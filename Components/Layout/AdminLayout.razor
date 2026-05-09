@@ -1,0 +1,59 @@
+@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@using SmartPOS.Providers
+@using Blazored.LocalStorage
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+<div class="page" style="display: flex; height: 100vh; background-color: #f4ecd8;">
+    <div class="sidebar" style="width: 250px; background-color: #593626; color: #f4ecd8; padding: 20px;">
+        <h2 style="color: #e9cac9; text-align: center; border-bottom: 1px solid #704735; padding-bottom: 10px;">SmartPOS+</h2>
+        <h4 style="text-align: center; margin-bottom: 30px;">Admin Panel</h4>
+        
+        <nav class="flex-column">
+            <div class="nav-item px-3 mb-2">
+                <a class="nav-link text-white" href="admin/dashboard">
+                    <span class="oi oi-home" aria-hidden="true"></span> Dashboard
+                </a>
+            </div>
+            <div class="nav-item px-3 mb-2">
+                <a class="nav-link text-white" href="admin/users">
+                    <span class="oi oi-people" aria-hidden="true"></span> User Management
+                </a>
+            </div>
+            <div class="nav-item px-3 mb-2">
+                <a class="nav-link text-white" href="admin/roles">
+                    <span class="oi oi-lock-locked" aria-hidden="true"></span> Roles & Permissions
+                </a>
+            </div>
+        </nav>
+
+        <div style="position: absolute; bottom: 20px; width: 210px;">
+            <button @onclick="Logout" class="btn btn-outline-light w-100" style="color: #e9cac9; border-color: #e9cac9;">Logout</button>
+        </div>
+    </div>
+
+    <main style="flex-grow: 1; padding: 20px; overflow-y: auto;">
+        <div class="top-row px-4" style="background-color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: flex-end;">
+            <AuthorizeView>
+                <Authorized>
+                    <span>Welcome, @context.User.Identity?.Name!</span>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private async Task Logout()
+    {
+        await LocalStorage.RemoveItemAsync("authToken");
+        ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("/login");
+    }
+}
