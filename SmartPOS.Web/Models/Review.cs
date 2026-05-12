@@ -32,8 +32,9 @@ namespace SmartPOS.Web.Models
 
         // ── Navigation Properties ──
 
-        [ForeignKey(nameof(CustomerId))]
-        public virtual object Customer { get; set; } = null!;
+        // TODO: Uncomment when Customer model is added
+        // [ForeignKey(nameof(CustomerId))]
+        // public virtual Customer Customer { get; set; } = null!;
 
         [ForeignKey(nameof(ProductId))]
         public virtual Product Product { get; set; } = null!;
