@@ -103,6 +103,7 @@ namespace SmartPOS.Shared.Enums
 
 namespace SmartPOS.Shared.DTOs.Auth
 {
+    using SmartPOS.Shared.DTOs.Users;
     // Login request
     public class LoginRequestDto
     {
