@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SmartPOS")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+09f63678d0fcc3526b4be261066fd3b7a6d84945")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7f8eddf7faa580822e7cd67e9a297b0d9e90fca8")]
 [assembly: System.Reflection.AssemblyProductAttribute("SmartPOS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartPOS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
