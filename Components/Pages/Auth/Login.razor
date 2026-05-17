@@ -24,7 +24,7 @@
                 <a href="/register" class="auth-tab">Sign Up</a>
             </div>
 
-            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="loginForm">
                 <DataAnnotationsValidator />
 
                 <div class="auth-form-group">

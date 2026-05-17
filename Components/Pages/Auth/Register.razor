@@ -25,7 +25,7 @@
                 <a class="auth-tab active">Sign Up</a>
             </div>
 
-            <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+            <EditForm Model="@registerModel" OnValidSubmit="HandleRegister" FormName="registerForm">
                 <DataAnnotationsValidator />
 
                 <div class="auth-form-group">
