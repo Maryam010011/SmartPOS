@@ -1,3 +1,11 @@
+:root {
+    --dusty-rose: #e9cac9;
+    --buttermilk: #f4ecd8;
+    --chocolate: #593626;
+    --chocolate-light: #704735;
+    --chocolate-dark: #3b2217;
+}
+
 *,
 *::before,
 *::after {
@@ -8,12 +16,22 @@ html,
 body {
     margin: 0;
     min-height: 100%;
-    background: #000;
-    color: #000;
+    background: var(--buttermilk);
+    color: var(--chocolate-dark);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
     min-height: 100vh;
+}
+
+a {
+    color: var(--chocolate-light);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--chocolate);
 }
 
 .error-meta {
@@ -21,5 +39,24 @@ body {
     padding: 1rem;
     font-family: ui-monospace, monospace;
     font-size: 0.75rem;
-    color: #333;
+    color: var(--chocolate-dark);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--dusty-rose);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--chocolate-light);
+    border-radius: 4px;
+}
+
+::selection {
+    background: var(--chocolate);
+    color: var(--buttermilk);
 }

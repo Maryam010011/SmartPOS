@@ -7,6 +7,7 @@ using SmartPOS.Data;
 using Blazored.LocalStorage;
 using System.Text;
 using SmartPOS.Providers;
+using SmartPOS.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// 1. Setup EF Core with Azure SQL Server
+// 1. Setup EF Core with Local SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -43,11 +44,61 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorizationCore();
+// 4. Authorization (use AddAuthorization, not AddAuthorizationCore, for server-side Blazor)
+builder.Services.AddAuthorization();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<SmartPOS.Services.AuthService>();
 
 var app = builder.Build();
+
+// 5. Auto-create DB + tables + seed default data on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        // EnsureCreated handles creating the DB if it doesn't exist
+        // Then Migrate applies any pending migration changes on top
+        db.Database.EnsureCreated();
+        db.Database.Migrate();
+
+        // Seed Roles if empty
+        if (!db.Roles.Any())
+        {
+            db.Roles.AddRange(
+                new Role { Name = "Admin" },
+                new Role { Name = "Manager" },
+                new Role { Name = "Cashier" },
+                new Role { Name = "Customer" }
+            );
+            db.SaveChanges();
+        }
+
+        // Seed default Admin user if not present
+        if (!db.Users.Any(u => u.Email == "admin@smartpos.com"))
+        {
+            var adminRole = db.Roles.First(r => r.Name == "Admin");
+            db.Users.Add(new User
+            {
+                Name = "Admin",
+                Email = "admin@smartpos.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                RoleId = adminRole.Id,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            });
+            db.SaveChanges();
+        }
+
+        logger.LogInformation("Database initialized successfully.");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Database initialization failed. Check your SQL Server connection string in appsettings.json.");
+        throw; // Re-throw so the app fails fast — prevents runtime errors later
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -55,12 +106,10 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-app.UseHttpsRedirection();
 
+app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseAntiforgery();
 
 app.MapStaticAssets();

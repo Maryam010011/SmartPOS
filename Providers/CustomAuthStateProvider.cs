@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text.Json;
 using Blazored.LocalStorage;
@@ -9,6 +8,8 @@ namespace SmartPOS.Providers;
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
     private readonly ILocalStorageService _localStorage;
+    private static readonly AuthenticationState _anonymous =
+        new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
 
     public CustomAuthStateProvider(ILocalStorageService localStorage)
     {
@@ -17,28 +18,36 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var token = await _localStorage.GetItemAsync<string>("authToken");
-
-        if (string.IsNullOrWhiteSpace(token))
+        try
         {
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-        }
+            // During SSR pre-rendering, JS interop is unavailable — return anonymous gracefully
+            var token = await _localStorage.GetItemAsync<string>("authToken");
 
-        return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt")));
+            if (string.IsNullOrWhiteSpace(token))
+                return _anonymous;
+
+            var claims = ParseClaimsFromJwt(token);
+            var identity = new ClaimsIdentity(claims, "jwt");
+            return new AuthenticationState(new ClaimsPrincipal(identity));
+        }
+        catch
+        {
+            // JS interop not yet available (pre-rendering phase) — safe fallback
+            return _anonymous;
+        }
     }
 
     public void MarkUserAsAuthenticated(string token)
     {
-        var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt"));
-        var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
-        NotifyAuthenticationStateChanged(authState);
+        var claims = ParseClaimsFromJwt(token);
+        var identity = new ClaimsIdentity(claims, "jwt");
+        var user = new ClaimsPrincipal(identity);
+        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
     }
 
     public void MarkUserAsLoggedOut()
     {
-        var anonymousUser = new ClaimsPrincipal(new ClaimsIdentity());
-        var authState = Task.FromResult(new AuthenticationState(anonymousUser));
-        NotifyAuthenticationStateChanged(authState);
+        NotifyAuthenticationStateChanged(Task.FromResult(_anonymous));
     }
 
     private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
@@ -48,37 +57,33 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         var jsonBytes = ParseBase64WithoutPadding(payload);
         var keyValuePairs = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonBytes);
 
-        if (keyValuePairs != null)
+        if (keyValuePairs == null) return claims;
+
+        // Handle Role claim specially (can be array or single value)
+        if (keyValuePairs.TryGetValue(ClaimTypes.Role, out var roles) && roles != null)
         {
-            keyValuePairs.TryGetValue(ClaimTypes.Role, out object? roles);
-
-            if (roles != null)
+            var rolesStr = roles.ToString()!.Trim();
+            if (rolesStr.StartsWith("["))
             {
-                if (roles.ToString()!.Trim().StartsWith("["))
-                {
-                    var parsedRoles = JsonSerializer.Deserialize<string[]>(roles.ToString()!);
-                    if (parsedRoles != null)
-                    {
-                        foreach (var parsedRole in parsedRoles)
-                        {
-                            claims.Add(new Claim(ClaimTypes.Role, parsedRole));
-                        }
-                    }
-                }
-                else
-                {
-                    claims.Add(new Claim(ClaimTypes.Role, roles.ToString()!));
-                }
-                keyValuePairs.Remove(ClaimTypes.Role);
+                var parsedRoles = JsonSerializer.Deserialize<string[]>(rolesStr);
+                if (parsedRoles != null)
+                    foreach (var r in parsedRoles)
+                        claims.Add(new Claim(ClaimTypes.Role, r));
             }
-
-            claims.AddRange(keyValuePairs.Select(kvp => new Claim(kvp.Key, kvp.Value.ToString() ?? string.Empty)));
+            else
+            {
+                claims.Add(new Claim(ClaimTypes.Role, rolesStr));
+            }
+            keyValuePairs.Remove(ClaimTypes.Role);
         }
+
+        claims.AddRange(keyValuePairs.Select(kvp =>
+            new Claim(kvp.Key, kvp.Value?.ToString() ?? string.Empty)));
 
         return claims;
     }
 
-    private byte[] ParseBase64WithoutPadding(string base64)
+    private static byte[] ParseBase64WithoutPadding(string base64)
     {
         switch (base64.Length % 4)
         {

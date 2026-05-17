@@ -36,5 +36,18 @@ public class AppDbContext : DbContext
             .HasOne(c => c.User)
             .WithOne(u => u.CustomerProfile)
             .HasForeignKey<Customer>(c => c.UserId);
+
+        // Fix decimal precision warnings
+        modelBuilder.Entity<Customer>()
+            .Property(c => c.TotalSpent)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Promotion>()
+            .Property(p => p.Value)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<Promotion>()
+            .Property(p => p.MinOrderValue)
+            .HasPrecision(18, 2);
     }
 }

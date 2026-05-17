@@ -8,6 +8,7 @@
 @using SmartPOS.Models
 @inject AppDbContext DbContext
 @inject NavigationManager NavigationManager
+@inject ILogger<Register> Logger
 
 <PageTitle>Register - SmartPOS+</PageTitle>
 
@@ -61,7 +62,7 @@
                     <div style="color: #4CAF50; margin-bottom: 10px; text-align: center;">Registration successful! Redirecting to login...</div>
                 }
 
-                <button type="submit" class="auth-btn">
+                <button type="submit" class="auth-btn" disabled="@isLoading">
                     @if (isLoading)
                     {
                         <span>Loading...</span>
@@ -84,6 +85,7 @@
 
     private async Task HandleRegister()
     {
+        if (isLoading) return;
         isLoading = true;
         errorMessage = null;
 
@@ -93,18 +95,11 @@
             if (existingUser != null)
             {
                 errorMessage = "Email is already registered.";
-                isLoading = false;
                 return;
             }
 
-            // Assign default role (e.g., Customer). Ensure roles exist in DB first.
-            var customerRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Customer");
-            if (customerRole == null)
-            {
-                customerRole = new Role { Name = "Customer" };
-                DbContext.Roles.Add(customerRole);
-                await DbContext.SaveChangesAsync();
-            }
+            var customerRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Customer")
+                ?? throw new InvalidOperationException("Customer role not found in database. Run the app once to seed data.");
 
             var newUser = new User
             {
@@ -112,13 +107,13 @@
                 Email = registerModel.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerModel.Password),
                 RoleId = customerRole.Id,
-                IsActive = true
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
             };
 
             DbContext.Users.Add(newUser);
             await DbContext.SaveChangesAsync();
 
-            // Create Customer profile
             var customerProfile = new Customer
             {
                 UserId = newUser.Id
@@ -127,12 +122,15 @@
             await DbContext.SaveChangesAsync();
 
             isSuccess = true;
-            await Task.Delay(2000); // Wait for user to read success message
+            await Task.Delay(2000);
             NavigationManager.NavigateTo("/login");
         }
         catch (Exception ex)
         {
-            errorMessage = "An error occurred during registration. Please try again.";
+            Logger.LogError(ex, "Registration failed for email {Email}", registerModel.Email);
+            errorMessage = ex.Message.Contains("Customer role")
+                ? ex.Message
+                : "An error occurred during registration. Please try again.";
         }
         finally
         {

@@ -1,3 +1,11 @@
-﻿@page "/"
+@page "/"
+@inject NavigationManager NavigationManager
 
-<PageTitle>SmartPOS</PageTitle>
+<PageTitle>SmartPOS+ | Redirecting...</PageTitle>
+
+@code {
+    protected override void OnInitialized()
+    {
+        NavigationManager.NavigateTo("/login", replace: true);
+    }
+}
