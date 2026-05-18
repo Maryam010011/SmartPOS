@@ -58,7 +58,8 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        db.Database.Migrate();
+        // Since we are using a Database-First approach, database migrations on startup are bypassed.
+        // db.Database.Migrate();
 
         // Seed Roles if empty
         if (!db.Roles.Any())

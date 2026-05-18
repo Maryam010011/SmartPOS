@@ -1,13 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+
 namespace SmartPOS.Models;
 
-public class Permission
+public partial class Permission
 {
     public int Id { get; set; }
+
     public int RoleId { get; set; }
-    public Role? Role { get; set; }
-    public string Module { get; set; } = string.Empty;
+
+    public string Module { get; set; } = null!;
+
     public bool CanCreate { get; set; }
+
     public bool CanRead { get; set; }
+
     public bool CanUpdate { get; set; }
+
     public bool CanDelete { get; set; }
+
+    public virtual Role Role { get; set; } = null!;
 }

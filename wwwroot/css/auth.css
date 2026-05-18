@@ -1,160 +1,273 @@
+/* Vanilla + Burnt Orange Theme for SmartPOS */
 :root {
-    --dusty-rose: #e9cac9;
-    --buttermilk: #f4ecd8;
-    --chocolate: #593626;
-    --chocolate-light: #704735;
-    --chocolate-dark: #3b2217;
+    --vanilla-bg: #fcfbf9;
+    --vanilla-card-bg: #ffffff;
+    --vanilla-border: #e6e3df;
+    --vanilla-text-primary: #2b2927;
+    --vanilla-text-secondary: #706b64;
+    --burnt-orange: #CC5500;
+    --burnt-orange-hover: #b34a00;
+    --burnt-orange-light: #ffebd6;
+    --danger-color: #dc3545;
 }
 
 body {
-    background-color: var(--buttermilk);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--vanilla-bg);
+    font-family: 'Outfit', 'Inter', 'Segoe UI', system-ui, sans-serif;
     margin: 0;
     padding: 0;
-    height: 100vh;
+    min-height: 100vh;
+    color: var(--vanilla-text-primary);
 }
 
 .auth-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     padding: 20px;
     box-sizing: border-box;
 }
 
+/* Premium Vanilla Card Layout */
 .auth-card {
     width: 100%;
-    max-width: 400px;
-    background-color: var(--chocolate);
-    border-radius: 40px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    max-width: 480px;
+    background-color: var(--vanilla-card-bg);
+    border: 1px solid var(--vanilla-border);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
     overflow: hidden;
+    padding: 40px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.auth-card:hover {
+    box-shadow: 0 15px 50px rgba(204, 85, 0, 0.06);
+    border-color: rgba(204, 85, 0, 0.15);
+}
+
+.auth-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--vanilla-text-primary);
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.auth-subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: var(--vanilla-text-secondary);
+    margin-bottom: 30px;
+}
+
+/* Role Selection Grid */
+.role-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.role-btn {
+    background-color: var(--vanilla-card-bg);
+    border: 1px solid var(--vanilla-border);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--vanilla-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
-    color: var(--buttermilk);
-}
-
-.auth-header {
-    background-color: var(--buttermilk);
-    height: 200px;
-    border-bottom-left-radius: 60px;
-    position: relative;
-    display: flex;
-    justify-content: center;
     align-items: center;
-    overflow: hidden;
+    gap: 8px;
 }
 
-.auth-header img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0.8;
+.role-btn:hover {
+    border-color: var(--burnt-orange);
+    color: var(--burnt-orange);
+    background-color: var(--burnt-orange-light);
+    transform: translateY(-2px);
 }
 
-.auth-body {
-    padding: 30px 40px;
-    flex-grow: 1;
+.role-btn.active {
+    border-color: var(--burnt-orange);
+    color: #ffffff;
+    background-color: var(--burnt-orange);
+    box-shadow: 0 4px 15px rgba(204, 85, 0, 0.25);
 }
 
-.auth-tabs {
+.role-icon {
+    font-size: 22px;
+}
+
+/* Forms & Inputs */
+.auth-form {
+    animation: fadeIn 0.4s ease-out;
+}
+
+.form-header {
+    margin-bottom: 20px;
     display: flex;
-    justify-content: space-around;
-    margin-bottom: 30px;
-    font-size: 18px;
+    align-items: center;
+    gap: 10px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: var(--burnt-orange);
+    font-size: 14px;
     font-weight: 600;
-}
-
-.auth-tab {
     cursor: pointer;
-    color: var(--dusty-rose);
-    text-decoration: none;
-    padding-bottom: 5px;
-    transition: all 0.3s;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
-.auth-tab.active {
-    color: var(--buttermilk);
-    border-bottom: 2px solid var(--buttermilk);
+.back-btn:hover {
+    text-decoration: underline;
 }
 
-.auth-tab:hover {
-    color: var(--buttermilk);
+.form-role-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--vanilla-text-primary);
 }
 
 .auth-form-group {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.auth-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--vanilla-text-secondary);
+}
+
+.input-container {
     position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.auth-input-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--vanilla-text-secondary);
+    font-size: 16px;
 }
 
 .auth-input {
     width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--dusty-rose);
-    padding: 10px 10px 10px 35px;
-    color: var(--buttermilk);
-    font-size: 16px;
+    padding: 12px 14px 12px 42px;
+    border: 1px solid var(--vanilla-border);
+    border-radius: 10px;
+    font-size: 15px;
+    background-color: var(--vanilla-bg);
+    color: var(--vanilla-text-primary);
     outline: none;
     box-sizing: border-box;
-    transition: border-color 0.3s;
-}
-
-.auth-input::placeholder {
-    color: var(--dusty-rose);
-    opacity: 0.7;
+    transition: all 0.2s ease;
 }
 
 .auth-input:focus {
-    border-bottom: 2px solid var(--buttermilk);
+    border-color: var(--burnt-orange);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px var(--burnt-orange-light);
 }
 
-.auth-icon {
-    position: absolute;
-    left: 5px;
-    top: 10px;
-    color: var(--dusty-rose);
-}
-
+/* Buttons */
 .auth-btn {
     width: 100%;
-    padding: 15px;
-    background: linear-gradient(145deg, var(--chocolate-light), var(--chocolate-dark));
-    color: var(--buttermilk);
+    padding: 14px;
+    background-color: var(--burnt-orange);
+    color: #ffffff;
     border: none;
-    border-radius: 25px;
-    font-size: 18px;
-    font-weight: bold;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-    box-shadow: 5px 5px 10px var(--chocolate-dark), -5px -5px 10px var(--chocolate-light);
-    transition: transform 0.1s, box-shadow 0.1s;
+    box-shadow: 0 4px 12px rgba(204, 85, 0, 0.15);
+    transition: all 0.2s ease;
     margin-top: 10px;
 }
 
-.auth-btn:active {
-    transform: translateY(2px);
-    box-shadow: inset 5px 5px 10px var(--chocolate-dark), inset -5px -5px 10px var(--chocolate-light);
+.auth-btn:hover {
+    background-color: var(--burnt-orange-hover);
+    box-shadow: 0 6px 18px rgba(204, 85, 0, 0.25);
+    transform: translateY(-1px);
 }
 
+.auth-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px rgba(204, 85, 0, 0.15);
+}
+
+.auth-btn:disabled {
+    background-color: var(--vanilla-border);
+    color: var(--vanilla-text-secondary);
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Links */
 .auth-links {
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
     margin-top: 20px;
     font-size: 14px;
 }
 
 .auth-links a {
-    color: var(--dusty-rose);
+    color: var(--burnt-orange);
     text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
 }
 
 .auth-links a:hover {
-    color: var(--buttermilk);
+    color: var(--burnt-orange-hover);
+    text-decoration: underline;
 }
 
+/* Validations */
 .text-danger {
-    color: #ffb3b3;
+    color: var(--danger-color);
     font-size: 12px;
-    margin-top: 5px;
-    display: block;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.validation-message-box {
+    background-color: #fdf2f2;
+    border: 1px solid #f8b4b4;
+    color: #9b1c1c;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

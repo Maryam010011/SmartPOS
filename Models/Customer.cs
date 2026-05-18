@@ -1,13 +1,19 @@
+﻿using System;
+using System.Collections.Generic;
+
 namespace SmartPOS.Models;
 
-public class Customer
+public partial class Customer
 {
     public int Id { get; set; }
-    
-    public int UserId { get; set; }
-    public User? User { get; set; }
 
-    public int LoyaltyPoints { get; set; } = 0;
-    public decimal TotalSpent { get; set; } = 0;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public int UserId { get; set; }
+
+    public int LoyaltyPoints { get; set; }
+
+    public decimal TotalSpent { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public virtual User User { get; set; } = null!;
 }

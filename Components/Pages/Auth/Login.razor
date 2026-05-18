@@ -3,110 +3,193 @@
 @using SmartPOS.Providers
 @using Blazored.LocalStorage
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.ComponentModel.DataAnnotations
 @inject AuthService AuthService
 @inject ILocalStorageService LocalStorage
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
-<PageTitle>Login - SmartPOS+</PageTitle>
+<PageTitle>Sign In - SmartPOS+</PageTitle>
 
 <link href="css/auth.css" rel="stylesheet" />
 
 <div class="auth-container">
     <div class="auth-card">
-        <div class="auth-header">
-            <!-- A placeholder image to match the coffee shop mockup style -->
-            <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=400&q=80" alt="POS System" />
-        </div>
-        <div class="auth-body">
-            <div class="auth-tabs">
-                <a class="auth-tab active">Sign In</a>
-                <a href="/register" class="auth-tab">Sign Up</a>
+        @if (string.IsNullOrEmpty(selectedRole))
+        {
+            <!-- Role Selection View -->
+            <h1 class="auth-title">Welcome to SmartPOS+</h1>
+            <p class="auth-subtitle">Please select your role to proceed to sign in</p>
+
+            <div class="role-grid">
+                <button type="button" class="role-btn" @onclick='() => SelectRole("Admin")'>
+                    <span class="role-icon">🛡️</span>
+                    <span>Admin</span>
+                </button>
+                <button type="button" class="role-btn" @onclick='() => SelectRole("Manager")'>
+                    <span class="role-icon">💼</span>
+                    <span>Manager</span>
+                </button>
+                <button type="button" class="role-btn" @onclick='() => SelectRole("Cashier")'>
+                    <span class="role-icon">💵</span>
+                    <span>Cashier</span>
+                </button>
+                <button type="button" class="role-btn" @onclick='() => SelectRole("Customer")'>
+                    <span class="role-icon">🛍️</span>
+                    <span>Customer</span>
+                </button>
             </div>
-
-            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="loginForm">
-                <DataAnnotationsValidator />
-
-                <div class="auth-form-group">
-                    <span class="auth-icon">✉</span>
-                    <InputText @bind-Value="loginModel.Email" class="auth-input" placeholder="Email Address:" />
-                    <ValidationMessage For="@(() => loginModel.Email)" class="text-danger" />
+            
+            <p style="text-align: center; font-size: 13px; color: var(--vanilla-text-secondary); margin-top: 10px;">
+                Secure role-based Single Sign-On enabled.
+            </p>
+        }
+        else
+        {
+            <!-- Specific Login Form for the selected role -->
+            <div class="auth-form">
+                <div class="form-header">
+                    <button type="button" class="back-btn" @onclick="ClearRole">
+                        ← Back to Roles
+                    </button>
                 </div>
 
-                <div class="auth-form-group">
-                    <span class="auth-icon">🔒</span>
-                    <InputText @bind-Value="loginModel.Password" type="password" class="auth-input" placeholder="Password:" />
-                    <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
-                </div>
+                <h1 class="auth-title">@selectedRole Sign In</h1>
+                <p class="auth-subtitle">Enter your details below to access your @selectedRole.ToLower() panel</p>
 
                 @if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    <div class="text-danger" style="margin-bottom: 10px; text-align: center;">@errorMessage</div>
+                    <div class="validation-message-box">
+                        @errorMessage
+                    </div>
                 }
 
-                <button type="submit" class="auth-btn">
-                    @if (isLoading)
-                    {
-                        <span>Loading...</span>
-                    }
-                    else
-                    {
-                        <span>Sign In</span>
-                    }
-                </button>
+                <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="loginForm">
+                    <DataAnnotationsValidator />
 
-                <div class="auth-links">
-                    <a href="#">Forgot Password?</a>
-                </div>
-            </EditForm>
-        </div>
+                    <div class="auth-form-group">
+                        <label class="auth-label">Email Address</label>
+                        <div class="input-container">
+                            <span class="auth-input-icon">✉</span>
+                            <InputText @bind-Value="loginModel.Email" class="auth-input" placeholder="e.g. name@smartpos.com" />
+                        </div>
+                        <ValidationMessage For="@(() => loginModel.Email)" class="text-danger" />
+                    </div>
+
+                    <div class="auth-form-group">
+                        <label class="auth-label">Password</label>
+                        <div class="input-container">
+                            <span class="auth-input-icon">🔒</span>
+                            <InputText @bind-Value="loginModel.Password" type="password" class="auth-input" placeholder="••••••••" />
+                        </div>
+                        <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
+                    </div>
+
+                    <button type="submit" class="auth-btn" disabled="@isLoading">
+                        @if (isLoading)
+                        {
+                            <span>Signing In...</span>
+                        }
+                        else
+                        {
+                            <span>Sign In as @selectedRole</span>
+                        }
+                    </button>
+
+                    <div class="auth-links">
+                        <a href="#" @onclick:preventDefault @onclick="ForgotPassword">Forgot Password?</a>
+                        <a href="/register">Sign Up</a>
+                    </div>
+                </EditForm>
+            </div>
+        }
     </div>
 </div>
 
 @code {
+    private string? selectedRole;
     private LoginModel loginModel = new();
     private string? errorMessage;
     private bool isLoading;
+
+    private void SelectRole(string role)
+    {
+        selectedRole = role;
+        errorMessage = null;
+        loginModel = new(); // Reset model when switching roles
+    }
+
+    private void ClearRole()
+    {
+        selectedRole = null;
+        errorMessage = null;
+        loginModel = new();
+    }
 
     private async Task HandleLogin()
     {
         isLoading = true;
         errorMessage = null;
 
-        var token = await AuthService.LoginAsync(loginModel.Email, loginModel.Password);
-
-        if (token != null)
+        try
         {
-            await LocalStorage.SetItemAsync("authToken", token);
-            ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsAuthenticated(token);
-            
-            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+            var result = await AuthService.LoginAsync(loginModel.Email, loginModel.Password);
 
-            if (user.IsInRole("Admin"))
-                NavigationManager.NavigateTo("/admin/dashboard");
-            else if (user.IsInRole("Manager"))
-                NavigationManager.NavigateTo("/manager/inventory");
-            else if (user.IsInRole("Cashier"))
-                NavigationManager.NavigateTo("/cashier/pos");
+            if (result.Token != null && result.User != null)
+            {
+                // Enforce role check match
+                string actualRole = result.User.Role?.Name ?? "Customer";
+                if (!string.Equals(actualRole, selectedRole, StringComparison.OrdinalIgnoreCase))
+                {
+                    errorMessage = $"Access Denied. These credentials are for a {actualRole}, not a {selectedRole}.";
+                    isLoading = false;
+                    return;
+                }
+
+                // Store JWT token securely in LocalStorage
+                await LocalStorage.SetItemAsync("authToken", result.Token);
+
+                // Notify custom auth state provider of user's authentication
+                ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsAuthenticated(result.Token);
+
+                // Redirect to role-specific dashboard page
+                if (actualRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                    NavigationManager.NavigateTo("/admin/dashboard");
+                else if (actualRole.Equals("Manager", StringComparison.OrdinalIgnoreCase))
+                    NavigationManager.NavigateTo("/manager/inventory");
+                else if (actualRole.Equals("Cashier", StringComparison.OrdinalIgnoreCase))
+                    NavigationManager.NavigateTo("/cashier/pos");
+                else
+                    NavigationManager.NavigateTo("/customer/shop");
+            }
             else
-                NavigationManager.NavigateTo("/customer/shop");
+            {
+                errorMessage = "Invalid email or password.";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            errorMessage = "Invalid email or password.";
+            errorMessage = $"A database connection error occurred: {ex.Message}";
         }
+        finally
+        {
+            isLoading = false;
+        }
+    }
 
-        isLoading = false;
+    private void ForgotPassword()
+    {
+        errorMessage = "A password reset link has been simulated. Check console or DB log.";
     }
 
     public class LoginModel
     {
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email is required.")]
-        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Invalid email format.")]
+        [Required(ErrorMessage = "Email address is required.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
         public string Email { get; set; } = string.Empty;
 
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Password is required.")]
+        [Required(ErrorMessage = "Password is required.")]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters long.")]
         public string Password { get; set; } = string.Empty;
     }
 }

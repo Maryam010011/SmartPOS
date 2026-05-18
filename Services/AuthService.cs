@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SmartPOS.Data;
+using SmartPOS.Models;
 
 namespace SmartPOS.Services;
 
@@ -18,23 +19,104 @@ public class AuthService
         _configuration = configuration;
     }
 
-    public async Task<string?> LoginAsync(string email, string password)
+    /// <summary>
+    /// Verifies user credentials and logs the login action into their role-specific log table.
+    /// </summary>
+    public async Task<(string? Token, User? User)> LoginAsync(string email, string password)
     {
-        var user = await _context.Users
-            .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
+        try
+        {
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == email && u.IsActive);
 
-        if (user == null)
-            return null;
+            if (user == null)
+                return (null, null);
 
-        // Verify password using BCrypt
-        if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-            return null;
+            // Verify password using BCrypt
+            if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+                return (null, null);
 
-        return GenerateJwtToken(user);
+            // Generate JWT Token
+            var token = GenerateJwtToken(user);
+
+            // Log successful login action based on role
+            string roleName = user.Role?.Name ?? "Customer";
+            await LogUserActionAsync(user.Id, roleName, "User logged in successfully.");
+
+            return (token, user);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Database connection or login error: {ex.Message}");
+            return (null, null);
+        }
     }
 
-    private string GenerateJwtToken(Models.User user)
+    /// <summary>
+    /// Dynamically inserts action logs into role-specific tables (AdminLogs, ManagerActions, etc.).
+    /// </summary>
+    public async Task<bool> LogUserActionAsync(int userId, string role, string actionDetails)
+    {
+        try
+        {
+            if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+            {
+                var log = new AdminLog
+                {
+                    AdminId = userId,
+                    ActionDetails = actionDetails,
+                    Timestamp = DateTime.UtcNow
+                };
+                _context.AdminLogs.Add(log);
+            }
+            else if (string.Equals(role, "Manager", StringComparison.OrdinalIgnoreCase))
+            {
+                var action = new ManagerAction
+                {
+                    ManagerId = userId,
+                    ActionDetails = actionDetails,
+                    Timestamp = DateTime.UtcNow
+                };
+                _context.ManagerActions.Add(action);
+            }
+            else if (string.Equals(role, "Cashier", StringComparison.OrdinalIgnoreCase))
+            {
+                var log = new CashierLog
+                {
+                    CashierId = userId,
+                    ActionDetails = actionDetails,
+                    Timestamp = DateTime.UtcNow
+                };
+                _context.CashierLogs.Add(log);
+            }
+            else if (string.Equals(role, "Customer", StringComparison.OrdinalIgnoreCase))
+            {
+                var log = new CustomerLog
+                {
+                    CustomerId = userId,
+                    ActionDetails = actionDetails,
+                    Timestamp = DateTime.UtcNow
+                };
+                _context.CustomerLogs.Add(log);
+            }
+            else
+            {
+                return false;
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            // Safe fallback logging for connection errors or schema issues
+            Console.WriteLine($"Error writing action log to database: {ex.Message}");
+            return false;
+        }
+    }
+
+    private string GenerateJwtToken(User user)
     {
         var jwtKey = _configuration["Jwt:Key"] ?? "FallbackSecretKeyForSmartPOSApplication";
         var key = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey));
