@@ -58,9 +58,6 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        // EnsureCreated handles creating the DB if it doesn't exist
-        // Then Migrate applies any pending migration changes on top
-        db.Database.EnsureCreated();
         db.Database.Migrate();
 
         // Seed Roles if empty

@@ -60,7 +60,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         if (keyValuePairs == null) return claims;
 
         // Handle Role claim specially (can be array or single value)
-        if (keyValuePairs.TryGetValue(ClaimTypes.Role, out var roles) && roles != null)
+        if (keyValuePairs.TryGetValue("role", out var roles) && roles != null)
         {
             var rolesStr = roles.ToString()!.Trim();
             if (rolesStr.StartsWith("["))
@@ -74,7 +74,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
             {
                 claims.Add(new Claim(ClaimTypes.Role, rolesStr));
             }
-            keyValuePairs.Remove(ClaimTypes.Role);
+            keyValuePairs.Remove("role");
         }
 
         claims.AddRange(keyValuePairs.Select(kvp =>

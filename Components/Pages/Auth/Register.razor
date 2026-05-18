@@ -52,6 +52,18 @@
                     <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="text-danger" />
                 </div>
 
+                <div class="auth-form-group">
+                    <span class="auth-icon">👔</span>
+                    <InputSelect @bind-Value="registerModel.SelectedRoleId" class="auth-input">
+                        <option value="0">Select your role...</option>
+                        @foreach (var role in availableRoles)
+                        {
+                            <option value="@role.Id">@role.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => registerModel.SelectedRoleId)" class="text-danger" />
+                </div>
+
                 @if (!string.IsNullOrEmpty(errorMessage))
                 {
                     <div class="text-danger" style="margin-bottom: 10px; text-align: center;">@errorMessage</div>
@@ -79,9 +91,17 @@
 
 @code {
     private RegisterModel registerModel = new();
+    private List<Role> availableRoles = new();
     private string? errorMessage;
     private bool isLoading;
     private bool isSuccess;
+
+    protected override async Task OnInitializedAsync()
+    {
+        availableRoles = await DbContext.Roles
+            .Where(r => r.Name != "Admin")
+            .ToListAsync();
+    }
 
     private async Task HandleRegister()
     {
@@ -98,15 +118,25 @@
                 return;
             }
 
-            var customerRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Customer")
-                ?? throw new InvalidOperationException("Customer role not found in database. Run the app once to seed data.");
+            if (registerModel.SelectedRoleId == 0)
+            {
+                errorMessage = "Please select a role.";
+                return;
+            }
+
+            var selectedRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Id == registerModel.SelectedRoleId);
+            if (selectedRole == null)
+            {
+                errorMessage = "Invalid role selected.";
+                return;
+            }
 
             var newUser = new User
             {
                 Name = registerModel.Name,
                 Email = registerModel.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerModel.Password),
-                RoleId = customerRole.Id,
+                RoleId = selectedRole.Id,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -114,12 +144,15 @@
             DbContext.Users.Add(newUser);
             await DbContext.SaveChangesAsync();
 
-            var customerProfile = new Customer
+            if (selectedRole.Name == "Customer")
             {
-                UserId = newUser.Id
-            };
-            DbContext.Customers.Add(customerProfile);
-            await DbContext.SaveChangesAsync();
+                var customerProfile = new Customer
+                {
+                    UserId = newUser.Id
+                };
+                DbContext.Customers.Add(customerProfile);
+                await DbContext.SaveChangesAsync();
+            }
 
             isSuccess = true;
             await Task.Delay(2000);
@@ -128,7 +161,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Registration failed for email {Email}", registerModel.Email);
-            errorMessage = ex.Message.Contains("Customer role")
+            errorMessage = ex.Message.Contains("role")
                 ? ex.Message
                 : "An error occurred during registration. Please try again.";
         }
@@ -154,5 +187,8 @@
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Confirm Password is required.")]
         [System.ComponentModel.DataAnnotations.Compare("Password", ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Range(1, int.MaxValue, ErrorMessage = "Please select a role.")]
+        public int SelectedRoleId { get; set; }
     }
 }
