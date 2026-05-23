@@ -27,6 +27,7 @@ builder.Services.AddScoped<IReviewService,      ReviewService>();
 builder.Services.AddScoped<IAIChatbotService,   AIChatbotService>();
 builder.Services.AddScoped<IFBRService,         FBRService>();
 builder.Services.AddScoped<IBERTService,        BERTService>();
+builder.Services.AddScoped<IInventoryService,   InventoryServiceStub>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
