@@ -12,6 +12,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // ─── API Controllers ───────────────────────────────────────────
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // ─── HttpClient (required by FBRService and AIChatbotService) ──
 builder.Services.AddHttpClient();
@@ -44,6 +46,8 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.UseSwagger();
+app.UseSwaggerUI();
 app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
