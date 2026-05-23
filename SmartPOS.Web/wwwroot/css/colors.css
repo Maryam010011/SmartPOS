@@ -1,0 +1,28 @@
+/* ============================================================
+   SmartPOS+ Bakery — Global Color Theme
+   ============================================================
+   This file defines the single source-of-truth for every brand
+   color used across the application. All team members MUST
+   reference these CSS custom properties instead of hard-coding
+   hex values in pages or components.
+   ============================================================ */
+
+:root {
+    /* ── Chocolate Brown ─────────────────────────────────────── */
+    --color-navbar-bg:      #3D1C02;  /* Navigation bars and top headers       */
+    --color-sidebar-bg:     #3D1C02;  /* Sidebar backgrounds                   */
+    --color-heading-text:   #3D1C02;  /* Main headings and titles               */
+    --color-primary-text:   #3D1C02;  /* Primary body text                      */
+
+    /* ── Dusty Rose ──────────────────────────────────────────── */
+    --color-button-primary: #C4848A;  /* Primary action buttons                 */
+    --color-button-hover:   #b07078;  /* Button hover states (darkened rose)    */
+    --color-accent:         #C4848A;  /* Active states and highlights           */
+    --color-badge:          #C4848A;  /* Status badges and tags                 */
+    --color-border-accent:  #C4848A;  /* Accent borders                        */
+
+    /* ── Buttermilk ──────────────────────────────────────────── */
+    --color-page-bg:        #FFF8DC;  /* Main page backgrounds                 */
+    --color-card-bg:        #FFF8DC;  /* Card and panel surfaces               */
+    --color-table-row-alt:  #FFF8DC;  /* Alternating table row backgrounds     */
+}
