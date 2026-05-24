@@ -30,6 +30,8 @@ namespace SmartPOS.Web.Data
         // ── DbSets — Maryam Jahangir's Models ──
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
+        public DbSet<Customer> Customers { get; set; } = null!;
+        public DbSet<LoyaltyTransaction> LoyaltyTransactions { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -114,6 +116,27 @@ namespace SmartPOS.Web.Data
                       .HasForeignKey(u => u.RoleId)
                       .IsRequired()
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ─────────────────────────────────────────────────
+            // Customer — Email unique index
+            // ─────────────────────────────────────────────────
+            modelBuilder.Entity<Customer>(entity =>
+            {
+                entity.HasIndex(c => c.Email)
+                      .IsUnique();
+
+                entity.HasMany(c => c.Sales)
+                      .WithOne(s => s.Customer)
+                      .HasForeignKey(s => s.CustomerId)
+                      .IsRequired(false)
+                      .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasMany(c => c.LoyaltyTransactions)
+                      .WithOne(lt => lt.Customer)
+                      .HasForeignKey(lt => lt.CustomerId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             // ─────────────────────────────────────────────────

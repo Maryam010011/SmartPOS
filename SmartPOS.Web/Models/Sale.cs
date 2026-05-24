@@ -39,9 +39,8 @@ namespace SmartPOS.Web.Models
         public SaleStatus Status { get; set; }
 
         // ── Navigation Properties ──
-        // TODO: Uncomment when Customer, User, Promotion models are added
-        // [ForeignKey(nameof(CustomerId))]
-        // public virtual Customer? Customer { get; set; }
+        [ForeignKey(nameof(CustomerId))]
+        public virtual Customer? Customer { get; set; }
 
         // [ForeignKey(nameof(UserId))]
         // public virtual User User { get; set; } = null!;

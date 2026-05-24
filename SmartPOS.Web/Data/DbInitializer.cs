@@ -94,6 +94,23 @@ namespace SmartPOS.Web.Data
                 context.Users.AddRange(users);
                 await context.SaveChangesAsync();
             }
+
+            // ── Seed Customers (only if none exist) ──
+            if (!await context.Customers.AnyAsync())
+            {
+                var customers = new List<Customer>
+                {
+                    new() { Name = "Ayesha Tariq",     Email = "ayesha@email.com",    Phone = "0300-1234567", LoyaltyPoints = 240,  TotalSpent = 24000, IsActive = true,  CreatedAt = DateTime.UtcNow.AddDays(-60) },
+                    new() { Name = "Bilal Ahmed",      Email = "bilal@email.com",     Phone = "0301-2345678", LoyaltyPoints = 80,   TotalSpent = 8000,  IsActive = true,  CreatedAt = DateTime.UtcNow.AddDays(-45) },
+                    new() { Name = "Dania Khan",       Email = "dania@email.com",     Phone = "0302-3456789", LoyaltyPoints = 0,    TotalSpent = 0,     IsActive = true,  CreatedAt = DateTime.UtcNow.AddDays(-30), Address = "House 12, Street 5, F-7/1, Islamabad" },
+                    new() { Name = "Farhan Malik",     Email = "farhan@email.com",    Phone = "0303-4567890", LoyaltyPoints = 560,  TotalSpent = 56000, IsActive = true,  CreatedAt = DateTime.UtcNow.AddDays(-20), DateOfBirth = new DateTime(1990, 5, 15) },
+                    new() { Name = "Hina Shah",       Email = "hina@email.com",      Phone = "0304-5678901", LoyaltyPoints = 120,  TotalSpent = 12000, IsActive = false, CreatedAt = DateTime.UtcNow.AddDays(-10) },
+                    new() { Name = "Imran Ali",        Email = "imran@email.com",     Phone = "0305-6789012", LoyaltyPoints = 30,   TotalSpent = 3500,  IsActive = true,  CreatedAt = DateTime.UtcNow.AddDays(-5) },
+                };
+
+                context.Customers.AddRange(customers);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

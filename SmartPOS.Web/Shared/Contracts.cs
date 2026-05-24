@@ -168,6 +168,8 @@ namespace SmartPOS.Shared.DTOs.Users
 
 namespace SmartPOS.Shared.DTOs.Customers
 {
+    using SmartPOS.Shared.Enums;
+
     public class CustomerDto
     {
         public int Id { get; set; }
@@ -176,6 +178,32 @@ namespace SmartPOS.Shared.DTOs.Customers
         public string Phone { get; set; } = string.Empty;
         public int LoyaltyPoints { get; set; }
         public decimal TotalSpent { get; set; }
+        public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class CustomerDetailDto : CustomerDto
+    {
+        public DateTime? DateOfBirth { get; set; }
+        public string? Address { get; set; }
+        public List<SaleSummaryDto> RecentOrders { get; set; } = new();
+        public List<LoyaltyHistoryEntryDto> LoyaltyHistory { get; set; } = new();
+    }
+
+    public class SaleSummaryDto
+    {
+        public int Id { get; set; }
+        public DateTime SaleDate { get; set; }
+        public decimal TotalAmount { get; set; }
+        public SaleStatus Status { get; set; }
+        public int ItemCount { get; set; }
+    }
+
+    public class LoyaltyHistoryEntryDto
+    {
+        public int Points { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public string Reason { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }
 
@@ -183,16 +211,37 @@ namespace SmartPOS.Shared.DTOs.Customers
     {
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
+        public string? Phone { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string? Address { get; set; }
     }
 
     public class UpdateCustomerDto
     {
-        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string Phone { get; set; } = string.Empty;
+        public string? Phone { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string? Address { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    public class CustomerFilterDto
+    {
+        public bool? IsActive { get; set; }
+        public string SearchTerm { get; set; } = string.Empty;
+        public DateTime? RegistrationDateFrom { get; set; }
+        public DateTime? RegistrationDateTo { get; set; }
+        public decimal? MinSpend { get; set; }
+        public decimal? MaxSpend { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+    }
+
+    public class LoyaltyAdjustDto
+    {
+        public int Points { get; set; }
+        public string Reason { get; set; } = string.Empty;
     }
 }
 
@@ -258,12 +307,18 @@ namespace SmartPOS.Shared.Interfaces
     {
         // Shahzain's Sales module calls these
         Task<ApiResponse<CustomerDto>> GetById(int id);
-        Task<ApiResponse<List<CustomerDto>>> GetAll();
         Task<ApiResponse<CustomerDto>> GetByEmail(string email);
         Task<ApiResponse<CustomerDto>> Create(CreateCustomerDto dto);
-        Task<ApiResponse<CustomerDto>> Update(UpdateCustomerDto dto);
+        Task<ApiResponse<CustomerDto>> Update(int id, UpdateCustomerDto dto);
         Task<ApiResponse> AddLoyaltyPoints(int customerId, int points);
         Task<ApiResponse> DeductLoyaltyPoints(int customerId, int points);
+
+        // New methods
+        Task<ApiResponse<List<CustomerDto>>> GetAllCustomers(CustomerFilterDto filter);
+        Task<ApiResponse<CustomerDetailDto>> GetCustomerById(int id);
+        Task<ApiResponse> DeleteCustomer(int id);
+        Task<ApiResponse> AdjustLoyaltyPoints(int customerId, int adjustment, string reason);
+        Task<ApiResponse<List<SaleSummaryDto>>> GetCustomerPurchaseHistory(int customerId);
     }
 
     public interface IPromotionService
