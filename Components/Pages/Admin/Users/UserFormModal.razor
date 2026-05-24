@@ -1,0 +1,285 @@
+@using SmartPOS.Shared.DTOs.Users
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@using SmartPOS.Shared.Enums
+@using System.Text.RegularExpressions
+@inject IUserService UserService
+
+@if (IsVisible)
+{
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-pos" style="background-color: var(--color-card-bg); border: 2px solid var(--color-border-accent);">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold" style="color: var(--color-button-primary);">
+                        @(IsEditMode ? "Edit User Account" : "Create New User")
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger p-2 small mb-3">@ErrorMessage</div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" @bind-value="Name" @bind-value:event="oninput" placeholder="e.g. John Doe" />
+                        @if (ShowValidationErrors && string.IsNullOrWhiteSpace(Name))
+                        {
+                            <div class="text-danger small mt-1">Full Name is required.</div>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" @bind-value="Email" @bind-value:event="oninput" placeholder="e.g. johndoe@pos.com" />
+                        @if (ShowValidationErrors)
+                        {
+                            @if (string.IsNullOrWhiteSpace(Email))
+                            {
+                                <div class="text-danger small mt-1">Email is required.</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Email) && !IsValidEmail(Email))
+                            {
+                                <div class="text-danger small mt-1">Please enter a valid email format.</div>
+                            }
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Assigned Role <span class="text-danger">*</span></label>
+                        <select class="form-select" @bind="RoleId">
+                            <option value="-1">-- Select Role --</option>
+                            @foreach (var role in Enum.GetValues<UserRole>())
+                            {
+                                <option value="@((int)role)">@role.ToString()</option>
+                            }
+                        </select>
+                        @if (ShowValidationErrors && RoleId == -1)
+                        {
+                            <div class="text-danger small mt-1">Please select an assigned role.</div>
+                        }
+                    </div>
+
+                    @if (!IsEditMode)
+                    {
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" @bind-value="Password" @bind-value:event="oninput" placeholder="Min 8 chars" />
+                                @if (ShowValidationErrors)
+                                {
+                                    @if (string.IsNullOrWhiteSpace(Password))
+                                    {
+                                        <div class="text-danger small mt-1">Password is required.</div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(Password) && Password.Length < 8)
+                                    {
+                                        <div class="text-danger small mt-1">Password must be at least 8 characters.</div>
+                                    }
+                                }
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Confirm Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" @bind-value="ConfirmPassword" @bind-value:event="oninput" placeholder="Re-type password" />
+                                @if (ShowValidationErrors)
+                                {
+                                    @if (string.IsNullOrWhiteSpace(ConfirmPassword))
+                                    {
+                                        <div class="text-danger small mt-1">Please confirm the password.</div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(ConfirmPassword) && Password != ConfirmPassword)
+                                    {
+                                        <div class="text-danger small mt-1">Passwords do not match.</div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-secondary d-block">Account Status</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" role="switch" id="statusSwitch" @bind="IsActive" />
+                                <label class="form-check-label fw-semibold small @(IsActive ? "text-success" : "text-muted")" for="statusSwitch">
+                                    @(IsActive ? "Active / Enabled" : "Inactive / Suspended")
+                                </label>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer border-top-0 d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="CloseModal" disabled="@IsLoading">Cancel</button>
+                    <button type="button" class="btn btn-burnt-orange d-flex align-items-center gap-2" @onclick="HandleSubmit" disabled="@IsLoading">
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span>Saving...</span>
+                        }
+                        else
+                        {
+                            <span>@(IsEditMode ? "Save Changes" : "Create Account")</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show modal-backdrop-pos"></div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    // Properties bound to inputs
+    private string Name { get; set; } = string.Empty;
+    private string Email { get; set; } = string.Empty;
+    private int RoleId { get; set; } = -1;
+    private string Password { get; set; } = string.Empty;
+    private string ConfirmPassword { get; set; } = string.Empty;
+    private bool IsActive { get; set; } = true;
+
+    // Component State
+    private bool IsEditMode { get; set; }
+    private int EditUserId { get; set; }
+    private bool IsLoading { get; set; }
+    private bool ShowValidationErrors { get; set; }
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    // Open for Add Mode
+    public void OpenAdd()
+    {
+        IsEditMode = false;
+        EditUserId = 0;
+        Name = string.Empty;
+        Email = string.Empty;
+        RoleId = -1;
+        Password = string.Empty;
+        ConfirmPassword = string.Empty;
+        IsActive = true;
+        ShowValidationErrors = false;
+        ErrorMessage = string.Empty;
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    // Open for Edit Mode
+    public void OpenEdit(UserDto userDto)
+    {
+        IsEditMode = true;
+        EditUserId = userDto.Id;
+        Name = userDto.Name;
+        Email = userDto.Email;
+        RoleId = userDto.RoleId;
+        Password = string.Empty;
+        ConfirmPassword = string.Empty;
+        IsActive = userDto.IsActive;
+        ShowValidationErrors = false;
+        ErrorMessage = string.Empty;
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        OnClose.InvokeAsync();
+    }
+
+    private async Task HandleSubmit()
+    {
+        ShowValidationErrors = true;
+        ErrorMessage = string.Empty;
+
+        // Perform validations
+        if (string.IsNullOrWhiteSpace(Name) || string.IsNullOrWhiteSpace(Email) || !IsValidEmail(Email) || RoleId == -1)
+        {
+            return;
+        }
+
+        if (!IsEditMode)
+        {
+            if (string.IsNullOrWhiteSpace(Password) || Password.Length < 8 || Password != ConfirmPassword)
+            {
+                return;
+            }
+        }
+
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            if (IsEditMode)
+            {
+                var updateDto = new UpdateUserDto
+                {
+                    Name = Name,
+                    Email = Email,
+                    RoleId = RoleId,
+                    IsActive = IsActive
+                };
+
+                var response = await UserService.UpdateUser(EditUserId, updateDto);
+                if (response.Success)
+                {
+                    await OnSave.InvokeAsync();
+                    CloseModal();
+                }
+                else
+                {
+                    ErrorMessage = response.Message;
+                }
+            }
+            else
+            {
+                var createDto = new CreateUserDto
+                {
+                    Name = Name,
+                    Email = Email,
+                    Password = Password,
+                    RoleId = RoleId
+                };
+
+                var response = await UserService.CreateUser(createDto);
+                if (response.Success)
+                {
+                    await OnSave.InvokeAsync();
+                    CloseModal();
+                }
+                else
+                {
+                    ErrorMessage = response.Message;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"System exception: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return false;
+        try
+        {
+            return Regex.IsMatch(email,
+                @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+                RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return false;
+        }
+    }
+}

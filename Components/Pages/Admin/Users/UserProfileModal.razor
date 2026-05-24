@@ -1,0 +1,268 @@
+@using SmartPOS.Shared.DTOs.Users
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@using SmartPOS.Shared.Enums
+@inject IUserService UserService
+
+@if (IsVisible && UserDetail != null)
+{
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-pos" style="background-color: var(--color-card-bg); border: 2px solid var(--color-border-accent);">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" style="color: var(--color-button-primary);">User Account Profile</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger p-2 small mb-3">@ErrorMessage</div>
+                    }
+
+                    <!-- Profile Header (Avatar and Name) -->
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div class="avatar-circle">
+                            @GetInitials(UserDetail.Name)
+                        </div>
+                        <div>
+                            <h4 class="fw-bold m-0 text-dark">@UserDetail.Name</h4>
+                            <span class="badge badge-role badge-role-@UserDetail.RoleName.ToLower() mt-1">
+                                @UserDetail.RoleName
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Profile Meta Details -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <label class="form-label text-secondary small fw-semibold m-0">Email Address</label>
+                            <p class="m-0 text-dark fw-bold text-truncate">@UserDetail.Email</p>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary small fw-semibold m-0">Registration Date</label>
+                            <p class="m-0 text-dark fw-bold">@UserDetail.CreatedAt.ToString("yyyy-MM-dd")</p>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary small fw-semibold m-0">Account State</label>
+                            <p class="m-0">
+                                @if (UserDetail.IsActive)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill fw-bold">
+                                        ● Active / Enabled
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 rounded-pill fw-bold">
+                                        ● Suspended / Inactive
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label text-secondary small fw-semibold m-0">Database ID</label>
+                            <p class="m-0 text-secondary font-monospace">#@UserDetail.Id</p>
+                        </div>
+                    </div>
+
+                    <!-- Audit Trail / Login History -->
+                    <div class="border-top pt-3">
+                        <h6 class="fw-bold mb-3" style="color: var(--color-button-primary);">Recent Login History & Activity</h6>
+                        @if (UserDetail.LoginHistory != null && UserDetail.LoginHistory.Any())
+                        {
+                            <ul class="list-unstyled m-0 d-flex flex-column gap-2">
+                                @foreach (var log in UserDetail.LoginHistory)
+                                {
+                                    <li class="bg-light p-2 rounded border border-light-subtle d-flex flex-column">
+                                        <span class="font-monospace small text-muted">@GetLogTime(log)</span>
+                                        <span class="small fw-semibold text-dark mt-1">@GetLogAction(log)</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="text-muted small m-0 italic">No recent login activities recorded.</p>
+                        }
+
+                        <p class="small text-secondary mt-3 mb-0 italic border-start border-3 ps-2" style="border-color: var(--color-button-primary) !important;">
+                            <strong>Audit Summary:</strong> @UserDetail.AuditSummary
+                        </p>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top-0 d-flex justify-content-between gap-2">
+                    <div>
+                        <!-- Deactivate / Activate Account Trigger Button -->
+                        @if (UserDetail.IsActive)
+                        {
+                            <button type="button" class="btn btn-outline-danger btn-sm px-3 fw-bold" @onclick="ToggleActiveStatus" disabled="@IsLoading">
+                                @if (IsLoading)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                }
+                                else
+                                {
+                                    <span>Deactivate Account</span>
+                                }
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-outline-success btn-sm px-3 fw-bold" @onclick="ToggleActiveStatus" disabled="@IsLoading">
+                                @if (IsLoading)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                }
+                                else
+                                {
+                                    <span>Activate Account</span>
+                                }
+                            </button>
+                        }
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CloseModal">Close</button>
+                        <button type="button" class="btn btn-burnt-orange px-4 fw-bold" @onclick="RequestEdit" disabled="@IsLoading">
+                            Edit Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show modal-backdrop-pos"></div>
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<UserDto> OnEditRequested { get; set; }
+    [Parameter] public EventCallback OnStatusChanged { get; set; }
+
+    private UserDetailDto? UserDetail { get; set; }
+    private bool IsLoading { get; set; }
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    public async Task Open(int userId)
+    {
+        ErrorMessage = string.Empty;
+        IsLoading = true;
+        IsVisible = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await UserService.GetUserById(userId);
+            if (response.Success)
+            {
+                UserDetail = response.Data;
+            }
+            else
+            {
+                ErrorMessage = response.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"System exception loading details: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+        OnClose.InvokeAsync();
+    }
+
+    private async Task RequestEdit()
+    {
+        if (UserDetail == null) return;
+        var basicDto = new UserDto
+        {
+            Id = UserDetail.Id,
+            Name = UserDetail.Name,
+            Email = UserDetail.Email,
+            RoleId = UserDetail.RoleId,
+            RoleName = UserDetail.RoleName,
+            IsActive = UserDetail.IsActive,
+            CreatedAt = UserDetail.CreatedAt
+        };
+
+        IsVisible = false;
+        await OnEditRequested.InvokeAsync(basicDto);
+    }
+
+    private async Task ToggleActiveStatus()
+    {
+        if (UserDetail == null) return;
+        IsLoading = true;
+        ErrorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            ApiResponse response;
+            if (UserDetail.IsActive)
+            {
+                response = await UserService.DeactivateUser(UserDetail.Id);
+            }
+            else
+            {
+                response = await UserService.ActivateUser(UserDetail.Id);
+            }
+
+            if (response.Success)
+            {
+                // Reload profile data
+                var reloadResponse = await UserService.GetUserById(UserDetail.Id);
+                if (reloadResponse.Success)
+                {
+                    UserDetail = reloadResponse.Data;
+                }
+                await OnStatusChanged.InvokeAsync();
+            }
+            else
+            {
+                ErrorMessage = response.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error updating status: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "U";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][0].ToString().ToUpper();
+        return (parts[0][0].ToString() + parts[parts.Length - 1][0].ToString()).ToUpper();
+    }
+
+    private string GetLogTime(string log)
+    {
+        if (string.IsNullOrEmpty(log)) return string.Empty;
+        var parts = log.Split(" - ");
+        return parts.Length > 0 ? parts[0] : string.Empty;
+    }
+
+    private string GetLogAction(string log)
+    {
+        if (string.IsNullOrEmpty(log)) return string.Empty;
+        var parts = log.Split(" - ");
+        return parts.Length > 1 ? parts[1] : log;
+    }
+}

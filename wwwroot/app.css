@@ -40,3 +40,107 @@ body {
     font-size: 0.75rem;
     color: #333;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   SmartPOS+ Premium Color Palette Custom Classes
+   ───────────────────────────────────────────────────────────── */
+
+body {
+    background-color: var(--color-page-bg) !important;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.card-pos {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border-accent);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(204, 85, 0, 0.05);
+}
+
+.btn-burnt-orange {
+    background-color: var(--color-button-primary) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-weight: 600;
+    transition: all 0.25s ease-in-out;
+}
+
+.btn-burnt-orange:hover {
+    background-color: var(--color-button-hover) !important;
+    box-shadow: 0 4px 12px rgba(204, 85, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-outline-burnt-orange {
+    background-color: transparent !important;
+    color: var(--color-button-primary) !important;
+    border: 2px solid var(--color-button-primary) !important;
+    border-radius: 8px;
+    padding: 6px 16px;
+    font-weight: 600;
+    transition: all 0.25s ease-in-out;
+}
+
+.btn-outline-burnt-orange:hover {
+    background-color: var(--color-button-primary) !important;
+    color: #ffffff !important;
+}
+
+.badge-role {
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.badge-role-admin {
+    background-color: rgba(204, 85, 0, 0.15);
+    color: var(--color-button-primary);
+}
+
+.badge-role-manager {
+    background-color: rgba(13, 110, 253, 0.15);
+    color: #0d6efd;
+}
+
+.badge-role-cashier {
+    background-color: rgba(25, 135, 84, 0.15);
+    color: #198754;
+}
+
+.badge-role-customer {
+    background-color: rgba(108, 117, 125, 0.15);
+    color: #6c757d;
+}
+
+.avatar-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--color-button-primary);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 10px rgba(204, 85, 0, 0.15);
+}
+
+/* Modals glassmorphism backdrop */
+.modal-backdrop-pos {
+    background-color: rgba(26, 26, 26, 0.5) !important;
+    backdrop-filter: blur(4px);
+}
+
+/* Table Hover */
+.table-pos tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.table-pos tbody tr:hover {
+    background-color: rgba(204, 85, 0, 0.03) !important;
+}
+

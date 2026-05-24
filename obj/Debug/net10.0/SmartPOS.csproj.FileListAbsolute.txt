@@ -161,5 +161,5 @@ E:\4th semester\VP theory\VP Project\pro1\SmartPOS\bin\Debug\net10.0\runtimes\wi
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\bin\Debug\net10.0\runtimes\win\lib\net6.0\System.Windows.Extensions.dll
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\SmartPOS.csproj.AssemblyReference.cache
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\SmartPOS.csproj.Up2Date
-E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\yibno2f1mp-{0}-kyt876jpys-kyt876jpys.gz
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\bin\Debug\net10.0\BCrypt-Net-Next.dll
+E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\yibno2f1mp-{0}-v6s2v0yk0t-v6s2v0yk0t.gz
