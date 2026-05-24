@@ -1,4 +1,4 @@
-/* _content/SmartPOS/Components/Layout/MainLayout.razor.rz.scp.css */
+/* /Components/Layout/MainLayout.razor.rz.scp.css */
 .shell[b-j1ghlbrrdb] {
     min-height: 100vh;
     background: #000;
@@ -26,7 +26,7 @@
     right: 0.75rem;
     top: 0.5rem;
 }
-/* _content/SmartPOS/Components/Layout/ReconnectModal.razor.rz.scp.css */
+/* /Components/Layout/ReconnectModal.razor.rz.scp.css */
 .components-reconnect-first-attempt-visible[b-3c9mfgvibn],
 .components-reconnect-repeated-attempt-visible[b-3c9mfgvibn],
 .components-reconnect-failed-visible[b-3c9mfgvibn],
