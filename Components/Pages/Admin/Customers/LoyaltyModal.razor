@@ -1,0 +1,132 @@
+@using SmartPOS.Shared.DTOs.Customers
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@inject ICustomerService CustomerService
+
+@if (IsVisible)
+{
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-pos">
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" style="color: var(--color-button-primary);">
+                        Adjust Loyalty Points
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger p-2 small mb-3">@ErrorMessage</div>
+                    }
+
+                    <div class="text-center mb-4">
+                        <div class="text-muted small fw-semibold text-uppercase">Current Balance</div>
+                        <div class="fw-bold display-6" style="color: var(--color-button-primary);">@CurrentPoints</div>
+                        <div class="text-muted small">@CustomerName</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">
+                            Adjustment Amount
+                            <span class="text-muted fw-normal">(positive = add, negative = deduct)</span>
+                        </label>
+                        <input type="number" class="form-control" @bind-value="Adjustment" @bind-value:event="oninput" placeholder="e.g. 50 or -50" />
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold small text-secondary">Reason <span class="text-danger">*</span></label>
+                        <textarea class="form-control" rows="2" @bind-value="Reason" @bind-value:event="oninput"
+                                  placeholder="e.g. Birthday bonus, manual adjustment"></textarea>
+                        @if (ShowErrors && string.IsNullOrWhiteSpace(Reason))
+                        {
+                            <div class="text-danger small mt-1">Reason is required.</div>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 d-flex justify-content-end gap-2">
+                    <button class="btn btn-outline-secondary" @onclick="CloseModal" disabled="@IsLoading">Cancel</button>
+                    <button class="btn btn-burnt-orange d-flex align-items-center gap-2 fw-bold px-3" @onclick="HandleSubmit" disabled="@IsLoading || Adjustment == 0">
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm"></span>
+                            <span>Saving...</span>
+                        }
+                        else
+                        {
+                            <span>@(Adjustment > 0 ? "Add Points" : "Deduct Points")</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show modal-backdrop-pos"></div>
+}
+
+@code {
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private bool IsVisible;
+    private bool IsLoading;
+    private bool ShowErrors;
+    private string ErrorMessage = "";
+
+    private int CurrentCustomerId;
+    private string CustomerName = "";
+    private int CurrentPoints;
+    private int Adjustment;
+    private string Reason = "";
+
+    public void Open(int customerId, string customerName, int currentPoints)
+    {
+        CurrentCustomerId = customerId;
+        CustomerName = customerName;
+        CurrentPoints = currentPoints;
+        Adjustment = 0;
+        Reason = "";
+        ShowErrors = false;
+        ErrorMessage = "";
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        ShowErrors = true;
+
+        if (Adjustment == 0) return;
+        if (string.IsNullOrWhiteSpace(Reason)) return;
+
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await CustomerService.AdjustLoyaltyPoints(CurrentCustomerId, Adjustment, Reason.Trim());
+            if (response.Success)
+            {
+                CloseModal();
+                await OnSave.InvokeAsync();
+            }
+            else
+            {
+                ErrorMessage = response.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+}
