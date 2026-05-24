@@ -33,13 +33,87 @@ body {
     min-height: 100vh;
 }
 
-.error-meta {
-    margin: 0;
-    padding: 1rem;
-    font-family: ui-monospace, monospace;
-    font-size: 0.75rem;
-    color: #333;
+/* Home Landing Page Styles */
+.home-container {
+    min-height: 100vh;
+    background-color: var(--color-page-bg);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
 }
+
+/* Decorative faded bakery shapes */
+.decorative {
+    position: absolute;
+    background: var(--color-button-primary);
+    opacity: 0.08;
+    border-radius: 50%;
+    filter: blur(40px);
+}
+.deco1 {
+    width: 400px;
+    height: 400px;
+    top: -100px;
+    left: -100px;
+    transform: rotate(30deg);
+}
+.deco2 {
+    width: 350px;
+    height: 350px;
+    bottom: -120px;
+    right: -120px;
+    transform: rotate(-25deg);
+}
+.deco3 {
+    width: 300px;
+    height: 300px;
+    top: 20%;
+    right: -150px;
+    transform: rotate(15deg);
+}
+
+/* Logo square */
+.logo {
+    width: 70px;
+    height: 70px;
+    background-color: var(--color-button-primary);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    margin: 0 auto;
+}
+
+.title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--color-button-primary);
+    margin: 0;
+}
+
+.divider {
+    width: 120px;
+    border-top: 3px solid var(--color-button-primary);
+    margin: 0 auto;
+}
+
+.footer {
+    position: absolute;
+    bottom: 1rem;
+    width: 100%;
+    font-size: 0.85rem;
+    color: #666;
+    text-align: center;
+}
+
 
 /* ─────────────────────────────────────────────────────────────
    SmartPOS+ Premium Color Palette Custom Classes
