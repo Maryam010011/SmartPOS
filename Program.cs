@@ -28,6 +28,7 @@ builder.Services.AddScoped<IAIChatbotService,   AIChatbotService>();
 builder.Services.AddScoped<IFBRService,         FBRService>();
 builder.Services.AddScoped<IBERTService,        BERTService>();
 builder.Services.AddScoped<IInventoryService,   InventoryServiceStub>();
+builder.Services.AddScoped<IWeatherService,     WeatherService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
