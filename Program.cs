@@ -11,6 +11,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Register User Management Service
+builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IUserService, SmartPOS.Services.MaryamJ.UserService>();
+
+// Enable Web API Controllers
+builder.Services.AddControllers();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,6 +32,7 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

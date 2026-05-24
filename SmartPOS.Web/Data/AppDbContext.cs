@@ -27,6 +27,9 @@ namespace SmartPOS.Web.Data
         public DbSet<SaleItem> SaleItems { get; set; } = null!;
         public DbSet<Review> Reviews { get; set; } = null!;
 
+        // ── DbSets — Maryam Jahangir's Models ──
+        public DbSet<User> Users { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -93,6 +96,15 @@ namespace SmartPOS.Web.Data
             {
                 entity.ToTable(t =>
                     t.HasCheckConstraint("CK_Review_Rating", "[Rating] >= 1 AND [Rating] <= 5"));
+            });
+
+            // ─────────────────────────────────────────────────
+            // User — Email unique constraint & index
+            // ─────────────────────────────────────────────────
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasIndex(u => u.Email)
+                      .IsUnique();
             });
         }
     }

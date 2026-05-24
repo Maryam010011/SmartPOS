@@ -134,6 +134,12 @@ namespace SmartPOS.Shared.DTOs.Users
         public DateTime CreatedAt { get; set; }
     }
 
+    public class UserDetailDto : UserDto
+    {
+        public List<string> LoginHistory { get; set; } = new();
+        public string AuditSummary { get; set; } = string.Empty;
+    }
+
     public class CreateUserDto
     {
         public string Name { get; set; } = string.Empty;
@@ -144,11 +150,19 @@ namespace SmartPOS.Shared.DTOs.Users
 
     public class UpdateUserDto
     {
-        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public int RoleId { get; set; }
         public bool IsActive { get; set; }
+    }
+
+    public class UserFilterDto
+    {
+        public int? RoleId { get; set; }
+        public bool? IsActive { get; set; }
+        public string SearchTerm { get; set; } = string.Empty;
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
     }
 }
 
@@ -229,12 +243,15 @@ namespace SmartPOS.Shared.Interfaces
 
     public interface IUserService
     {
-        Task<ApiResponse<UserDto>> GetById(int id);
-        Task<ApiResponse<List<UserDto>>> GetAll();
-        Task<ApiResponse<UserDto>> Create(CreateUserDto dto);
-        Task<ApiResponse<UserDto>> Update(UpdateUserDto dto);
-        Task<ApiResponse> Delete(int id);
-        Task<ApiResponse> ToggleActive(int id);
+        Task<ApiResponse<List<UserDto>>> GetAllUsers(UserFilterDto filter);
+        Task<ApiResponse<UserDetailDto>> GetUserById(int id);
+        Task<ApiResponse<UserDto>> CreateUser(CreateUserDto dto);
+        Task<ApiResponse<UserDto>> UpdateUser(int id, UpdateUserDto dto);
+        Task<ApiResponse> DeleteUser(int id);
+        Task<ApiResponse> ActivateUser(int id);
+        Task<ApiResponse> DeactivateUser(int id);
+        Task<ApiResponse> BulkActivate(List<int> ids);
+        Task<ApiResponse> BulkDeactivate(List<int> ids);
     }
 
     public interface ICustomerService
