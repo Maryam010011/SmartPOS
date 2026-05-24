@@ -1,3 +1,20 @@
+:root {
+    --color-navbar-bg: #CC5500;
+    --color-sidebar-bg: #CC5500;
+    --color-heading-text: #CC5500;
+    --color-primary-text: #1A1A1A;
+
+    --color-button-primary: #CC5500;
+    --color-button-hover: #A84400;
+    --color-accent: #CC5500;
+    --color-badge: #CC5500;
+    --color-border-accent: #CC5500;
+
+    --color-page-bg: #FDF6EC;
+    --color-card-bg: #FDF6EC;
+    --color-table-row-alt: #FDF6EC;
+}
+
 *,
 *::before,
 *::after {
