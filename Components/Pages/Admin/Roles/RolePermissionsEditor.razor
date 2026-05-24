@@ -1,0 +1,454 @@
+@page "/admin/roles/{Id:int}/permissions"
+@using SmartPOS.Shared.DTOs.Roles
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@inject IRoleService RoleService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<div class="container-fluid py-4" style="background-color: var(--color-page-bg); min-height: 100vh;">
+    <!-- Toast -->
+    @if (!string.IsNullOrEmpty(ToastMessage))
+    {
+        <div class="toast-container-pos">
+            <div class="toast-pos toast-@ToastType">
+                <span class="toast-icon">
+                    @switch (ToastType)
+                    {
+                        case "success": <text>✅</text>; break;
+                        case "error": <text>❌</text>; break;
+                        case "warning": <text>⚠️</text>; break;
+                        default: <text>ℹ️</text>; break;
+                    }
+                </span>
+                <span class="toast-body">@ToastMessage</span>
+                <button class="toast-close" @onclick="DismissToast">&times;</button>
+            </div>
+        </div>
+    }
+
+    <!-- Warning banner when saving affects active users -->
+    @if (ShowUserWarning)
+    {
+        <div class="alert alert-warning d-flex align-items-center gap-3 border border-warning-subtle shadow-sm rounded-3 mb-4 p-3" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="flex-shrink-0" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+            </svg>
+            <div class="fw-semibold small text-dark">
+                ⚠️ <strong>@UserCount user(s)</strong> are currently assigned to this role. Changing their permissions may affect their access to system features.
+            </div>
+            <button class="btn btn-sm btn-outline-secondary ms-auto" @onclick="DismissWarning">Dismiss</button>
+        </div>
+    }
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <a href="/admin/roles" class="btn btn-sm btn-outline-secondary rounded-circle p-1 d-flex align-items-center justify-content-center"
+                   style="width: 32px; height: 32px;" title="Back to Roles">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
+                    </svg>
+                </a>
+                <h2 class="fw-bold mb-0" style="color: var(--color-button-primary);">Permissions: @RoleName</h2>
+            </div>
+            <p class="text-muted m-0 ms-4 ps-1">Toggle module-level permissions for this role. Disabling <strong>Read</strong> automatically disables Create / Update / Delete.</p>
+        </div>
+    </div>
+
+    <!-- Permission Matrix -->
+    @if (IsLoading)
+    {
+        <div class="d-flex justify-content-center align-items-center py-5 my-5 flex-column gap-3">
+            <div class="spinner-border" style="width: 3rem; height: 3rem; color: var(--color-button-primary) !important;" role="status"></div>
+            <span class="fw-semibold text-secondary">Loading permissions...</span>
+        </div>
+    }
+    else if (Permissions == null)
+    {
+        <div class="text-center py-5 my-5">
+            <h5 class="fw-bold text-dark">Role Not Found</h5>
+            <p class="text-muted small">The requested role does not exist.</p>
+            <a href="/admin/roles" class="btn btn-burnt-orange btn-sm mt-2 px-4">Back to Roles</a>
+        </div>
+    }
+    else
+    {
+        <div class="card card-pos">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="perm-matrix table align-middle m-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 220px; padding-left: 20px;">Module</th>
+                                <th class="perm-cell" style="width: 130px;">Create</th>
+                                <th class="perm-cell" style="width: 130px;">Read</th>
+                                <th class="perm-cell" style="width: 130px;">Update</th>
+                                <th class="perm-cell" style="width: 130px; padding-right: 20px;">Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Select All Row -->
+                            <tr class="select-all-row">
+                                <td style="padding-left: 20px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    Select / Deselect All
+                                </td>
+                                <td class="perm-cell">
+                                    <div class="form-check form-switch form-switch-perm d-inline-flex">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               checked="@AllCreate" @onchange="ToggleAllCreate" />
+                                    </div>
+                                </td>
+                                <td class="perm-cell">
+                                    <div class="form-check form-switch form-switch-perm d-inline-flex">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               checked="@AllRead" @onchange="ToggleAllRead" />
+                                    </div>
+                                </td>
+                                <td class="perm-cell">
+                                    <div class="form-check form-switch form-switch-perm d-inline-flex">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               checked="@AllUpdate" @onchange="ToggleAllUpdate" />
+                                    </div>
+                                </td>
+                                <td class="perm-cell" style="padding-right: 20px;">
+                                    <div class="form-check form-switch form-switch-perm d-inline-flex">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                               checked="@AllDelete" @onchange="ToggleAllDelete" />
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Module Rows -->
+                            @foreach (var moduleKey in ModuleKeys)
+                            {
+                                var perm = GetModulePermission(moduleKey);
+                                if (perm == null) continue;
+                                var isReadDisabled = !perm.CanRead;
+                                var displayName = GetModuleDisplayName(moduleKey);
+
+                                <tr>
+                                    <td style="padding-left: 20px;">
+                                        <span class="module-name">@displayName</span>
+                                    </td>
+                                    <td class="perm-cell">
+                                        <div class="form-check form-switch form-switch-perm d-inline-flex">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                   checked="@perm.CanCreate"
+                                                   disabled="@isReadDisabled"
+                                                    @onchange="(e) => ToggleModulePermission(moduleKey, ColCreate, bool.Parse(e.Value?.ToString() ?? bool.FalseString))" />
+                                        </div>
+                                    </td>
+                                    <td class="perm-cell">
+                                        <div class="form-check form-switch form-switch-perm d-inline-flex">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                   checked="@perm.CanRead"
+                                                   @onchange="(e) => ToggleModulePermission(moduleKey, ColRead, bool.Parse(e.Value?.ToString() ?? bool.FalseString))" />
+                                        </div>
+                                    </td>
+                                    <td class="perm-cell">
+                                        <div class="form-check form-switch form-switch-perm d-inline-flex">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                   checked="@perm.CanUpdate"
+                                                   disabled="@isReadDisabled"
+                                                   @onchange="(e) => ToggleModulePermission(moduleKey, ColUpdate, bool.Parse(e.Value?.ToString() ?? bool.FalseString))" />
+                                        </div>
+                                    </td>
+                                    <td class="perm-cell" style="padding-right: 20px;">
+                                        <div class="form-check form-switch form-switch-perm d-inline-flex">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                   checked="@perm.CanDelete"
+                                                   disabled="@isReadDisabled"
+                                                   @onchange="(e) => ToggleModulePermission(moduleKey, ColDelete, bool.Parse(e.Value?.ToString() ?? bool.FalseString))" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small fw-semibold">
+                    @UserCount user(s) assigned to this role
+                </span>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary fw-bold px-4" @onclick="ResetPermissions">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 1 .908-.417A4 4 0 1 0 8 4z"/>
+                        <path d="M8 4.5V.5l-3 3 3 3V4.5z"/>
+                    </svg>
+                    Reset to Default
+                </button>
+                <button class="btn btn-burnt-orange fw-bold px-4 d-flex align-items-center gap-2"
+                        @onclick="SavePermissions" disabled="@IsSaving">
+                    @if (IsSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status"></span>
+                    }
+                    else
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                        </svg>
+                        <span>Save Changes</span>
+                    }
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private string RoleName { get; set; } = string.Empty;
+    private int UserCount { get; set; }
+    private PermissionsDto? OriginalPermissions { get; set; }
+    private PermissionsDto? Permissions { get; set; }
+    private bool IsLoading { get; set; } = true;
+    private bool IsSaving { get; set; }
+    private bool ShowUserWarning { get; set; }
+    private bool HasModified { get; set; }
+
+    // Toast
+    private string ToastMessage { get; set; } = string.Empty;
+    private string ToastType { get; set; } = "success";
+
+    private const string ColCreate = "Create";
+    private const string ColRead = "Read";
+    private const string ColUpdate = "Update";
+    private const string ColDelete = "Delete";
+
+    private static readonly string[] ModuleKeys =
+    {
+        "UserManagement", "Inventory", "POS", "Reports",
+        "Promotions", "Customers", "PurchaseOrders", "AuditLogs"
+    };
+
+    private static readonly Dictionary<string, string> ModuleDisplayNames = new()
+    {
+        ["UserManagement"] = "User Management",
+        ["Inventory"] = "Inventory",
+        ["POS"] = "POS",
+        ["Reports"] = "Reports",
+        ["Promotions"] = "Promotions",
+        ["Customers"] = "Customers",
+        ["PurchaseOrders"] = "Purchase Orders",
+        ["AuditLogs"] = "Audit Logs"
+    };
+
+    // Computed "Select All" states
+    private bool AllCreate => Permissions?.Modules.Values.All(p => p.CanCreate) ?? false;
+    private bool AllRead => Permissions?.Modules.Values.All(p => p.CanRead) ?? false;
+    private bool AllUpdate => Permissions?.Modules.Values.All(p => p.CanUpdate) ?? false;
+    private bool AllDelete => Permissions?.Modules.Values.All(p => p.CanDelete) ?? false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRolePermissions();
+    }
+
+    private async Task LoadRolePermissions()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await RoleService.GetRoleById(Id);
+            if (response.Success && response.Data != null)
+            {
+                RoleName = response.Data.RoleName;
+                UserCount = response.Data.UserCount;
+                OriginalPermissions = DeepClonePermissions(response.Data.Permissions);
+                Permissions = DeepClonePermissions(response.Data.Permissions);
+            }
+            else
+            {
+                Permissions = null;
+            }
+        }
+        catch
+        {
+            Permissions = null;
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private ModulePermission? GetModulePermission(string moduleKey)
+    {
+        if (Permissions?.Modules == null) return null;
+        return Permissions.Modules.TryGetValue(moduleKey, out var perm) ? perm : null;
+    }
+
+    private static string GetModuleDisplayName(string key) =>
+        ModuleDisplayNames.TryGetValue(key, out var name) ? name : key;
+
+    // ── Individual Toggle ──
+    private void ToggleModulePermission(string moduleKey, string column, bool value)
+    {
+        if (Permissions?.Modules == null || !Permissions.Modules.TryGetValue(moduleKey, out var perm))
+            return;
+
+        switch (column)
+        {
+            case "Create":
+                perm.CanCreate = value;
+                break;
+            case "Read":
+                perm.CanRead = value;
+                if (!value)
+                {
+                    perm.CanCreate = false;
+                    perm.CanUpdate = false;
+                    perm.CanDelete = false;
+                }
+                break;
+            case "Update":
+                perm.CanUpdate = value;
+                break;
+            case "Delete":
+                perm.CanDelete = value;
+                break;
+        }
+
+        HasModified = true;
+    }
+
+    // ── Select All Toggles ──
+    private void ToggleAllCreate(ChangeEventArgs e)
+    {
+        var value = bool.Parse(e.Value?.ToString() ?? bool.FalseString);
+        if (Permissions?.Modules == null) return;
+        foreach (var perm in Permissions.Modules.Values)
+            perm.CanCreate = value && perm.CanRead;
+        HasModified = true;
+    }
+
+    private void ToggleAllRead(ChangeEventArgs e)
+    {
+        var value = bool.Parse(e.Value?.ToString() ?? bool.FalseString);
+        if (Permissions?.Modules == null) return;
+        foreach (var perm in Permissions.Modules.Values)
+        {
+            perm.CanRead = value;
+            if (!value)
+            {
+                perm.CanCreate = false;
+                perm.CanUpdate = false;
+                perm.CanDelete = false;
+            }
+        }
+        HasModified = true;
+    }
+
+    private void ToggleAllUpdate(ChangeEventArgs e)
+    {
+        var value = bool.Parse(e.Value?.ToString() ?? bool.FalseString);
+        if (Permissions?.Modules == null) return;
+        foreach (var perm in Permissions.Modules.Values)
+            perm.CanUpdate = value && perm.CanRead;
+        HasModified = true;
+    }
+
+    private void ToggleAllDelete(ChangeEventArgs e)
+    {
+        var value = bool.Parse(e.Value?.ToString() ?? bool.FalseString);
+        if (Permissions?.Modules == null) return;
+        foreach (var perm in Permissions.Modules.Values)
+            perm.CanDelete = value && perm.CanRead;
+        HasModified = true;
+    }
+
+    // ── Reset ──
+    private void ResetPermissions()
+    {
+        if (OriginalPermissions != null)
+            Permissions = DeepClonePermissions(OriginalPermissions);
+        HasModified = false;
+        ShowToast("success", "Permissions reset to original defaults.");
+    }
+
+    // ── Save ──
+    private async Task SavePermissions()
+    {
+        if (Permissions == null) return;
+
+        if (UserCount > 0 && !ShowUserWarning)
+        {
+            ShowUserWarning = true;
+        }
+
+        IsSaving = true;
+        ShowUserWarning = false;
+        StateHasChanged();
+
+        try
+        {
+            var response = await RoleService.UpdateRolePermissions(Id, Permissions);
+            if (response.Success)
+            {
+                OriginalPermissions = DeepClonePermissions(Permissions);
+                HasModified = false;
+                ShowToast("success", $"Permissions for \"{RoleName}\" saved successfully!");
+
+                // Reload to get fresh data
+                await LoadRolePermissions();
+            }
+            else
+            {
+                ShowToast("error", response.Message);
+            }
+        }
+        catch
+        {
+            ShowToast("error", "Failed to save permissions. Please try again.");
+        }
+        finally
+        {
+            IsSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    // ── Helpers ──
+    private void DismissWarning() => ShowUserWarning = false;
+
+    private void DismissToast() => ToastMessage = string.Empty;
+
+    private void ShowToast(string type, string message)
+    {
+        ToastType = type;
+        ToastMessage = message;
+        StateHasChanged();
+    }
+
+    private static PermissionsDto DeepClonePermissions(PermissionsDto source)
+    {
+        var clone = new PermissionsDto();
+        foreach (var kvp in source.Modules)
+        {
+            clone.Modules[kvp.Key] = new ModulePermission
+            {
+                CanCreate = kvp.Value.CanCreate,
+                CanRead = kvp.Value.CanRead,
+                CanUpdate = kvp.Value.CanUpdate,
+                CanDelete = kvp.Value.CanDelete
+            };
+        }
+        return clone;
+    }
+}

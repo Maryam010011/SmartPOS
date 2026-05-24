@@ -218,3 +218,236 @@ body {
     background-color: rgba(204, 85, 0, 0.03) !important;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Custom Toggle Switch — Burnt Orange Theme
+   ───────────────────────────────────────────────────────────── */
+.form-switch-perm .form-check-input {
+    width: 2.5em;
+    height: 1.25em;
+    margin-left: 0;
+    cursor: pointer;
+}
+
+.form-switch-perm .form-check-input:checked {
+    background-color: var(--color-button-primary);
+    border-color: var(--color-button-primary);
+}
+
+.form-switch-perm .form-check-input:focus {
+    border-color: var(--color-button-primary);
+    box-shadow: 0 0 0 0.15rem rgba(204, 85, 0, 0.2);
+}
+
+.form-switch-perm .form-check-input:disabled {
+    cursor: not-allowed;
+    opacity: 0.35;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Permissions Matrix Table
+   ───────────────────────────────────────────────────────────── */
+.perm-matrix {
+    border: 1px solid #e9e2d8;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.perm-matrix th {
+    background-color: #f5ede2;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 16px;
+    border-bottom: 2px solid var(--color-button-primary);
+}
+
+.perm-matrix td {
+    padding: 12px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f0e8dd;
+    font-size: 0.9rem;
+}
+
+.perm-matrix tr:last-child td {
+    border-bottom: none;
+}
+
+.perm-matrix .module-name {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.perm-matrix .perm-cell {
+    text-align: center;
+}
+
+.perm-matrix .perm-cell .form-check {
+    justify-content: center;
+    padding-left: 0;
+    min-height: auto;
+    margin-bottom: 0;
+}
+
+.perm-matrix .select-all-row td {
+    background-color: #f8f2ea;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1a1a1a;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Custom Toast Notification
+   ───────────────────────────────────────────────────────────── */
+.toast-container-pos {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toast-pos {
+    background: #fff;
+    border: 1px solid #e0d8ce;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 320px;
+    max-width: 420px;
+    animation: toast-slide 0.3s ease;
+}
+
+.toast-pos.toast-success {
+    border-left: 4px solid #198754;
+}
+
+.toast-pos.toast-error {
+    border-left: 4px solid #dc3545;
+}
+
+.toast-pos.toast-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.toast-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.toast-body {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1a1a1a;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.toast-close:hover {
+    color: #333;
+}
+
+@keyframes toast-slide {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Permissions Summary Pills
+   ───────────────────────────────────────────────────────────── */
+.perm-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    gap: 4px;
+}
+
+.perm-pill-full {
+    background-color: rgba(25, 135, 84, 0.12);
+    color: #198754;
+}
+
+.perm-pill-read {
+    background-color: rgba(13, 110, 253, 0.12);
+    color: #0d6efd;
+}
+
+.perm-pill-custom {
+    background-color: rgba(204, 85, 0, 0.12);
+    color: #cc5500;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Inline Edit Input
+   ───────────────────────────────────────────────────────────── */
+.input-edit-inline {
+    border: 1px solid var(--color-border-accent);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    background: #fff;
+    width: 100%;
+}
+
+.input-edit-inline:focus {
+    outline: none;
+    border-color: var(--color-button-primary);
+    box-shadow: 0 0 0 0.2rem rgba(204, 85, 0, 0.15);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Status badge pill refinements
+   ───────────────────────────────────────────────────────────── */
+.badge-perm-summary {
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.badge-summary-full {
+    background-color: rgba(25, 135, 84, 0.12);
+    color: #198754;
+}
+
+.badge-summary-readonly {
+    background-color: rgba(13, 110, 253, 0.12);
+    color: #0d6efd;
+}
+
+.badge-summary-custom {
+    background-color: rgba(204, 85, 0, 0.12);
+    color: #cc5500;
+}
+
+.badge-summary-none {
+    background-color: rgba(108, 117, 125, 0.12);
+    color: #6c757d;
+}
+

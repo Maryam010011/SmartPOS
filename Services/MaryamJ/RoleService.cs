@@ -25,7 +25,6 @@ namespace SmartPOS.Services.MaryamJ
             try
             {
                 var roles = await _dbContext.Roles
-                    .Include(r => r.Users)
                     .Select(r => new RoleDto
                     {
                         Id = r.Id,

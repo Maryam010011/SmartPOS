@@ -34,6 +34,14 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Roles/RoleList.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxSb2xlc1xSb2xlTGlzdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Roles/RolePermissionsEditor.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxSb2xlc1xSb2xlUGVybWlzc2lvbnNFZGl0b3IucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Users/UserFormModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxVc2Vyc1xVc2VyRm9ybU1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 

@@ -20,10 +20,10 @@ namespace SmartPOS.Services.MaryamJ
         // Static in-memory mock repository to act as a resilient fallback
         private static readonly List<User> MockUsers = new()
         {
-            new User { Id = 1, Name = "Admin User", Email = "admin@pos.com", PasswordHash = BCryptNet.HashPassword("admin123"), RoleId = 0, IsActive = true, CreatedAt = DateTime.UtcNow.AddDays(-10) },
-            new User { Id = 2, Name = "Manager Staff", Email = "manager@pos.com", PasswordHash = BCryptNet.HashPassword("manager123"), RoleId = 1, IsActive = true, CreatedAt = DateTime.UtcNow.AddDays(-5) },
-            new User { Id = 3, Name = "Jane Cashier", Email = "cashier@pos.com", PasswordHash = BCryptNet.HashPassword("cashier123"), RoleId = 2, IsActive = true, CreatedAt = DateTime.UtcNow.AddDays(-2) },
-            new User { Id = 4, Name = "John Customer", Email = "customer@pos.com", PasswordHash = BCryptNet.HashPassword("customer123"), RoleId = 3, IsActive = false, CreatedAt = DateTime.UtcNow.AddDays(-1) }
+            new User { Id = 1, Name = "Admin User", Email = "admin@pos.com", PasswordHash = BCryptNet.HashPassword("admin123"), RoleId = 1, IsActive = true, CreatedAt = DateTime.UtcNow.AddDays(-10) },
+            new User { Id = 2, Name = "Manager Staff", Email = "manager@pos.com", PasswordHash = BCryptNet.HashPassword("manager123"), RoleId = 2, IsActive = true, CreatedAt = DateTime.UtcNow.AddDays(-5) },
+            new User { Id = 3, Name = "Jane Cashier", Email = "cashier@pos.com", PasswordHash = BCryptNet.HashPassword("cashier123"), RoleId = 3, IsActive = true, CreatedAt = DateTime.UtcNow.AddDays(-2) },
+            new User { Id = 4, Name = "John Customer", Email = "customer@pos.com", PasswordHash = BCryptNet.HashPassword("customer123"), RoleId = 4, IsActive = false, CreatedAt = DateTime.UtcNow.AddDays(-1) }
         };
         private static int _nextMockId = 5;
 
