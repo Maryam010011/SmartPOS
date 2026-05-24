@@ -28,5 +28,9 @@ namespace SmartPOS.Web.Models
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Navigation property to Role
+        [ForeignKey("RoleId")]
+        public Role? Role { get; set; }
     }
 }

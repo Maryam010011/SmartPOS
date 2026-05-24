@@ -29,6 +29,7 @@ namespace SmartPOS.Web.Data
 
         // ── DbSets — Maryam Jahangir's Models ──
         public DbSet<User> Users { get; set; } = null!;
+        public DbSet<Role> Roles { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -100,12 +101,91 @@ namespace SmartPOS.Web.Data
 
             // ─────────────────────────────────────────────────
             // User — Email unique constraint & index
+            // User → Role FK (restrict delete so role can't be
+            //         removed while users are assigned)
             // ─────────────────────────────────────────────────
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasIndex(u => u.Email)
                       .IsUnique();
+
+                entity.HasOne(u => u.Role)
+                      .WithMany(r => r.Users)
+                      .HasForeignKey(u => u.RoleId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
             });
+
+            // ─────────────────────────────────────────────────
+            // Role — Unique RoleName index + Seed Data
+            // ─────────────────────────────────────────────────
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.HasIndex(r => r.RoleName)
+                      .IsUnique();
+            });
+
+            // Seed 4 default roles with full permissions JSON
+            var allModules = new[] { "UserManagement", "Inventory", "POS", "Reports", "Promotions", "Customers", "PurchaseOrders", "AuditLogs" };
+
+            string BuildPermissionsJson(Dictionary<string, bool[]> moduleFlags)
+            {
+                var dict = new Dictionary<string, object>();
+                foreach (var kvp in moduleFlags)
+                {
+                    dict[kvp.Key] = new { CanCreate = kvp.Value[0], CanRead = kvp.Value[1], CanUpdate = kvp.Value[2], CanDelete = kvp.Value[3] };
+                }
+                return System.Text.Json.JsonSerializer.Serialize(new { Modules = dict });
+            }
+
+            // Admin — all true
+            var adminPerms = allModules.ToDictionary(m => m, _ => new[] { true, true, true, true });
+
+            // Manager — all read/update, create on some, delete on none
+            var managerPerms = new Dictionary<string, bool[]>
+            {
+                ["UserManagement"]  = new[] { false, true,  true,  false },
+                ["Inventory"]       = new[] { true,  true,  true,  false },
+                ["POS"]             = new[] { true,  true,  true,  false },
+                ["Reports"]         = new[] { false, true,  false, false },
+                ["Promotions"]      = new[] { true,  true,  true,  false },
+                ["Customers"]       = new[] { true,  true,  true,  false },
+                ["PurchaseOrders"]  = new[] { true,  true,  true,  false },
+                ["AuditLogs"]       = new[] { false, true,  false, false },
+            };
+
+            // Cashier — POS + read only on others
+            var cashierPerms = new Dictionary<string, bool[]>
+            {
+                ["UserManagement"]  = new[] { false, false, false, false },
+                ["Inventory"]       = new[] { false, true,  false, false },
+                ["POS"]             = new[] { true,  true,  true,  false },
+                ["Reports"]         = new[] { false, true,  false, false },
+                ["Promotions"]      = new[] { false, true,  false, false },
+                ["Customers"]       = new[] { true,  true,  true,  false },
+                ["PurchaseOrders"]  = new[] { false, false, false, false },
+                ["AuditLogs"]       = new[] { false, false, false, false },
+            };
+
+            // Customer — read only on products, own profile
+            var customerPerms = new Dictionary<string, bool[]>
+            {
+                ["UserManagement"]  = new[] { false, false, false, false },
+                ["Inventory"]       = new[] { false, true,  false, false },
+                ["POS"]             = new[] { true,  true,  false, false },
+                ["Reports"]         = new[] { false, false, false, false },
+                ["Promotions"]      = new[] { false, true,  false, false },
+                ["Customers"]       = new[] { false, true,  true,  false },
+                ["PurchaseOrders"]  = new[] { false, false, false, false },
+                ["AuditLogs"]       = new[] { false, false, false, false },
+            };
+
+            modelBuilder.Entity<Role>().HasData(
+                new Role { Id = 1, RoleName = "Admin",    Permissions = BuildPermissionsJson(adminPerms) },
+                new Role { Id = 2, RoleName = "Manager",  Permissions = BuildPermissionsJson(managerPerms) },
+                new Role { Id = 3, RoleName = "Cashier",  Permissions = BuildPermissionsJson(cashierPerms) },
+                new Role { Id = 4, RoleName = "Customer", Permissions = BuildPermissionsJson(customerPerms) }
+            );
         }
     }
 }

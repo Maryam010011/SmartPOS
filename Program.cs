@@ -20,6 +20,9 @@ builder.Services.AddRazorComponents()
 // Register User Management Service
 builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IUserService, SmartPOS.Services.MaryamJ.UserService>();
 
+// Register Role Management Service
+builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IRoleService, SmartPOS.Services.MaryamJ.RoleService>();
+
 // Enable Web API Controllers
 builder.Services.AddControllers();
 

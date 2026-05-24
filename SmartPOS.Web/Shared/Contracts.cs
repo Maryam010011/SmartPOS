@@ -671,3 +671,70 @@ namespace SmartPOS.Shared.Interfaces
         Task<ApiResponse<WeatherDto>> GetCurrentWeather(string city);
     }
 }
+
+
+// ============================================================
+//  ROLE MANAGEMENT — MARYAM JAHANGIR
+//  DTOs and Interface for Role CRUD & Permissions
+// ============================================================
+
+namespace SmartPOS.Shared.DTOs.Roles
+{
+    public class PermissionsDto
+    {
+        public Dictionary<string, ModulePermission> Modules { get; set; } = new();
+    }
+
+    public class ModulePermission
+    {
+        public bool CanCreate { get; set; }
+        public bool CanRead { get; set; }
+        public bool CanUpdate { get; set; }
+        public bool CanDelete { get; set; }
+    }
+
+    public class RoleDto
+    {
+        public int Id { get; set; }
+        public string RoleName { get; set; } = string.Empty;
+        public int UserCount { get; set; }
+    }
+
+    public class RoleDetailDto : RoleDto
+    {
+        public PermissionsDto Permissions { get; set; } = new();
+    }
+
+    public class CreateRoleDto
+    {
+        public string RoleName { get; set; } = string.Empty;
+        public PermissionsDto Permissions { get; set; } = new();
+    }
+
+    public class UpdateRoleDto
+    {
+        public string RoleName { get; set; } = string.Empty;
+        public PermissionsDto Permissions { get; set; } = new();
+    }
+}
+
+// ─────────────────────────────────────────────────────────────
+// SERVICE INTERFACE — ROLE MANAGEMENT (MARYAM JAHANGIR)
+// ─────────────────────────────────────────────────────────────
+
+namespace SmartPOS.Shared.Interfaces
+{
+    using SmartPOS.Shared.Common;
+    using SmartPOS.Shared.DTOs.Roles;
+
+    public interface IRoleService
+    {
+        Task<ApiResponse<List<RoleDto>>> GetAllRoles();
+        Task<ApiResponse<RoleDetailDto>> GetRoleById(int id);
+        Task<ApiResponse<RoleDto>> CreateRole(CreateRoleDto dto);
+        Task<ApiResponse<RoleDto>> UpdateRole(int id, UpdateRoleDto dto);
+        Task<ApiResponse> DeleteRole(int id);
+        Task<ApiResponse<PermissionsDto>> GetRolePermissions(int id);
+        Task<ApiResponse> UpdateRolePermissions(int id, PermissionsDto permissions);
+    }
+}
