@@ -261,6 +261,25 @@ public class CustomerService : ICustomerService
         }
     }
 
+    public async Task<ApiResponse> ActivateCustomer(int id)
+    {
+        try
+        {
+            var customer = await _context.Customers.FindAsync(id);
+            if (customer == null)
+                return ApiResponse.Fail("Customer not found.");
+
+            customer.IsActive = true;
+            await _context.SaveChangesAsync();
+
+            return ApiResponse.Ok("Customer activated successfully.");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.Fail($"Failed to activate customer: {ex.Message}");
+        }
+    }
+
     public async Task<ApiResponse> AddLoyaltyPoints(int customerId, int points, string reason)
     {
         return await AddLoyaltyPointsWithReason(customerId, points, string.IsNullOrWhiteSpace(reason) ? "Purchase earned points" : reason);

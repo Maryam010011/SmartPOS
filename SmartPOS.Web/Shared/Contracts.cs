@@ -318,6 +318,7 @@ namespace SmartPOS.Shared.Interfaces
         Task<ApiResponse<List<CustomerDto>>> GetAllCustomers(CustomerFilterDto filter);
         Task<ApiResponse<CustomerDetailDto>> GetCustomerById(int id);
         Task<ApiResponse> DeleteCustomer(int id);
+        Task<ApiResponse> ActivateCustomer(int id);
         Task<ApiResponse> AdjustLoyaltyPoints(int customerId, int adjustment, string reason);
         Task<ApiResponse<List<SaleSummaryDto>>> GetCustomerPurchaseHistory(int customerId);
         Task<ApiResponse> SendPromotionalEmail(int customerId);

@@ -186,8 +186,15 @@
                                                     @if (c.IsActive)
                                                     {
                                                         <button class="dropdown-item text-warning d-flex align-items-center gap-2" @onclick="() => PromptDeactivate(c)">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.093 3.093c-.496 1.46-.707 2.71-.728 3.74-.022 1.01.125 1.91.432 2.658A13 13 0 0 0 2.52 11.53c1.678 2.195 3.061 5.513 2.465 9.99a1.54 1.54 0 0 0 1.044 1.263 62 62 0 0 0 2.887.87c.307.085.6.14.887.165.289-.026.58-.08.887-.165a62 62 0 0 0 2.887-.87 1.54 1.54 0 0 0 1.044-1.263c.277-2.073-.105-3.83-.715-5.32l-1.39-1.39c.64 1.47 1.002 3.1 1.002 4.965 0 .87-.12 1.493-.306 1.95a12.8 12.8 0 0 1-2.517 2.453c-.28.132-.581.24-.829.24s-.548-.108-.829-.24A12.8 12.8 0 0 1 4.5 12.996c0-1.865.362-3.495 1.002-4.965z"/><path d="M14.907 13.5a8 8 0 1 0-8 8 8 8 0 0 0 8-8m-8 6.5a6.5 6.5 0 1 1 6.5-6.5 6.5 6.5 0 0 1-6.5 6.5"/></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.093 3.093c-.496 1.46-.707 2.71-.728 3.74-.022 1.01.125 1.91.432 2.658A13 13 0 0 0 2.52 11.53c1.678 2.195 3.061 5.513 2.465 9.99a1.54 1.54 0 0 0 1.044 1.263 62 62 0 0 0 2.887.87c.307.085.6.14.887.165.289-.026.58-.08.887-.165a62 62 0 0 0 2.887-.87 1.54 1.54 0 0 0 1.044-1.263c.277-2.073-.105-3.83-.715-5.32l-1.39-1.39c.64 1.47 1.002 3.1 1.002 4.965 0 .87-.12 1.493-.306 1.95a12.8 12.8 0 1 1-2.517 2.453c-.28.132-.581.24-.829.24s-.548-.108-.829-.24A12.8 12.8 0 0 1 4.5 12.996c0-1.865.362-3.495 1.002-4.965z"/><path d="M14.907 13.5a8 8 0 1 0-8 8 8 8 0 0 0 8-8m-8 6.5a6.5 6.5 0 1 1 6.5-6.5 6.5 6.5 0 1 1-6.5 6.5"/></svg>
                                                             <span>Deactivate</span>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button class="dropdown-item text-success d-flex align-items-center gap-2" @onclick="() => ReactivateCustomer(c)">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-6.646-2.646a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L11.293 9H3.5a.5.5 0 0 1 0-1h7.793l-1.939-1.939a.5.5 0 0 1 0-.708z"/></svg>
+                                                            <span>Reactivate</span>
                                                         </button>
                                                     }
                                                 </li>
@@ -407,11 +414,33 @@
                 ShowToast("error", response.Message);
             }
         }
-        catch { ShowToast("error", "Failed to deactivate customer."); }
-        finally { IsSaving = false; StateHasChanged(); }
-    }
+         catch { ShowToast("error", "Failed to deactivate customer."); }
+         finally { IsSaving = false; StateHasChanged(); }
+     }
 
-    // Toast
+     private async Task ReactivateCustomer(CustomerRowDto c)
+     {
+         IsSaving = true;
+         StateHasChanged();
+
+         try
+         {
+             var response = await CustomerService.ActivateCustomer(c.Id);
+             if (response.Success)
+             {
+                 ShowToast("success", "Customer reactivated.");
+                 await LoadCustomers();
+             }
+             else
+             {
+                 ShowToast("error", response.Message);
+             }
+         }
+         catch { ShowToast("error", "Failed to reactivate customer."); }
+         finally { IsSaving = false; StateHasChanged(); }
+     }
+
+     // Toast
     private void ShowToast(string type, string msg) { ToastType = type; ToastMessage = msg; StateHasChanged(); }
     private void DismissToast() => ToastMessage = string.Empty;
 

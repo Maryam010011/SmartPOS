@@ -42,6 +42,10 @@
                         {
                             <div class="text-danger small mt-1">Reason is required.</div>
                         }
+                        @if (ShowErrors && Adjustment == 0)
+                        {
+                            <div class="text-danger small mt-1">Please enter a non-zero adjustment amount.</div>
+                        }
                         @if (IsAdmin)
                         {
                             <div class="mt-2">
@@ -58,7 +62,7 @@
                 </div>
                 <div class="modal-footer border-top-0 d-flex justify-content-end gap-2">
                     <button class="btn btn-outline-secondary" @onclick="CloseModal" disabled="@IsLoading">Cancel</button>
-                    <button class="btn btn-burnt-orange d-flex align-items-center gap-2 fw-bold px-3" @onclick="HandleSubmit" disabled="@IsLoading || Adjustment == 0">
+                    <button class="btn btn-burnt-orange d-flex align-items-center gap-2 fw-bold px-3" @onclick="HandleSubmit" disabled="@IsLoading">
                         @if (IsLoading)
                         {
                             <span class="spinner-border spinner-border-sm"></span>
@@ -112,6 +116,7 @@
     private async Task HandleSubmit()
     {
         ShowErrors = true;
+        ErrorMessage = "";
 
         if (Adjustment == 0) return;
         if (string.IsNullOrWhiteSpace(Reason)) return;
