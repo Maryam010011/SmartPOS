@@ -54,56 +54,20 @@ public class AuthService
     }
 
     /// <summary>
-    /// Dynamically inserts action logs into role-specific tables (AdminLogs, ManagerActions, etc.).
+    /// Inserts an action log into the unified AuditLog table.
     /// </summary>
     public async Task<bool> LogUserActionAsync(int userId, string role, string actionDetails)
     {
         try
         {
-            if (string.Equals(role, "Admin", StringComparison.OrdinalIgnoreCase))
+            var log = new AuditLog
             {
-                var log = new AdminLog
-                {
-                    AdminId = userId,
-                    ActionDetails = actionDetails,
-                    Timestamp = DateTime.UtcNow
-                };
-                _context.AdminLogs.Add(log);
-            }
-            else if (string.Equals(role, "Manager", StringComparison.OrdinalIgnoreCase))
-            {
-                var action = new ManagerAction
-                {
-                    ManagerId = userId,
-                    ActionDetails = actionDetails,
-                    Timestamp = DateTime.UtcNow
-                };
-                _context.ManagerActions.Add(action);
-            }
-            else if (string.Equals(role, "Cashier", StringComparison.OrdinalIgnoreCase))
-            {
-                var log = new CashierLog
-                {
-                    CashierId = userId,
-                    ActionDetails = actionDetails,
-                    Timestamp = DateTime.UtcNow
-                };
-                _context.CashierLogs.Add(log);
-            }
-            else if (string.Equals(role, "Customer", StringComparison.OrdinalIgnoreCase))
-            {
-                var log = new CustomerLog
-                {
-                    CustomerId = userId,
-                    ActionDetails = actionDetails,
-                    Timestamp = DateTime.UtcNow
-                };
-                _context.CustomerLogs.Add(log);
-            }
-            else
-            {
-                return false;
-            }
+                UserId = userId,
+                Action = actionDetails,
+                Module = role,
+                Timestamp = DateTime.UtcNow
+            };
+            _context.AuditLogs.Add(log);
 
             await _context.SaveChangesAsync();
             return true;
