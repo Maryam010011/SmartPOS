@@ -111,6 +111,94 @@ namespace SmartPOS.Web.Data
                 context.Customers.AddRange(customers);
                 await context.SaveChangesAsync();
             }
+
+            // ── Seed Promotions (only if none exist) ──
+            if (!await context.Promotions.AnyAsync())
+            {
+                var now = DateTime.UtcNow;
+
+                var promotions = new List<Promotion>
+                {
+                    // Active percentage discount
+                    new()
+                    {
+                        Code = "WELCOME10",
+                        DiscountType = SmartPOS.Shared.Enums.DiscountType.Percentage,
+                        Value = 10,
+                        MinOrderValue = 500,
+                        MaxUsageLimit = 100,
+                        UsageCount = 15,
+                        ValidFrom = now.AddDays(-30),
+                        ValidTo = now.AddDays(60),
+                        IsActive = true,
+                        Description = "10% off for all orders above Rs 500",
+                        CreatedAt = now.AddDays(-30)
+                    },
+                    // Active flat discount
+                    new()
+                    {
+                        Code = "FLAT50",
+                        DiscountType = SmartPOS.Shared.Enums.DiscountType.Flat,
+                        Value = 50,
+                        MinOrderValue = 200,
+                        MaxUsageLimit = 50,
+                        UsageCount = 23,
+                        ValidFrom = now.AddDays(-15),
+                        ValidTo = now.AddDays(45),
+                        IsActive = true,
+                        Description = "Rs 50 flat discount on orders above Rs 200",
+                        CreatedAt = now.AddDays(-15)
+                    },
+                    // Percentage for loyal customers
+                    new()
+                    {
+                        Code = "LOYAL20",
+                        DiscountType = SmartPOS.Shared.Enums.DiscountType.Percentage,
+                        Value = 20,
+                        MinOrderValue = 1000,
+                        MaxUsageLimit = 25,
+                        UsageCount = 8,
+                        ValidFrom = now.AddDays(-10),
+                        ValidTo = now.AddDays(20),
+                        IsActive = true,
+                        Description = "20% off for orders above Rs 1000",
+                        CreatedAt = now.AddDays(-10)
+                    },
+                    // Inactive promotion
+                    new()
+                    {
+                        Code = "SUMMER15",
+                        DiscountType = SmartPOS.Shared.Enums.DiscountType.Percentage,
+                        Value = 15,
+                        MinOrderValue = 0,
+                        MaxUsageLimit = 200,
+                        UsageCount = 45,
+                        ValidFrom = now.AddDays(-90),
+                        ValidTo = now.AddDays(-30),
+                        IsActive = false,
+                        Description = "Summer sale - expired",
+                        CreatedAt = now.AddDays(-90)
+                    },
+                    // Big discount for special events
+                    new()
+                    {
+                        Code = "GRAND25",
+                        DiscountType = SmartPOS.Shared.Enums.DiscountType.Percentage,
+                        Value = 25,
+                        MinOrderValue = 2000,
+                        MaxUsageLimit = 50,
+                        UsageCount = 0,
+                        ValidFrom = now,
+                        ValidTo = now.AddDays(7),
+                        IsActive = true,
+                        Description = "Grand opening special - 25% off on orders above Rs 2000",
+                        CreatedAt = now
+                    }
+                };
+
+                context.Promotions.AddRange(promotions);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
