@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using SmartPOS.Components;
 using SmartPOS.Web.Data;
 using SmartPOS.Shared.Interfaces;
@@ -48,6 +49,12 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "SmartPOS.Web", "wwwroot")),
+    RequestPath = ""
+});
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapControllers();

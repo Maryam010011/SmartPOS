@@ -1,0 +1,402 @@
+@page "/admin/products"
+@inject IProductService ProductService
+@inject ICategoryService CategoryService
+@inject ISupplierService SupplierService
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.DTOs
+@using SmartPOS.Shared.DTOs.Products
+@using SmartPOS.Shared.DTOs.Categories
+@using SmartPOS.Shared.DTOs.Suppliers
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using SmartPOS.Shared.Common
+@inject IJSRuntime JSRuntime
+
+<div class="container py-4">
+    <div class="d-flex flex-column gap-3">
+        <h2 class="mb-0" style="color: var(--color-heading-text);">Product Management</h2>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="text-danger">@errorMessage</div>
+        }
+
+        <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <input class="form-control"
+                       placeholder="Search products..."
+                       value="@currentKeyword"
+                       @oninput="OnSearchInput" />
+            </div>
+            <div class="col-md-6 text-md-end">
+                <button class="btn"
+                        style="background-color: var(--color-button-primary); border-color: var(--color-button-primary); color: white;"
+                        @onclick="ShowAddForm">
+                    Add Product
+                </button>
+            </div>
+        </div>
+
+        @if (showForm)
+        {
+            <div class="card border-0" style="background-color: var(--color-card-bg);">
+                <div class="card-body">
+                    <EditForm Model="selectedProduct" OnValidSubmit="SaveProductAsync">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Name</label>
+                                <input class="form-control" @bind="selectedProduct.Name" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">SKU</label>
+                                <input class="form-control" @bind="selectedProduct.SKU" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" rows="3" @bind="selectedProduct.Description"></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Price</label>
+                                <input class="form-control" type="number" step="0.01" @bind="selectedProduct.Price" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Cost Price</label>
+                                <input class="form-control" type="number" step="0.01" @bind="selectedProduct.CostPrice" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Image URL</label>
+                                <input class="form-control" @bind="selectedProduct.ImageURL" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Category</label>
+                                <select class="form-select" @bind="selectedProduct.CategoryId">
+                                    <option value="0">Select category</option>
+                                    @foreach (var category in categories)
+                                    {
+                                        <option value="@category.Id">@category.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Supplier</label>
+                                <InputSelect class="form-select" @bind-Value="selectedProduct.SupplierId">
+                                    <option value="">Select supplier</option>
+                                    @foreach (var supplier in suppliers)
+                                    {
+                                        <option value="@supplier.Id">@supplier.Name</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mt-4">
+                                    <input class="form-check-input" type="checkbox" @bind="selectedProduct.IsActive" />
+                                    <label class="form-check-label">Active</label>
+                                </div>
+                            </div>
+                            <div class="col-12 d-flex gap-2">
+                                <button type="submit" class="btn btn-success">Save</button>
+                                <button type="button" class="btn btn-outline-secondary" @onclick="CancelForm">Cancel</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        }
+
+        @if (isLoading)
+        {
+            <div class="text-center py-4">Loading products...</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>SKU</th>
+                            <th>Category</th>
+                            <th>Supplier</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">Stock</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (products.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-4">No products found.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @for (var i = 0; i < products.Count; i++)
+                            {
+                                var product = products[i];
+                                var rowStyle = i % 2 == 1 ? "background-color: var(--color-table-row-alt);" : string.Empty;
+
+                                <tr style="@rowStyle">
+                                    <td>@product.Name</td>
+                                    <td>@product.SKU</td>
+                                    <td>@product.CategoryName</td>
+                                    <td>@product.SupplierName</td>
+                                    <td class="text-end">Rs. @product.Price.ToString("N2")</td>
+                                    <td class="text-end">@product.CurrentStock</td>
+                                    <td>
+                                        <span class="badge @(product.IsActive ? "bg-success" : "bg-danger")">
+                                            @(product.IsActive ? "Active" : "Inactive")
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => EditProduct(product)">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteProductAsync(product)">Delete</button>
+                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ToggleActiveAsync(product)">
+                                                Toggle Active
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<ProductDto> products = new();
+    private List<CategoryDto> categories = new();
+    private List<SupplierDto> suppliers = new();
+    private string currentKeyword = string.Empty;
+    private bool showForm;
+    private bool isEditing;
+    private bool isLoading;
+    private string errorMessage = string.Empty;
+    private UpdateProductDto selectedProduct = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var productResponse = await ProductService.GetAll();
+            if (productResponse.Success && productResponse.Data != null)
+            {
+                products = productResponse.Data;
+            }
+            else
+            {
+                errorMessage = productResponse.Message;
+            }
+
+            var categoryResponse = await CategoryService.GetAll();
+            if (categoryResponse.Success && categoryResponse.Data != null)
+            {
+                categories = categoryResponse.Data;
+            }
+            else if (string.IsNullOrWhiteSpace(errorMessage))
+            {
+                errorMessage = categoryResponse.Message;
+            }
+
+            var supplierResponse = await SupplierService.GetAll();
+            if (supplierResponse.Success && supplierResponse.Data != null)
+            {
+                suppliers = supplierResponse.Data;
+            }
+            else if (string.IsNullOrWhiteSpace(errorMessage))
+            {
+                errorMessage = supplierResponse.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnSearchInput(ChangeEventArgs args)
+    {
+        currentKeyword = args.Value?.ToString() ?? string.Empty;
+        await RefreshProductsAsync();
+    }
+
+    private async Task RefreshProductsAsync()
+    {
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            ApiResponse<List<ProductDto>> response = string.IsNullOrWhiteSpace(currentKeyword)
+                ? await ProductService.GetAll()
+                : await ProductService.Search(currentKeyword);
+
+            if (response.Success && response.Data != null)
+            {
+                products = response.Data;
+            }
+            else
+            {
+                errorMessage = response.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void ShowAddForm()
+    {
+        isEditing = false;
+        showForm = true;
+        selectedProduct = new UpdateProductDto
+        {
+            IsActive = true,
+            CategoryId = 0
+        };
+    }
+
+    private void EditProduct(ProductDto product)
+    {
+        isEditing = true;
+        showForm = true;
+        selectedProduct = new UpdateProductDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            SKU = product.SKU,
+            Description = product.Description,
+            Price = product.Price,
+            CostPrice = product.CostPrice,
+            ImageURL = product.ImageURL,
+            CategoryId = product.CategoryId,
+            SupplierId = product.SupplierId,
+            IsActive = product.IsActive
+        };
+    }
+
+    private void CancelForm()
+    {
+        showForm = false;
+        isEditing = false;
+        selectedProduct = new UpdateProductDto();
+    }
+
+    private async Task SaveProductAsync()
+    {
+        errorMessage = string.Empty;
+
+        try
+        {
+            if (isEditing)
+            {
+                var response = await ProductService.Update(selectedProduct);
+                if (!response.Success)
+                {
+                    errorMessage = response.Message;
+                    return;
+                }
+            }
+            else
+            {
+                var createDto = new CreateProductDto
+                {
+                    Name = selectedProduct.Name,
+                    SKU = selectedProduct.SKU,
+                    Description = selectedProduct.Description,
+                    Price = selectedProduct.Price,
+                    CostPrice = selectedProduct.CostPrice,
+                    ImageURL = selectedProduct.ImageURL,
+                    CategoryId = selectedProduct.CategoryId,
+                    SupplierId = selectedProduct.SupplierId
+                };
+
+                var response = await ProductService.Create(createDto);
+                if (!response.Success)
+                {
+                    errorMessage = response.Message;
+                    return;
+                }
+            }
+
+            showForm = false;
+            isEditing = false;
+            selectedProduct = new UpdateProductDto();
+            await RefreshProductsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task DeleteProductAsync(ProductDto product)
+    {
+        errorMessage = string.Empty;
+
+        try
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", $"Delete {product.Name}?");
+            if (!confirmed)
+            {
+                return;
+            }
+
+            var response = await ProductService.Delete(product.Id);
+            if (!response.Success)
+            {
+                errorMessage = response.Message;
+                return;
+            }
+
+            await RefreshProductsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+
+    private async Task ToggleActiveAsync(ProductDto product)
+    {
+        errorMessage = string.Empty;
+
+        try
+        {
+            var response = await ProductService.ToggleActive(product.Id);
+            if (!response.Success)
+            {
+                errorMessage = response.Message;
+                return;
+            }
+
+            await RefreshProductsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}
