@@ -381,7 +381,7 @@
 
     private void OpenLoyaltyModal(CustomerRowDto c) => LoyaltyModalRef?.Open(c.Id, c.Name, c.LoyaltyPoints);
 
-    private void ViewProfile(int id) => Navigation.NavigateTo($"/admin/customers/{id}/profile");
+    private void ViewProfile(int id) => Navigation.NavigateTo($"/admin/customers/profile/{id}");
 
     // Deactivate
     private void PromptDeactivate(CustomerRowDto c) => DeactivateTarget = c;

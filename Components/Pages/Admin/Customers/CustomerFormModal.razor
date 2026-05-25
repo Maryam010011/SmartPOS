@@ -270,7 +270,7 @@
                     IsActive = IsActive
                 };
 
-                var response = await CustomerService.Update(EditId, dto);
+                var response = await CustomerService.UpdateCustomer(EditId, dto);
                 if (response.Success)
                 {
                     CloseModal();
@@ -292,7 +292,7 @@
                     Address = string.IsNullOrWhiteSpace(Address) ? null : Address.Trim()
                 };
 
-                var response = await CustomerService.Create(dto);
+                var response = await CustomerService.CreateCustomer(dto);
                 if (response.Success)
                 {
                     CloseModal();

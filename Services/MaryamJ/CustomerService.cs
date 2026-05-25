@@ -63,7 +63,8 @@ public class CustomerService : ICustomerService
                     LoyaltyPoints = c.LoyaltyPoints,
                     TotalSpent = c.TotalSpent,
                     IsActive = c.IsActive,
-                    CreatedAt = c.CreatedAt
+                    CreatedAt = c.CreatedAt,
+                    TotalOrders = c.Sales.Count()
                 })
                 .ToListAsync();
 
@@ -166,7 +167,7 @@ public class CustomerService : ICustomerService
         }
     }
 
-    public async Task<ApiResponse<CustomerDto>> Create(CreateCustomerDto dto)
+    public async Task<ApiResponse<CustomerDto>> CreateCustomer(CreateCustomerDto dto)
     {
         try
         {
@@ -203,7 +204,7 @@ public class CustomerService : ICustomerService
         }
     }
 
-    public async Task<ApiResponse<CustomerDto>> Update(int id, UpdateCustomerDto dto)
+    public async Task<ApiResponse<CustomerDto>> UpdateCustomer(int id, UpdateCustomerDto dto)
     {
         try
         {
@@ -260,14 +261,14 @@ public class CustomerService : ICustomerService
         }
     }
 
-    public async Task<ApiResponse> AddLoyaltyPoints(int customerId, int points)
+    public async Task<ApiResponse> AddLoyaltyPoints(int customerId, int points, string reason)
     {
-        return await AddLoyaltyPointsWithReason(customerId, points, "Purchase earned points");
+        return await AddLoyaltyPointsWithReason(customerId, points, string.IsNullOrWhiteSpace(reason) ? "Purchase earned points" : reason);
     }
 
-    public async Task<ApiResponse> DeductLoyaltyPoints(int customerId, int points)
+    public async Task<ApiResponse> DeductLoyaltyPoints(int customerId, int points, string reason)
     {
-        return await AddLoyaltyPointsWithReason(customerId, -points, "Points redeemed at checkout");
+        return await AddLoyaltyPointsWithReason(customerId, -points, string.IsNullOrWhiteSpace(reason) ? "Points redeemed at checkout" : reason);
     }
 
     public async Task<ApiResponse> AdjustLoyaltyPoints(int customerId, int adjustment, string reason)
@@ -350,6 +351,25 @@ public class CustomerService : ICustomerService
         }
     }
 
+    public async Task<ApiResponse> SendPromotionalEmail(int customerId)
+    {
+        try
+        {
+            var customer = await _context.Customers.FindAsync(customerId);
+            if (customer == null)
+                return ApiResponse.Fail("Customer not found.");
+
+            if (!customer.IsActive)
+                return ApiResponse.Fail("Cannot send promotional email to an inactive customer.");
+
+            return ApiResponse.Ok($"Promotional email sent successfully to {customer.Name} ({customer.Email}) [Simulation].");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.Fail($"Failed to send promotional email: {ex.Message}");
+        }
+    }
+
     private static CustomerDto MapToDto(Customer customer)
     {
         return new CustomerDto
@@ -361,7 +381,8 @@ public class CustomerService : ICustomerService
             LoyaltyPoints = customer.LoyaltyPoints,
             TotalSpent = customer.TotalSpent,
             IsActive = customer.IsActive,
-            CreatedAt = customer.CreatedAt
+            CreatedAt = customer.CreatedAt,
+            TotalOrders = customer.Sales?.Count ?? 0
         };
     }
 }

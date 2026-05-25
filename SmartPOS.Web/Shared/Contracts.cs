@@ -180,6 +180,7 @@ namespace SmartPOS.Shared.DTOs.Customers
         public decimal TotalSpent { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int TotalOrders { get; set; }
     }
 
     public class CustomerDetailDto : CustomerDto
@@ -308,10 +309,10 @@ namespace SmartPOS.Shared.Interfaces
         // Shahzain's Sales module calls these
         Task<ApiResponse<CustomerDto>> GetById(int id);
         Task<ApiResponse<CustomerDto>> GetByEmail(string email);
-        Task<ApiResponse<CustomerDto>> Create(CreateCustomerDto dto);
-        Task<ApiResponse<CustomerDto>> Update(int id, UpdateCustomerDto dto);
-        Task<ApiResponse> AddLoyaltyPoints(int customerId, int points);
-        Task<ApiResponse> DeductLoyaltyPoints(int customerId, int points);
+        Task<ApiResponse<CustomerDto>> CreateCustomer(CreateCustomerDto dto);
+        Task<ApiResponse<CustomerDto>> UpdateCustomer(int id, UpdateCustomerDto dto);
+        Task<ApiResponse> AddLoyaltyPoints(int customerId, int points, string reason);
+        Task<ApiResponse> DeductLoyaltyPoints(int customerId, int points, string reason);
 
         // New methods
         Task<ApiResponse<List<CustomerDto>>> GetAllCustomers(CustomerFilterDto filter);
@@ -319,6 +320,7 @@ namespace SmartPOS.Shared.Interfaces
         Task<ApiResponse> DeleteCustomer(int id);
         Task<ApiResponse> AdjustLoyaltyPoints(int customerId, int adjustment, string reason);
         Task<ApiResponse<List<SaleSummaryDto>>> GetCustomerPurchaseHistory(int customerId);
+        Task<ApiResponse> SendPromotionalEmail(int customerId);
     }
 
     public interface IPromotionService

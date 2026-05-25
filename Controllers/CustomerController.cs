@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Customers;
@@ -6,7 +7,7 @@ using SmartPOS.Shared.Interfaces;
 namespace SmartPOS.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/customers")]
 public class CustomerController : ControllerBase
 {
     private readonly ICustomerService _customerService;
@@ -18,6 +19,7 @@ public class CustomerController : ControllerBase
 
     // GET /api/customers
     [HttpGet]
+    [Authorize(Roles = "Cashier,Manager,Admin")]
     public async Task<IActionResult> GetAll([FromQuery] CustomerFilterDto filter)
     {
         var result = await _customerService.GetAllCustomers(filter);
@@ -26,6 +28,7 @@ public class CustomerController : ControllerBase
 
     // GET /api/customers/{id}
     [HttpGet("{id}")]
+    [Authorize(Roles = "Cashier,Manager,Admin")]
     public async Task<IActionResult> GetById(int id)
     {
         var result = await _customerService.GetCustomerById(id);
@@ -34,9 +37,10 @@ public class CustomerController : ControllerBase
 
     // POST /api/customers
     [HttpPost]
+    [Authorize(Roles = "Manager,Admin")]
     public async Task<IActionResult> Create([FromBody] CreateCustomerDto dto)
     {
-        var result = await _customerService.Create(dto);
+        var result = await _customerService.CreateCustomer(dto);
         return result.Success
             ? CreatedAtAction(nameof(GetById), new { id = result.Data!.Id }, result)
             : BadRequest(result);
@@ -44,14 +48,16 @@ public class CustomerController : ControllerBase
 
     // PUT /api/customers/{id}
     [HttpPut("{id}")]
+    [Authorize(Roles = "Manager,Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateCustomerDto dto)
     {
-        var result = await _customerService.Update(id, dto);
+        var result = await _customerService.UpdateCustomer(id, dto);
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
     // DELETE /api/customers/{id}
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _customerService.DeleteCustomer(id);
@@ -60,22 +66,25 @@ public class CustomerController : ControllerBase
 
     // POST /api/customers/{id}/loyalty/add
     [HttpPost("{id}/loyalty/add")]
+    [Authorize(Roles = "Manager,Admin")]
     public async Task<IActionResult> AddLoyaltyPoints(int id, [FromBody] LoyaltyAdjustDto dto)
     {
-        var result = await _customerService.AddLoyaltyPoints(id, dto.Points);
+        var result = await _customerService.AddLoyaltyPoints(id, dto.Points, dto.Reason);
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
     // POST /api/customers/{id}/loyalty/deduct
     [HttpPost("{id}/loyalty/deduct")]
+    [Authorize(Roles = "Manager,Admin")]
     public async Task<IActionResult> DeductLoyaltyPoints(int id, [FromBody] LoyaltyAdjustDto dto)
     {
-        var result = await _customerService.DeductLoyaltyPoints(id, dto.Points);
+        var result = await _customerService.DeductLoyaltyPoints(id, dto.Points, dto.Reason);
         return result.Success ? Ok(result) : BadRequest(result);
     }
 
     // PUT /api/customers/{id}/loyalty/adjust
     [HttpPut("{id}/loyalty/adjust")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AdjustLoyaltyPoints(int id, [FromBody] LoyaltyAdjustDto dto)
     {
         var result = await _customerService.AdjustLoyaltyPoints(id, dto.Points, dto.Reason);
@@ -84,9 +93,19 @@ public class CustomerController : ControllerBase
 
     // GET /api/customers/{id}/orders
     [HttpGet("{id}/orders")]
+    [Authorize(Roles = "Cashier,Manager,Admin")]
     public async Task<IActionResult> GetPurchaseHistory(int id)
     {
         var result = await _customerService.GetCustomerPurchaseHistory(id);
         return result.Success ? Ok(result) : NotFound(result);
+    }
+
+    // POST /api/customers/{id}/send-promo
+    [HttpPost("{id}/send-promo")]
+    [Authorize(Roles = "Manager,Admin")]
+    public async Task<IActionResult> SendPromotionalEmail(int id)
+    {
+        var result = await _customerService.SendPromotionalEmail(id);
+        return result.Success ? Ok(result) : BadRequest(result);
     }
 }
