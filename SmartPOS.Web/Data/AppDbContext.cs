@@ -32,6 +32,7 @@ namespace SmartPOS.Web.Data
         public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<Customer> Customers { get; set; } = null!;
         public DbSet<LoyaltyTransaction> LoyaltyTransactions { get; set; } = null!;
+        public DbSet<Promotion> Promotions { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -137,6 +138,15 @@ namespace SmartPOS.Web.Data
                       .HasForeignKey(lt => lt.CustomerId)
                       .IsRequired()
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ─────────────────────────────────────────────────
+            // Promotion — Unique Code index + Sale relationship
+            // ─────────────────────────────────────────────────
+            modelBuilder.Entity<Promotion>(entity =>
+            {
+                entity.HasIndex(p => p.Code)
+                      .IsUnique();
             });
 
             // ─────────────────────────────────────────────────

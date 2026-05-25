@@ -26,6 +26,9 @@ builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IRoleService, SmartPOS.Ser
 // Register Customer Management Service
 builder.Services.AddScoped<SmartPOS.Shared.Interfaces.ICustomerService, SmartPOS.Services.MaryamJ.CustomerService>();
 
+// Register Promotion Management Service
+builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IPromotionService, SmartPOS.Services.MaryamJ.PromotionService>();
+
 // Enable Web API Controllers
 builder.Services.AddControllers();
 

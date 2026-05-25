@@ -254,14 +254,67 @@ namespace SmartPOS.Shared.DTOs.Promotions
     {
         public int Id { get; set; }
         public string Code { get; set; } = string.Empty;
-        public DiscountType Type { get; set; }
+        public DiscountType DiscountType { get; set; }
         public decimal Value { get; set; }
         public decimal MinOrderValue { get; set; }
         public int MaxUsageLimit { get; set; }
         public int UsageCount { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime ValidFrom { get; set; }
+        public DateTime ValidTo { get; set; }
         public bool IsActive { get; set; }
+        public string? Description { get; set; }
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class CreatePromotionDto
+    {
+        public string? Code { get; set; }
+        public DiscountType DiscountType { get; set; }
+        public decimal Value { get; set; }
+        public decimal MinOrderValue { get; set; }
+        public int MaxUsageLimit { get; set; }
+        public DateTime ValidFrom { get; set; }
+        public DateTime ValidTo { get; set; }
+        public bool IsActive { get; set; } = true;
+        public string? Description { get; set; }
+    }
+
+    public class UpdatePromotionDto
+    {
+        public string? Code { get; set; }
+        public DiscountType? DiscountType { get; set; }
+        public decimal? Value { get; set; }
+        public decimal? MinOrderValue { get; set; }
+        public int? MaxUsageLimit { get; set; }
+        public DateTime? ValidFrom { get; set; }
+        public DateTime? ValidTo { get; set; }
+        public bool? IsActive { get; set; }
+        public string? Description { get; set; }
+    }
+
+    public class PromoValidationResult
+    {
+        public bool IsValid { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public DiscountType? DiscountType { get; set; }
+        public int? PromotionId { get; set; }
+        public string ErrorMessage { get; set; } = string.Empty;
+    }
+
+    public class DailyUsageStat
+    {
+        public DateTime Date { get; set; }
+        public int UsageCount { get; set; }
+        public decimal TotalDiscount { get; set; }
+        public decimal TotalRevenue { get; set; }
+    }
+
+    public class PromoAnalyticsDto
+    {
+        public int TotalTimesUsed { get; set; }
+        public decimal TotalDiscountGiven { get; set; }
+        public decimal RevenueFromPromoOrders { get; set; }
+        public List<DailyUsageStat> DailyUsageList { get; set; } = new();
     }
 
     public class ApplyPromoResultDto
@@ -326,7 +379,7 @@ namespace SmartPOS.Shared.Interfaces
 
     public interface IPromotionService
     {
-        // Shahzain's Sales module calls these
+        // Shahzain's Sales module calls these (backward compatible)
         Task<ApiResponse<PromotionDto>> GetByCode(string code);
         Task<ApiResponse<ApplyPromoResultDto>> ValidateAndApply(string code, decimal orderTotal);
         Task<ApiResponse> IncrementUsage(int promoId);
@@ -334,6 +387,17 @@ namespace SmartPOS.Shared.Interfaces
         Task<ApiResponse<PromotionDto>> Create(PromotionDto dto);
         Task<ApiResponse<PromotionDto>> Update(PromotionDto dto);
         Task<ApiResponse> Delete(int id);
+
+        // New methods for MaryamJ's Promotion module
+        Task<ApiResponse<List<PromotionDto>>> GetAllPromotions();
+        Task<ApiResponse<PromotionDto>> GetById(int id);
+        Task<ApiResponse<PromotionDto>> CreatePromotion(CreatePromotionDto dto);
+        Task<ApiResponse<PromotionDto>> UpdatePromotion(int id, UpdatePromotionDto dto);
+        Task<ApiResponse> DeletePromotion(int id);
+        Task<ApiResponse> ToggleActive(int id);
+        Task<ApiResponse<PromoValidationResult>> ValidatePromoCode(string code, decimal orderTotal);
+        Task<ApiResponse> ApplyPromoCode(int promoId);
+        Task<ApiResponse<PromoAnalyticsDto>> GetPromoAnalytics(int id);
     }
 }
 
