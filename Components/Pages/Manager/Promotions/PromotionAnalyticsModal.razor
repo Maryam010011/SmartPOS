@@ -175,8 +175,8 @@
     private string PromoCode = "";
 
     private PromoAnalyticsDto? Analytics;
-    private List<DailyUsageStat>? ChartData;
-    private List<string>? ChartLabels;
+    private List<DailyUsageStat> ChartData = new();
+    private List<string> ChartLabels = new();
     private int MaxUsageCount;
 
     private List<RecentSaleEntry> RecentSales = new();
@@ -188,7 +188,8 @@
         IsVisible = true;
         IsLoading = true;
         Analytics = null;
-        ChartData = null;
+        ChartData = new();
+        ChartLabels = new();
         RecentSales = new();
         StateHasChanged();
 

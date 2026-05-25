@@ -396,10 +396,11 @@ namespace SmartPOS.Shared.Interfaces
         Task<ApiResponse> DeletePromotion(int id);
         Task<ApiResponse> ToggleActive(int id);
         Task<ApiResponse<PromoValidationResult>> ValidatePromoCode(string code, decimal orderTotal);
-        Task<ApiResponse> ApplyPromoCode(int promoId);
-        Task<ApiResponse<PromoAnalyticsDto>> GetPromoAnalytics(int id);
-    }
-}
+         Task<ApiResponse> ApplyPromoCode(int promoId);
+         Task<ApiResponse<PromoAnalyticsDto>> GetPromoAnalytics(int id);
+         Task<ApiResponse<List<PromotionDto>>> GetActivePromotions();
+     }
+ }
 
 
 // ============================================================

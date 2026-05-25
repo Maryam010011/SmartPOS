@@ -438,11 +438,30 @@ public class PromotionService : IPromotionService
         }
         catch (Exception ex)
         {
-            return ApiResponse<PromoAnalyticsDto>.Fail($"Failed to get analytics: {ex.Message}");
-        }
-    }
+             return ApiResponse<PromoAnalyticsDto>.Fail($"Failed to get analytics: {ex.Message}");
+         }
+     }
 
-    // ── Helpers ──
+     public async Task<ApiResponse<List<PromotionDto>>> GetActivePromotions()
+     {
+         try
+         {
+             var now = DateTime.UtcNow;
+             var activePromotions = await _context.Promotions
+                 .Where(p => p.IsActive && now >= p.ValidFrom && now <= p.ValidTo && p.UsageCount < p.MaxUsageLimit)
+                 .OrderBy(p => p.ValidTo)
+                 .ToListAsync();
+
+             var dtos = activePromotions.Select(MapToDto).ToList();
+             return ApiResponse<List<PromotionDto>>.Ok(dtos);
+         }
+         catch (Exception ex)
+         {
+             return ApiResponse<List<PromotionDto>>.Fail($"Failed to get active promotions: {ex.Message}");
+         }
+     }
+
+     // ── Helpers ──
 
     private static string GeneratePromoCode()
     {
