@@ -45,7 +45,7 @@
                         @if (IsAdmin)
                         {
                             <div class="mt-2">
-                                <button class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2" @onclick="() => Reason = 'Admin Override'">
+                                <button class="btn btn-sm btn-outline-warning d-flex align-items-center gap-2" @onclick="SetAdminOverrideReason">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-shield-lock-fill" viewBox="0 0 16 16">
                                         <path d="M5.5 9.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5v-1z"/>
                                         <path d="M12.854 3.146a.5.5 0 0 0-.708 0L10.5 4.793 14.207 8.5l1.647-1.646a.5.5 0 0 0 0-.708zM6.5 1a2.5 2.5 0 0 0-2.5 2.5v1.17c0 .535-.214 1.051-.595 1.42L3 6.5a1 1 0 0 0-.293.707v4.586c0 .75.41 1.465 1.09 1.867L5.5 14l1-1v-1.5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1V13l1 1 1.414-1.414c.68-.402 1.09-1.117 1.09-1.867V6.207a1 1 0 0 0-.293-.707l-.405-.274c-.38-.369-.595-.885-.595-1.42V3.5A2.5 2.5 0 0 0 9.5 1h-3z"/>
@@ -78,8 +78,9 @@
 
 @code {
     [Parameter] public EventCallback OnSave { get; set; }
-
     [Parameter] public bool IsAdmin { get; set; } = true;
+
+    private bool IsVisible;
     private bool IsLoading;
     private bool ShowErrors;
     private string ErrorMessage = "";
@@ -140,5 +141,11 @@
             IsLoading = false;
             StateHasChanged();
         }
+    }
+
+    private void SetAdminOverrideReason()
+    {
+        Reason = "Admin Override";
+        StateHasChanged();
     }
 }
