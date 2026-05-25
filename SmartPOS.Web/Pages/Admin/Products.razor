@@ -1,4 +1,7 @@
 @page "/admin/products"
+@using Microsoft.AspNetCore.Components.Web
+@rendermode @(new InteractiveServerRenderMode())
+
 @inject IProductService ProductService
 @inject ICategoryService CategoryService
 @inject ISupplierService SupplierService
