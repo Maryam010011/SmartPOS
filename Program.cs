@@ -28,7 +28,8 @@ builder.Services.AddScoped<IReviewService,      ReviewService>();
 builder.Services.AddScoped<IAIChatbotService,   AIChatbotService>();
 builder.Services.AddScoped<IFBRService,         FBRService>();
 builder.Services.AddScoped<IBERTService,        BERTService>();
-builder.Services.AddScoped<IInventoryService,   InventoryServiceStub>();
+//builder.Services.AddScoped<IInventoryService,   InventoryServiceStub>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IWeatherService,     WeatherService>();
 
 builder.Services.AddRazorComponents()
@@ -61,4 +62,5 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.Run();
+await DatabaseSeeder.SeedAsync(app.Services);
+await app.RunAsync();
