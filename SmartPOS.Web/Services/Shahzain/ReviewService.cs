@@ -190,7 +190,7 @@ namespace SmartPOS.Web.Services.Shahzain
                 Rating = review.Rating,
                 Comment = review.Comment,
                 Sentiment = review.Sentiment,
-                SentimentScore = review.SentimentScore,
+                SentimentScore = review.SentimentScore.HasValue ? (float)review.SentimentScore.Value : 0f,
                 CreatedAt = review.CreatedAt
             };
         }
