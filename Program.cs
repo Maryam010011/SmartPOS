@@ -62,5 +62,9 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-await DatabaseSeeder.SeedAsync(app.Services);
+//await DatabaseSeeder.SeedAsync(app.Services);
+using (var scope = app.Services.CreateScope())
+{
+     await DatabaseSeeder.SeedAsync(scope.ServiceProvider);
+}
 await app.RunAsync();
