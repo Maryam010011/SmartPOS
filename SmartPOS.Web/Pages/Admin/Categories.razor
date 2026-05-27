@@ -1,0 +1,832 @@
+@page "/admin/categories"
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using SmartPOS.Shared.DTOs.Categories
+@inject SmartPOS.Shared.Interfaces.ICategoryService CategoryService
+
+<PageTitle>Categories</PageTitle>
+
+<div class="admin-page">
+    <header class="page-header">
+        <div class="page-title">
+            <h1>Categories</h1>
+            <p>Manage category hierarchy, structure, and product grouping.</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline" @onclick="RefreshAllAsync" disabled="@isLoadingAll">
+                @if (isLoadingAll)
+                {
+                    <span class="spinner"></span>
+                    <span>Refreshing...</span>
+                }
+                else
+                {
+                    <span>Refresh</span>
+                }
+            </button>
+            <button class="btn btn-outline" @onclick="LoadTreeAsync" disabled="@isLoadingTree">
+                @if (isLoadingTree)
+                {
+                    <span class="spinner"></span>
+                    <span>Loading Tree...</span>
+                }
+                else
+                {
+                    <span>Load Tree</span>
+                }
+            </button>
+        </div>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(statusMessage))
+    {
+        <div class="alert @(isStatusSuccess ? "alert-success" : "alert-error")">
+            <span>@statusMessage</span>
+            <button class="btn btn-text" @onclick="ClearStatus">Dismiss</button>
+        </div>
+    }
+
+    <section class="grid two-column">
+        <div class="card">
+            <div class="card-header">
+                <h2>Find Category by ID</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-row">
+                        <label class="form-label">Category ID</label>
+                        <InputNumber class="form-input" @bind-Value="lookupCategoryId" />
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-primary" @onclick="LoadByIdAsync" disabled="@isLoadingById">
+                            @if (isLoadingById)
+                            {
+                                <span class="spinner"></span>
+                                <span>Loading...</span>
+                            }
+                            else
+                            {
+                                <span>Get Category</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+
+                @if (lookupCategory != null)
+                {
+                    <div class="detail-panel">
+                        <div class="detail-row">
+                            <span class="detail-label">Name</span>
+                            <span class="detail-value">@lookupCategory.Name</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Description</span>
+                            <span class="detail-value">@lookupCategory.Description</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Parent</span>
+                            <span class="detail-value">@lookupCategory.ParentCategoryName</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Sub-Categories</span>
+                            <span class="detail-value">@lookupCategory.SubCategories.Count</span>
+                        </div>
+                    </div>
+                }
+                else if (!isLoadingById && lookupCategoryId.HasValue)
+                {
+                    <div class="empty-state">No category found for the selected ID.</div>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Create Category</h2>
+            </div>
+            <div class="card-body">
+                <EditForm Model="createModel" OnValidSubmit="CreateAsync">
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <label class="form-label">Name</label>
+                            <InputText class="form-input" @bind-Value="createModel.Name" />
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label">Description</label>
+                            <InputText class="form-input" @bind-Value="createModel.Description" />
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label">Image URL</label>
+                            <InputText class="form-input" @bind-Value="createModel.ImageURL" />
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label">Parent Category</label>
+                            <select class="form-input" @bind="createModel.ParentCategoryId">
+                                <option value="">None</option>
+                                @foreach (var category in categories)
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" type="submit" disabled="@isSavingCreate">
+                                @if (isSavingCreate)
+                                {
+                                    <span class="spinner"></span>
+                                    <span>Saving...</span>
+                                }
+                                else
+                                {
+                                    <span>Create Category</span>
+                                }
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="card-header">
+            <h2>All Categories</h2>
+        </div>
+        <div class="card-body">
+            @if (isLoadingAll)
+            {
+                <div class="loading-state">
+                    <span class="spinner"></span>
+                    <span>Loading categories...</span>
+                </div>
+            }
+            else if (categories.Count == 0)
+            {
+                <div class="empty-state">No categories are available.</div>
+            }
+            else
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Parent</th>
+                            <th>Sub-Categories</th>
+                            <th class="table-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in categories)
+                        {
+                            <tr>
+                                <td>@category.Id</td>
+                                <td>@category.Name</td>
+                                <td>@category.Description</td>
+                                <td>@category.ParentCategoryName</td>
+                                <td>@category.SubCategories.Count</td>
+                                <td class="table-actions">
+                                    <button class="btn btn-outline" @onclick="() => BeginEdit(category)">Edit</button>
+                                    <button class="btn btn-danger" @onclick="() => RequestDelete(category)">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @if (pendingDeleteCategory != null)
+            {
+                <div class="confirm-panel">
+                    <div class="confirm-content">
+                        <h3>Confirm Delete</h3>
+                        <p>You are about to delete "@pendingDeleteCategory.Name". This action cannot be undone.</p>
+                    </div>
+                    <div class="confirm-actions">
+                        <button class="btn btn-danger" @onclick="ConfirmDeleteAsync" disabled="@isDeleting">
+                            @if (isDeleting)
+                            {
+                                <span class="spinner"></span>
+                                <span>Deleting...</span>
+                            }
+                            else
+                            {
+                                <span>Delete</span>
+                            }
+                        </button>
+                        <button class="btn btn-outline" @onclick="CancelDelete" disabled="@isDeleting">Cancel</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="grid two-column">
+        <div class="card">
+            <div class="card-header">
+                <h2>Edit Category</h2>
+            </div>
+            <div class="card-body">
+                @if (editModel == null)
+                {
+                    <div class="empty-state">Select a category from the list to edit.</div>
+                }
+                else
+                {
+                    <EditForm Model="editModel" OnValidSubmit="UpdateAsync">
+                        <div class="form-grid">
+                            <div class="form-row">
+                                <label class="form-label">Name</label>
+                                <InputText class="form-input" @bind-Value="editModel.Name" />
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label">Description</label>
+                                <InputText class="form-input" @bind-Value="editModel.Description" />
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label">Image URL</label>
+                                <InputText class="form-input" @bind-Value="editModel.ImageURL" />
+                            </div>
+                            <div class="form-row">
+                                <label class="form-label">Parent Category</label>
+                                <select class="form-input" @bind="editModel.ParentCategoryId">
+                                    <option value="">None</option>
+                                    @foreach (var category in categories.Where(c => c.Id != editModel.Id))
+                                    {
+                                        <option value="@category.Id">@category.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" type="submit" disabled="@isSavingEdit">
+                                    @if (isSavingEdit)
+                                    {
+                                        <span class="spinner"></span>
+                                        <span>Updating...</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Update Category</span>
+                                    }
+                                </button>
+                                <button class="btn btn-outline" type="button" @onclick="ClearEdit" disabled="@isSavingEdit">Clear</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                }
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Category Hierarchy</h2>
+            </div>
+            <div class="card-body">
+                @if (isLoadingTree)
+                {
+                    <div class="loading-state">
+                        <span class="spinner"></span>
+                        <span>Loading hierarchy...</span>
+                    </div>
+                }
+                else if (categoryTree.Count == 0)
+                {
+                    <div class="empty-state">No categories are available in the hierarchy.</div>
+                }
+                else
+                {
+                    <div class="tree">
+                        @foreach (var node in categoryTree)
+                        {
+                            @RenderCategoryNode(node)
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+</div>
+
+@code {
+    private readonly List<CategoryDto> categories = new();
+    private readonly List<CategoryDto> categoryTree = new();
+
+    private CreateCategoryDto createModel = new();
+    private UpdateCategoryDto? editModel;
+    private CategoryDto? lookupCategory;
+    private CategoryDto? pendingDeleteCategory;
+
+    private int? lookupCategoryId;
+
+    private bool isLoadingAll;
+    private bool isLoadingTree;
+    private bool isLoadingById;
+    private bool isSavingCreate;
+    private bool isSavingEdit;
+    private bool isDeleting;
+
+    private string? statusMessage;
+    private bool isStatusSuccess;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshAllAsync();
+        await LoadTreeAsync();
+    }
+
+    private async Task RefreshAllAsync()
+    {
+        isLoadingAll = true;
+        ClearStatus();
+
+        var response = await CategoryService.GetAll();
+        if (response.Success && response.Data != null)
+        {
+            categories.Clear();
+            categories.AddRange(response.Data);
+        }
+        else
+        {
+            SetStatus(response.Message, false);
+        }
+
+        isLoadingAll = false;
+    }
+
+    private async Task LoadTreeAsync()
+    {
+        isLoadingTree = true;
+        ClearStatus();
+
+        var response = await CategoryService.GetTree();
+        if (response.Success && response.Data != null)
+        {
+            categoryTree.Clear();
+            categoryTree.AddRange(response.Data);
+        }
+        else
+        {
+            SetStatus(response.Message, false);
+        }
+
+        isLoadingTree = false;
+    }
+
+    private async Task LoadByIdAsync()
+    {
+        lookupCategory = null;
+
+        if (!lookupCategoryId.HasValue)
+        {
+            SetStatus("Please enter a valid category ID.", false);
+            return;
+        }
+
+        isLoadingById = true;
+        ClearStatus();
+
+        var response = await CategoryService.GetById(lookupCategoryId.Value);
+        if (response.Success && response.Data != null)
+        {
+            lookupCategory = response.Data;
+        }
+        else
+        {
+            SetStatus(response.Message, false);
+        }
+
+        isLoadingById = false;
+    }
+
+    private async Task CreateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(createModel.Name))
+        {
+            SetStatus("Category name is required.", false);
+            return;
+        }
+
+        isSavingCreate = true;
+        ClearStatus();
+
+        var response = await CategoryService.Create(createModel);
+        if (response.Success)
+        {
+            SetStatus("Category created successfully.", true);
+            createModel = new CreateCategoryDto();
+            await RefreshAllAsync();
+            await LoadTreeAsync();
+        }
+        else
+        {
+            SetStatus(response.Message, false);
+        }
+
+        isSavingCreate = false;
+    }
+
+    private void BeginEdit(CategoryDto category)
+    {
+        editModel = new UpdateCategoryDto
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Description = category.Description,
+            ImageURL = category.ImageURL,
+            ParentCategoryId = category.ParentCategoryId
+        };
+    }
+
+    private async Task UpdateAsync()
+    {
+        if (editModel == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(editModel.Name))
+        {
+            SetStatus("Category name is required.", false);
+            return;
+        }
+
+        isSavingEdit = true;
+        ClearStatus();
+
+        var response = await CategoryService.Update(editModel);
+        if (response.Success)
+        {
+            SetStatus("Category updated successfully.", true);
+            await RefreshAllAsync();
+            await LoadTreeAsync();
+        }
+        else
+        {
+            SetStatus(response.Message, false);
+        }
+
+        isSavingEdit = false;
+    }
+
+    private void ClearEdit()
+    {
+        editModel = null;
+    }
+
+    private void RequestDelete(CategoryDto category)
+    {
+        pendingDeleteCategory = category;
+    }
+
+    private void CancelDelete()
+    {
+        pendingDeleteCategory = null;
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        if (pendingDeleteCategory == null)
+            return;
+
+        isDeleting = true;
+        ClearStatus();
+
+        var response = await CategoryService.Delete(pendingDeleteCategory.Id);
+        if (response.Success)
+        {
+            SetStatus("Category deleted successfully.", true);
+            pendingDeleteCategory = null;
+            await RefreshAllAsync();
+            await LoadTreeAsync();
+        }
+        else
+        {
+            SetStatus(response.Message, false);
+        }
+
+        isDeleting = false;
+    }
+
+    private void SetStatus(string message, bool success)
+    {
+        statusMessage = message;
+        isStatusSuccess = success;
+    }
+
+    private void ClearStatus()
+    {
+        statusMessage = null;
+    }
+
+    private RenderFragment RenderCategoryNode(CategoryDto node) => builder =>
+    {
+        var seq = 0;
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "tree-node");
+        builder.AddContent(seq++, node.Name);
+
+        if (node.SubCategories.Any())
+        {
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "tree-children");
+
+            foreach (var child in node.SubCategories)
+            {
+                builder.AddContent(seq++, RenderCategoryNode(child));
+            }
+
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+    };
+}
+
+<style>
+    .admin-page {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.5rem;
+        background-color: var(--color-page-bg);
+        color: var(--color-primary-text);
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .page-title h1 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+    }
+
+    .page-title p {
+        margin: 0.25rem 0 0;
+        font-size: 1rem;
+        opacity: 0.8;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .two-column {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .card {
+        background-color: var(--color-card-bg);
+        border: 1px solid var(--color-border-accent);
+        border-radius: 0.75rem;
+        padding: 1.25rem;
+        box-shadow: none;
+    }
+
+    .card-header {
+        margin-bottom: 1rem;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.4rem;
+        color: var(--color-heading-text);
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .form-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .form-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .form-label {
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .form-input {
+        padding: 0.6rem 0.75rem;
+        border: 1px solid var(--color-border-accent);
+        border-radius: 0.5rem;
+        background-color: var(--color-card-bg);
+        color: var(--color-primary-text);
+        font-size: 0.95rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 0.25rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.9rem;
+        border-radius: 0.5rem;
+        border: 1px solid transparent;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn-primary {
+        background-color: var(--color-button-primary);
+        color: var(--color-card-bg);
+    }
+
+    .btn-primary:hover:enabled {
+        background-color: var(--color-button-hover);
+    }
+
+    .btn-outline {
+        background-color: transparent;
+        border-color: var(--color-border-accent);
+        color: var(--color-primary-text);
+    }
+
+    .btn-outline:hover:enabled {
+        background-color: var(--color-table-row-alt);
+    }
+
+    .btn-danger {
+        background-color: var(--color-accent);
+        color: var(--color-card-bg);
+    }
+
+    .btn-danger:hover:enabled {
+        background-color: var(--color-button-hover);
+    }
+
+    .btn-text {
+        background: transparent;
+        color: var(--color-primary-text);
+        border: none;
+        padding: 0;
+        font-weight: 600;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .alert {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.9rem 1rem;
+        border-radius: 0.6rem;
+        border: 1px solid var(--color-border-accent);
+        background-color: var(--color-card-bg);
+    }
+
+    .alert-success {
+        border-color: var(--color-accent);
+    }
+
+    .alert-error {
+        border-color: var(--color-navbar-bg);
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+
+    .table th,
+    .table td {
+        text-align: left;
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--color-border-accent);
+    }
+
+    .table thead {
+        background-color: var(--color-table-row-alt);
+    }
+
+    .table-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .loading-state,
+    .empty-state {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+        padding: 0.75rem;
+        border: 1px dashed var(--color-border-accent);
+        border-radius: 0.6rem;
+    }
+
+    .detail-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        border: 1px solid var(--color-border-accent);
+        border-radius: 0.6rem;
+        padding: 0.75rem;
+        background-color: var(--color-card-bg);
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .detail-label {
+        font-weight: 600;
+    }
+
+    .confirm-panel {
+        margin-top: 1rem;
+        border: 1px solid var(--color-border-accent);
+        border-radius: 0.6rem;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        background-color: var(--color-card-bg);
+    }
+
+    .confirm-content h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: var(--color-heading-text);
+    }
+
+    .confirm-content p {
+        margin: 0.4rem 0 0;
+        opacity: 0.8;
+    }
+
+    .confirm-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .tree {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .tree-node {
+        padding: 0.4rem 0.6rem;
+        border: 1px solid var(--color-border-accent);
+        border-radius: 0.5rem;
+        background-color: var(--color-card-bg);
+    }
+
+    .tree-children {
+        margin-top: 0.5rem;
+        margin-left: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .spinner {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        border: 2px solid var(--color-border-accent);
+        border-top-color: var(--color-button-primary);
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+</style>
