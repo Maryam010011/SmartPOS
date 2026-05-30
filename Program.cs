@@ -29,6 +29,21 @@ builder.Services.AddScoped<SmartPOS.Shared.Interfaces.ICustomerService, SmartPOS
 // Register Promotion Management Service
 builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IPromotionService, SmartPOS.Services.MaryamJ.PromotionService>();
 
+// Register Product Management Service
+builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IProductService, SmartPOS.Services.MaryamJ.ProductService>();
+
+// Register Category Management Service
+builder.Services.AddScoped<SmartPOS.Shared.Interfaces.ICategoryService, SmartPOS.Services.MaryamJ.CategoryService>();
+
+// Register Inventory Management Service
+builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IInventoryService, SmartPOS.Services.MaryamJ.InventoryService>();
+
+// Register Purchase Order Service
+builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IPurchaseOrderService, SmartPOS.Services.MaryamJ.PurchaseOrderService>();
+
+// Register Weather Service
+builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IWeatherService, SmartPOS.Services.MaryamJ.WeatherService>();
+
 // Enable Web API Controllers
 builder.Services.AddControllers();
 

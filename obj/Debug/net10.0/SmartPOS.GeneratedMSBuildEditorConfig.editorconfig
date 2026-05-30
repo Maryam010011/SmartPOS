@@ -34,6 +34,14 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/ManagerLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFuYWdlckxheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Customers/CustomerFormModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxDdXN0b21lcnNcQ3VzdG9tZXJGb3JtTW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -106,6 +114,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXFByb21vdGlvbnNcUHJvbW90aW9uTGlzdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXF9JbXBvcnRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/NotFound.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xOb3RGb3VuZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -117,10 +129,6 @@ build_metadata.AdditionalFiles.CssScope =
 [E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xfSW1wb3J0cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
-
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/MainLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = b-j1ghlbrrdb
 
 [E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/ReconnectModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcUmVjb25uZWN0TW9kYWwucmF6b3I=

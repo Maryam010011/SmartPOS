@@ -1,8 +1,5 @@
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
-@inject IInventoryService InventoryService
-@using SmartPOS.Shared.Interfaces
-@using SmartPOS.Shared.Common
 
 <div class="app-layout @(IsAdminPage ? "admin-layout" : "")">
     @if (IsAdminPage)
@@ -71,10 +68,6 @@
                         <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
                     </svg>
                     <span>Low Stock Alerts</span>
-                    @if (LowStockBadgeCount > 0)
-                    {
-                        <span class="badge bg-danger ms-auto">@LowStockBadgeCount</span>
-                    }
                 </NavLink>
             </nav>
 
@@ -103,25 +96,4 @@
 @code {
     private bool IsAdminPage => Navigation.Uri.Contains("/admin/", StringComparison.OrdinalIgnoreCase)
                                 || Navigation.Uri.Contains("/manager/", StringComparison.OrdinalIgnoreCase);
-
-    private int LowStockBadgeCount;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadLowStockCount();
-    }
-
-    private async Task LoadLowStockCount()
-    {
-        try
-        {
-            var result = await InventoryService.GetLowStock();
-            if (result.Success && result.Data != null)
-                LowStockBadgeCount = result.Data.Count;
-        }
-        catch
-        {
-            LowStockBadgeCount = 0;
-        }
-    }
 }

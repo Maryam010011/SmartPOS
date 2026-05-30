@@ -15,7 +15,6 @@ E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\SmartPOS.so
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\rjimswa.dswa.cache.json
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
-E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\scopedcss\Components\Layout\MainLayout.razor.rz.scp.css
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\scopedcss\Components\Layout\ReconnectModal.razor.rz.scp.css
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\scopedcss\bundle\SmartPOS.styles.css
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\scopedcss\projectbundle\SmartPOS.bundle.scp.css
@@ -160,6 +159,6 @@ E:\4th semester\VP theory\VP Project\pro1\SmartPOS\bin\Debug\net10.0\runtimes\wi
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\SmartPOS.csproj.AssemblyReference.cache
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\SmartPOS.csproj.Up2Date
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\bin\Debug\net10.0\BCrypt-Net-Next.dll
-E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\yibno2f1mp-{0}-786755d0rm-786755d0rm.gz
-E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\8o8pgynyin-{0}-hksnq19j53-hksnq19j53.gz
-E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\wrx5r1mxb7-{0}-hksnq19j53-hksnq19j53.gz
+E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\yibno2f1mp-{0}-5e1zwugv1u-5e1zwugv1u.gz
+E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\8o8pgynyin-{0}-pbgj6pzijo-pbgj6pzijo.gz
+E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\wrx5r1mxb7-{0}-pbgj6pzijo-pbgj6pzijo.gz
