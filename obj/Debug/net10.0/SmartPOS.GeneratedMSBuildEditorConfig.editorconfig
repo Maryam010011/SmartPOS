@@ -34,6 +34,18 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/AdminLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQWRtaW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/CashierLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQ2FzaGllckxheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/CustomerLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQ3VzdG9tZXJMYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -136,6 +148,14 @@ build_metadata.AdditionalFiles.CssScope =
 
 [E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Routes.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSb3V0ZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Shared/Footer.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRm9vdGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Shared/NavBar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcTmF2QmFyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/_Imports.razor]

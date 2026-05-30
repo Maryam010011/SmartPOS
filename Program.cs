@@ -42,7 +42,7 @@ builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IInventoryService, SmartPO
 builder.Services.AddScoped<SmartPOS.Shared.Interfaces.ISupplierService, SmartPOS.Services.MaryamJ.SupplierService>();
 
 // Register Purchase Order Service
-builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IPurchaseOrderService, SmartPOS.Services.MaryamJ.PurchaseOrderService>();
+builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IPurchaseOrderService, SmartPOS.Services.MaryamY.PurchaseOrderService>();
 
 // Register Weather Service
 builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IWeatherService, SmartPOS.Services.MaryamJ.WeatherService>();

@@ -757,6 +757,11 @@ namespace SmartPOS.Shared.DTOs.PurchaseOrders
         public string Notes { get; set; } = string.Empty;
         public List<POLineItemDto> LineItems { get; set; } = new();
     }
+
+    public class ReceiveRequest
+    {
+        public int UserId { get; set; }
+    }
 }
 
 namespace SmartPOS.Shared.DTOs.Weather

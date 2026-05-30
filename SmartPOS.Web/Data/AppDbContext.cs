@@ -29,6 +29,8 @@ namespace SmartPOS.Web.Data
 
         // ── DbSets — Maryam Yaqoob's Models ──
         public DbSet<Inventory> Inventory { get; set; } = null!;
+        public DbSet<PurchaseOrder> PurchaseOrders { get; set; } = null!;
+        public DbSet<POLineItem> POLineItems { get; set; } = null!;
 
         // ── DbSets — Maryam Jahangir's Models ──
         public DbSet<User> Users { get; set; } = null!;
@@ -164,6 +166,43 @@ namespace SmartPOS.Web.Data
                 entity.HasOne(i => i.Product)
                       .WithMany()
                       .HasForeignKey(i => i.ProductId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ─────────────────────────────────────────────────
+            // PurchaseOrder → Supplier FK (optional, set null)
+            // PurchaseOrder → User FK (required, restrict)
+            // ─────────────────────────────────────────────────
+            modelBuilder.Entity<PurchaseOrder>(entity =>
+            {
+                entity.HasOne(po => po.Supplier)
+                      .WithMany()
+                      .HasForeignKey(po => po.SupplierId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(po => po.User)
+                      .WithMany()
+                      .HasForeignKey(po => po.UserId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(po => po.LineItems)
+                      .WithOne(li => li.PO)
+                      .HasForeignKey(li => li.POID)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ─────────────────────────────────────────────────
+            // POLineItem → Product FK (required, restrict)
+            // ─────────────────────────────────────────────────
+            modelBuilder.Entity<POLineItem>(entity =>
+            {
+                entity.HasOne(li => li.Product)
+                      .WithMany()
+                      .HasForeignKey(li => li.ProductId)
                       .IsRequired()
                       .OnDelete(DeleteBehavior.Restrict);
             });

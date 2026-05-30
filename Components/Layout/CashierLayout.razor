@@ -1,0 +1,22 @@
+@inherits LayoutComponentBase
+
+<NavBar />
+<div class="layout-wrapper">
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+            <NavLink class="nav-item" href="/cashier/pos" Match="NavLinkMatch.Prefix">
+                🖥 <span>POS Terminal</span>
+            </NavLink>
+            <NavLink class="nav-item" href="/cashier/sales-history" Match="NavLinkMatch.Prefix">
+                📜 <span>Sales History</span>
+            </NavLink>
+            <NavLink class="nav-item" href="/cashier/customer-lookup" Match="NavLinkMatch.Prefix">
+                👤 <span>Customer Lookup</span>
+            </NavLink>
+        </nav>
+    </aside>
+    <main class="main-content">
+        @Body
+    </main>
+</div>
+<Footer />

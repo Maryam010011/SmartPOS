@@ -1,0 +1,24 @@
+@inherits LayoutComponentBase
+
+<NavBar />
+<div class="customer-top-nav">
+    <NavLink class="customer-nav-link" href="/customer/shop" Match="NavLinkMatch.Prefix">
+        🏠 Home
+    </NavLink>
+    <NavLink class="customer-nav-link" href="/customer/shop" Match="NavLinkMatch.Prefix">
+        🛍 Shop
+    </NavLink>
+    <NavLink class="customer-nav-link" href="/customer/cart" Match="NavLinkMatch.Prefix">
+        🛒 Cart
+    </NavLink>
+    <NavLink class="customer-nav-link" href="/customer/orders" Match="NavLinkMatch.Prefix">
+        📦 Orders
+    </NavLink>
+    <NavLink class="customer-nav-link" href="/customer/profile" Match="NavLinkMatch.Prefix">
+        👤 Profile
+    </NavLink>
+</div>
+<main class="main-content" style="margin-left: 0; padding: 1.5rem; background: var(--color-page-bg); min-height: calc(100vh - 56px - 40px - 48px);">
+    @Body
+</main>
+<Footer />
