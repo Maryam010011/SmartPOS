@@ -32,8 +32,12 @@ builder.Services.AddScoped<IBERTService,        BERTService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IWeatherService,     WeatherService>();
 
+// ─── MaryamY's Service Registrations ──────────────────────────
+builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
 
 var app = builder.Build();
 
