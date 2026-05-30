@@ -38,6 +38,9 @@ builder.Services.AddScoped<SmartPOS.Shared.Interfaces.ICategoryService, SmartPOS
 // Register Inventory Management Service
 builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IInventoryService, SmartPOS.Services.MaryamJ.InventoryService>();
 
+// Register Supplier Service
+builder.Services.AddScoped<SmartPOS.Shared.Interfaces.ISupplierService, SmartPOS.Services.MaryamJ.SupplierService>();
+
 // Register Purchase Order Service
 builder.Services.AddScoped<SmartPOS.Shared.Interfaces.IPurchaseOrderService, SmartPOS.Services.MaryamJ.PurchaseOrderService>();
 
