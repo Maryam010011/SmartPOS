@@ -199,6 +199,25 @@ namespace SmartPOS.Web.Data
                 context.Promotions.AddRange(promotions);
                 await context.SaveChangesAsync();
             }
+
+            // ── Seed Inventory (only if none exist) ──
+            if (!context.Inventory.Any())
+            {
+                var inventoryRecords = new List<Inventory>
+                {
+                    new() { ProductId = 1, Quantity = 142, ReorderLevel = 20, LastUpdated = DateTime.UtcNow },
+                    new() { ProductId = 2, Quantity = 4,   ReorderLevel = 15, LastUpdated = DateTime.UtcNow },
+                    new() { ProductId = 3, Quantity = 0,   ReorderLevel = 30, LastUpdated = DateTime.UtcNow },
+                    new() { ProductId = 4, Quantity = 88,  ReorderLevel = 25, LastUpdated = DateTime.UtcNow },
+                    new() { ProductId = 5, Quantity = 6,   ReorderLevel = 20, LastUpdated = DateTime.UtcNow },
+                    new() { ProductId = 6, Quantity = 54,  ReorderLevel = 15, LastUpdated = DateTime.UtcNow },
+                    new() { ProductId = 7, Quantity = 12,  ReorderLevel = 25, LastUpdated = DateTime.UtcNow },
+                    new() { ProductId = 8, Quantity = 63,  ReorderLevel = 20, LastUpdated = DateTime.UtcNow },
+                };
+
+                context.Inventory.AddRange(inventoryRecords);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

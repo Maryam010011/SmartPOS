@@ -348,15 +348,15 @@
     private bool IsLoadingWizard;
     private bool IsSubmitting;
 
-    private List<SupplierDto>? Suppliers;
-    private List<ProductDto>? AllProducts;
+    private List<SupplierDto> Suppliers = new();
+    private List<ProductDto> AllProducts = new();
 
     private int SelectedSupplierId;
     private string SelectedSupplierName = string.Empty;
     private string Notes = string.Empty;
 
     private string ProductSearchTerm = string.Empty;
-    private List<ProductDto>? FilteredProducts;
+    private List<ProductDto>? FilteredProducts = null;
     private int SelectedProductId;
     private string SelectedProductName = string.Empty;
     private int NewItemQty = 1;
@@ -428,7 +428,7 @@
             return;
         }
         var term = ProductSearchTerm.Trim().ToLower();
-        FilteredProducts = AllProducts?
+        FilteredProducts = AllProducts
             .Where(p => p.IsActive && (
                 p.Name.ToLower().Contains(term) ||
                 p.SKU.ToLower().Contains(term)))

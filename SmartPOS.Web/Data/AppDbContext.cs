@@ -27,6 +27,9 @@ namespace SmartPOS.Web.Data
         public DbSet<SaleItem> SaleItems { get; set; } = null!;
         public DbSet<Review> Reviews { get; set; } = null!;
 
+        // ── DbSets — Maryam Yaqoob's Models ──
+        public DbSet<Inventory> Inventory { get; set; } = null!;
+
         // ── DbSets — Maryam Jahangir's Models ──
         public DbSet<User> Users { get; set; } = null!;
         public DbSet<Role> Roles { get; set; } = null!;
@@ -147,6 +150,22 @@ namespace SmartPOS.Web.Data
             {
                 entity.HasIndex(p => p.Code)
                       .IsUnique();
+            });
+
+            // ─────────────────────────────────────────────────
+            // Inventory — Unique index on ProductId (1:1),
+            //             FK → Products with restrict delete
+            // ─────────────────────────────────────────────────
+            modelBuilder.Entity<Inventory>(entity =>
+            {
+                entity.HasIndex(i => i.ProductId)
+                      .IsUnique();
+
+                entity.HasOne(i => i.Product)
+                      .WithMany()
+                      .HasForeignKey(i => i.ProductId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             // ─────────────────────────────────────────────────

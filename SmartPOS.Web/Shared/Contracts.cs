@@ -709,6 +709,18 @@ namespace SmartPOS.Shared.DTOs.Inventory
         public int Quantity { get; set; }
         public string Reason { get; set; } = string.Empty;
     }
+
+    public class AddStockRequest
+    {
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+    }
+
+    public class DeductStockRequest
+    {
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+    }
 }
 
 namespace SmartPOS.Shared.DTOs.PurchaseOrders
