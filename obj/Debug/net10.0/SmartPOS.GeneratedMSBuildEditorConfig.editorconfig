@@ -82,6 +82,18 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Inventory/InventoryDashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXEludmVudG9yeVxJbnZlbnRvcnlEYXNoYm9hcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Inventory/LowStockAlerts.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXEludmVudG9yeVxMb3dTdG9ja0FsZXJ0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Inventory/StockAdjustModal.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXEludmVudG9yeVxTdG9ja0FkanVzdE1vZGFsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Promotions/PromotionAnalyticsModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXFByb21vdGlvbnNcUHJvbW90aW9uQW5hbHl0aWNzTW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 

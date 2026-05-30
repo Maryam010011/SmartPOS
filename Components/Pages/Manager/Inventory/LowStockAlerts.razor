@@ -1,0 +1,183 @@
+@page "/manager/inventory/low-stock"
+@using SmartPOS.Shared.DTOs.Inventory
+@using SmartPOS.Shared.DTOs.Products
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@inject IInventoryService InventoryService
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<div class="container-fluid py-4" style="background-color: var(--color-page-bg); min-height: 100vh;">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: var(--color-button-primary);">Low Stock Alerts</h2>
+            <p class="text-muted m-0">Products that need immediate restocking attention.</p>
+        </div>
+        <a href="/manager/inventory" class="btn btn-outline-burnt-orange d-flex align-items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+            </svg>
+            <span>Back to Dashboard</span>
+        </a>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" style="color: var(--color-button-primary);" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mt-2">Loading low stock items...</p>
+        </div>
+    }
+    else
+    {
+        <!-- Alert Banner -->
+        <div class="alert d-flex align-items-center gap-3 py-3 px-4 mb-4 border-0 rounded-3" style="background-color: #CC5500; color: white;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" class="flex-shrink-0">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+            </svg>
+            <div>
+                <strong class="fs-5">@LowStockItems?.Count ?? 0 products need restocking</strong>
+                <div class="small opacity-75">These items are below their reorder level and require immediate attention.</div>
+            </div>
+        </div>
+
+        @if (LowStockItems == null || !LowStockItems.Any())
+        {
+            <div class="text-center py-5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="text-muted mb-3" viewBox="0 0 16 16">
+                    <path d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0"/>
+                    <path d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0z"/>
+                </svg>
+                <p class="text-muted fw-semibold mb-1">All stocked up!</p>
+                <p class="text-muted small m-0">No products are below their reorder level.</p>
+            </div>
+        }
+        else
+        {
+            <!-- Low Stock Table -->
+            <div class="card card-pos">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-pos align-middle m-0 table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="padding-left: 20px;">Product Name</th>
+                                    <th>Current Qty</th>
+                                    <th>Reorder Level</th>
+                                    <th>Shortage</th>
+                                    <th>Supplier</th>
+                                    <th class="text-end" style="padding-right: 20px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in LowStockItems)
+                                {
+                                    var product = GetProduct(item.ProductId);
+                                    var shortage = item.ReorderLevel - item.Quantity;
+                                    <tr>
+                                        <td style="padding-left: 20px;">
+                                            <span class="fw-bold text-dark">@item.ProductName</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-semibold @(item.Quantity == 0 ? "text-danger" : "text-dark")">
+                                                @item.Quantity
+                                            </span>
+                                        </td>
+                                        <td class="text-muted">@item.ReorderLevel</td>
+                                        <td>
+                                            <span class="fw-bold" style="color: #CC5500;">@shortage</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">@(product?.SupplierName ?? "-")</span>
+                                        </td>
+                                        <td class="text-end" style="padding-right: 20px;">
+                                            <button class="btn btn-burnt-orange btn-sm d-inline-flex align-items-center gap-1"
+                                                    @onclick="() => RaisePO(item.ProductId)">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M3 4.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5zM5 6v1h6V6zm0 2v1h4V8zm0 2v1h6v-1z"/>
+                                                    <path d="M2 2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zm0 1h12v10H2z"/>
+                                                </svg>
+                                                Raise PO
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    private List<InventoryDto>? LowStockItems;
+    private List<ProductDto>? AllProducts;
+    private Dictionary<int, ProductDto>? ProductLookup;
+    private bool IsLoading = true;
+
+    protected override async Task OnInitializedAsync() => await LoadData();
+
+    private async Task LoadData()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var lowStockTask = InventoryService.GetLowStock();
+            var prodTask = ProductService.GetAll();
+
+            await Task.WhenAll(lowStockTask, prodTask);
+
+            var lowStockResult = await lowStockTask;
+            var prodResult = await prodTask;
+
+            if (lowStockResult.Success && lowStockResult.Data != null)
+                LowStockItems = lowStockResult.Data
+                    .OrderByDescending(i => i.ReorderLevel - i.Quantity)
+                    .ToList();
+            else
+                LowStockItems = new List<InventoryDto>();
+
+            if (prodResult.Success && prodResult.Data != null)
+            {
+                AllProducts = prodResult.Data;
+                ProductLookup = AllProducts.ToDictionary(p => p.Id, p => p);
+            }
+            else
+            {
+                AllProducts = new List<ProductDto>();
+                ProductLookup = new Dictionary<int, ProductDto>();
+            }
+        }
+        catch
+        {
+            LowStockItems = new List<InventoryDto>();
+            AllProducts = new List<ProductDto>();
+            ProductLookup = new Dictionary<int, ProductDto>();
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private ProductDto? GetProduct(int productId)
+    {
+        if (ProductLookup != null && ProductLookup.TryGetValue(productId, out var product))
+            return product;
+        return null;
+    }
+
+    private void RaisePO(int productId)
+    {
+        Navigation.NavigateTo($"/manager/purchase-orders/create?productId={productId}");
+    }
+}
