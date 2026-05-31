@@ -32,6 +32,9 @@ builder.Services.AddScoped<IBERTService,        BERTService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IWeatherService,     WeatherService>();
 
+// ─── Shared Cart State (Scoped = per Blazor Server circuit / user session) ───
+builder.Services.AddScoped<CartStateService>();
+
 // ─── MaryamY's Service Registrations ──────────────────────────
 builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 

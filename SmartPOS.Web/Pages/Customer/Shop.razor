@@ -4,6 +4,10 @@
 
 @inject IProductService ProductService
 @inject ICategoryService CategoryService
+@inject CartStateService CartState
+@inject NavigationManager NavigationManager
+
+@implements IDisposable
 
 
 <PageTitle>Shop — SmartPOS+ Bakery</PageTitle>
@@ -221,7 +225,7 @@
         <button id="cart-close-btn" class="cart-close" @onclick="ToggleCart">&#10005;</button>
     </div>
 
-    @if (_cartItems.Count == 0)
+    @if (CartState.Count == 0)
     {
         <div class="cart-empty">
             <div class="cart-empty-icon">🛒</div>
@@ -232,7 +236,7 @@
     else
     {
         <div class="cart-items-list">
-            @foreach (var item in _cartItems)
+            @foreach (var item in CartState.Items)
             {
                 <div class="cart-item" id="cart-item-@item.Product.Id">
                     <div class="cart-item-img-wrap">
@@ -272,7 +276,7 @@
             <div class="cart-summary-row cart-summary-note">
                 <span>Tax &amp; delivery calculated at checkout</span>
             </div>
-            <button id="checkout-btn" class="btn-checkout">Proceed to Checkout →</button>
+            <button id="checkout-btn" class="btn-checkout" @onclick="NavigateToCheckout">Proceed to Checkout →</button>
             <button class="btn-clear-cart" @onclick="ClearCart">Clear Cart</button>
         </div>
     }
@@ -1377,8 +1381,7 @@
     private string  _searchTerm     = string.Empty;
     private int     _selectedCategoryId = 0;   // 0 = All
 
-    /* ── Cart State (in-component) ── */
-    private List<CartItem> _cartItems = new();
+    /* ── Cart State ── */
     private bool           _showCart  = false;
 
     /* ── Modal State ── */
@@ -1391,8 +1394,16 @@
        ══════════════════════════════════════════════ */
     protected override async Task OnInitializedAsync()
     {
+        CartState.OnCartChanged += HandleCartChanged;
         await LoadCategories();
         await LoadProducts();
+    }
+
+    private void HandleCartChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        CartState.OnCartChanged -= HandleCartChanged;
     }
 
     /* ══════════════════════════════════════════════
@@ -1487,33 +1498,26 @@
        ══════════════════════════════════════════════ */
     private void AddToCart(ProductDto product, int qty = 1)
     {
-        var existing = _cartItems.FirstOrDefault(c => c.Product.Id == product.Id);
-        if (existing is not null)
-            existing.Quantity += qty;
-        else
-            _cartItems.Add(new CartItem { Product = product, Quantity = qty });
-
+        CartState.AddItem(product, qty);
         _showCart = true;   // open cart drawer on add
     }
 
     private void RemoveFromCart(int productId)
-        => _cartItems.RemoveAll(c => c.Product.Id == productId);
+        => CartState.RemoveItem(productId);
 
     private void UpdateQuantity(int productId, int delta)
-    {
-        var item = _cartItems.FirstOrDefault(c => c.Product.Id == productId);
-        if (item is null) return;
+        => CartState.UpdateQuantity(productId, delta);
 
-        item.Quantity += delta;
-        if (item.Quantity <= 0)
-            _cartItems.Remove(item);
-    }
-
-    private void ClearCart()  => _cartItems.Clear();
+    private void ClearCart()  => CartState.Clear();
     private void ToggleCart() => _showCart = !_showCart;
 
-    private decimal CartTotal => _cartItems.Sum(c => c.Product.Price * c.Quantity);
-    private int     CartCount => _cartItems.Sum(c => c.Quantity);
+    private void NavigateToCheckout()
+    {
+        NavigationManager.NavigateTo("/customer/cart");
+    }
+
+    private decimal CartTotal => CartState.SubTotal;
+    private int     CartCount => CartState.Count;
 
     /* ══════════════════════════════════════════════
        HELPERS
@@ -1535,10 +1539,5 @@
     private static string TruncateDesc(string text, int max)
         => text.Length <= max ? text : text[..max].TrimEnd() + "…";
 
-    /* ── Local cart item record ── */
-    private sealed class CartItem
-    {
-        public ProductDto Product  { get; set; } = new();
-        public int        Quantity { get; set; } = 1;
-    }
+
 }
