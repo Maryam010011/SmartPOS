@@ -1,0 +1,1117 @@
+@page "/customer/home"
+@rendermode InteractiveServer
+@layout AdminLayout
+
+@inject IProductService    ProductService
+@inject ICategoryService   CategoryService
+@inject CartStateService   CartState
+@inject NavigationManager  NavigationManager
+
+<PageTitle>Home — SmartPOS+ Bakery</PageTitle>
+
+<!-- ══════════════════════════════════════════════════════════════
+     HERO SECTION  (purely static — no service calls needed)
+     ══════════════════════════════════════════════════════════════ -->
+<section class="home-hero">
+    <div class="hero-inner">
+        <div class="hero-text-col">
+            <span class="hero-eyebrow">🥐 Fresh From the Oven</span>
+            <h1 class="hero-headline">
+                Artisan Baked Goods,<br />
+                <span class="hero-headline-accent">Delivered to You.</span>
+            </h1>
+            <p class="hero-subline">
+                Hand-crafted breads, decadent pastries, and seasonal cakes—baked fresh every
+                morning and waiting for you at SmartPOS+ Bakery.
+            </p>
+            <div class="hero-cta-row">
+                <button id="hero-shop-btn"
+                        class="btn-hero-primary"
+                        @onclick="NavigateToShop">
+                    Shop Now &rarr;
+                </button>
+                <button id="hero-orders-btn"
+                        class="btn-hero-ghost"
+                        @onclick="NavigateToOrders">
+                    My Orders
+                </button>
+            </div>
+        </div>
+
+        <div class="hero-visual-col">
+            <div class="hero-badge-ring">
+                <div class="hero-badge-inner">
+                    <span class="hero-badge-icon">🎂</span>
+                    <span class="hero-badge-label">Fresh Daily</span>
+                </div>
+            </div>
+            <!-- Floating stat chips -->
+            <div class="hero-chip hero-chip--top">
+                <span class="chip-icon">⭐</span>
+                <div class="chip-text">
+                    <span class="chip-value">4.9</span>
+                    <span class="chip-label">Rating</span>
+                </div>
+            </div>
+            <div class="hero-chip hero-chip--bottom">
+                <span class="chip-icon">🛒</span>
+                <div class="chip-text">
+                    <span class="chip-value">1,200+</span>
+                    <span class="chip-label">Happy Customers</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decorative wave separator -->
+    <div class="hero-wave">
+        <svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="var(--color-page-bg)" />
+        </svg>
+    </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     CATEGORY BROWSING SECTION
+     ══════════════════════════════════════════════════════════════ -->
+<section class="home-section home-section--categories">
+    <div class="section-header">
+        <h2 class="section-title">Browse by Category</h2>
+        <p class="section-subtitle">Find exactly what you're craving</p>
+    </div>
+
+    @if (_loadingCategories)
+    {
+        <div class="cat-grid">
+            @for (int i = 0; i < 6; i++)
+            {
+                <div class="cat-card cat-card--skeleton">
+                    <div class="skeleton cat-skel-img"></div>
+                    <div class="skeleton cat-skel-name"></div>
+                </div>
+            }
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(_categoryError))
+    {
+        <div class="section-error">
+            <span>⚠️ @_categoryError</span>
+        </div>
+    }
+    else if (_categories.Count == 0)
+    {
+        <div class="section-empty">
+            <span class="empty-icon">🗂</span>
+            <p>No categories available yet. Check back soon!</p>
+        </div>
+    }
+    else
+    {
+        <div class="cat-grid">
+            @foreach (var cat in _categories)
+            {
+                <button id="cat-tile-@cat.Id"
+                        class="cat-card"
+                        @onclick="@(() => BrowseCategory(cat.Id))">
+                    <div class="cat-card-img-wrap">
+                        @if (!string.IsNullOrEmpty(cat.ImageURL))
+                        {
+                            <img src="@cat.ImageURL"
+                                 class="cat-card-img"
+                                 alt="@cat.Name"
+                                 loading="lazy"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                            <div class="cat-card-fallback" style="display:none;">🗂</div>
+                        }
+                        else
+                        {
+                            <div class="cat-card-fallback">🥖</div>
+                        }
+                    </div>
+                    <span class="cat-card-name">@cat.Name</span>
+                    @if (cat.SubCategories.Count > 0)
+                    {
+                        <span class="cat-card-sub">@cat.SubCategories.Count sub-categories</span>
+                    }
+                </button>
+            }
+        </div>
+    }
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     FEATURED PRODUCTS SECTION
+     ══════════════════════════════════════════════════════════════ -->
+<section class="home-section home-section--products">
+    <div class="section-header">
+        <div class="section-header-left">
+            <h2 class="section-title">Featured Products</h2>
+            <p class="section-subtitle">Our most loved bakes, freshly curated</p>
+        </div>
+        <button id="view-all-btn"
+                class="btn-view-all"
+                @onclick="NavigateToShop">
+            View All &rarr;
+        </button>
+    </div>
+
+    @if (_loadingProducts)
+    {
+        <div class="product-grid">
+            @for (int i = 0; i < 8; i++)
+            {
+                <div class="product-card product-card--skeleton">
+                    <div class="skeleton prod-skel-img"></div>
+                    <div class="prod-skel-body">
+                        <div class="skeleton prod-skel-category"></div>
+                        <div class="skeleton prod-skel-title"></div>
+                        <div class="skeleton prod-skel-desc"></div>
+                        <div class="skeleton prod-skel-price"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(_productError))
+    {
+        <div class="section-error">
+            <span>⚠️ @_productError</span>
+        </div>
+    }
+    else if (_featuredProducts.Count == 0)
+    {
+        <div class="section-empty">
+            <span class="empty-icon">🧁</span>
+            <p>No products to show right now. Come back soon!</p>
+        </div>
+    }
+    else
+    {
+        <div class="product-grid">
+            @foreach (var product in _featuredProducts)
+            {
+                <article id="home-product-@product.Id" class="product-card">
+
+                    <!-- Image Container -->
+                    <div class="product-card-img-wrap">
+                        @if (!string.IsNullOrEmpty(product.ImageURL))
+                        {
+                            <img src="@product.ImageURL"
+                                 class="product-card-img"
+                                 alt="@product.Name"
+                                 loading="lazy"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                            <div class="product-card-img-fallback" style="display:none;">🥖</div>
+                        }
+                        else
+                        {
+                            <div class="product-card-img-fallback">🥖</div>
+                        }
+
+                        <!-- Stock badge -->
+                        @if (product.CurrentStock == 0)
+                        {
+                            <span class="stock-badge stock-badge--out">Out of Stock</span>
+                        }
+                        else if (product.CurrentStock <= 10)
+                        {
+                            <span class="stock-badge stock-badge--low">Low Stock</span>
+                        }
+                        else
+                        {
+                            <span class="stock-badge stock-badge--in">In Stock</span>
+                        }
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="product-card-body">
+                        <span class="product-card-category">@product.CategoryName</span>
+                        <h3 class="product-card-title" title="@product.Name">@product.Name</h3>
+                        @if (!string.IsNullOrEmpty(product.Description))
+                        {
+                            <p class="product-card-desc">
+                                @TruncateDescription(product.Description, 65)
+                            </p>
+                        }
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="product-card-footer">
+                        <span class="product-card-price">Rs. @product.Price.ToString("N0")</span>
+
+                        <!-- ─────────────────────────────────────────────────────────────────
+                             UI-ONLY PLACEHOLDER: The @onclick below is wired to a local stub
+                             method. Real CartStateService integration (CartState.AddItem, etc.)
+                             will be connected here in the next UI sprint once cart state wiring
+                             is fully aligned with the CartStateService circuit lifecycle.
+                             ─────────────────────────────────────────────────────────────────  -->
+                        <button id="atc-home-@product.Id"
+                                class="btn-add-to-cart @(product.CurrentStock == 0 ? "btn-add-to-cart--disabled" : "")"
+                                disabled="@(product.CurrentStock == 0)"
+                                @onclick="@(() => AddToCartPlaceholder(product))">
+                            @if (product.CurrentStock == 0)
+                            {
+                                <span>Unavailable</span>
+                            }
+                            else
+                            {
+                                <span>+ Cart</span>
+                            }
+                        </button>
+                    </div>
+                </article>
+            }
+        </div>
+    }
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     PROMOTIONAL BANNER  (static marketing strip)
+     ══════════════════════════════════════════════════════════════ -->
+<section class="home-promo-strip">
+    <div class="promo-strip-inner">
+        <div class="promo-item">
+            <span class="promo-icon">🚀</span>
+            <div>
+                <strong>Fast Pickup</strong>
+                <span>Order ready in 15 minutes</span>
+            </div>
+        </div>
+        <div class="promo-divider"></div>
+        <div class="promo-item">
+            <span class="promo-icon">🎁</span>
+            <div>
+                <strong>Loyalty Rewards</strong>
+                <span>Earn points on every order</span>
+            </div>
+        </div>
+        <div class="promo-divider"></div>
+        <div class="promo-item">
+            <span class="promo-icon">🧁</span>
+            <div>
+                <strong>Daily Specials</strong>
+                <span>New items baked fresh daily</span>
+            </div>
+        </div>
+        <div class="promo-divider"></div>
+        <div class="promo-item">
+            <span class="promo-icon">💳</span>
+            <div>
+                <strong>Easy Checkout</strong>
+                <span>Cash, card & online payment</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+@code {
+    // ── State ──────────────────────────────────────────────────
+    private List<CategoryDto>  _categories       = new();
+    private List<ProductDto>   _featuredProducts = new();
+
+    private bool   _loadingCategories = true;
+    private bool   _loadingProducts   = true;
+
+    private string? _categoryError;
+    private string? _productError;
+
+    // ── Lifecycle ───────────────────────────────────────────────
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadCategoriesAsync(), LoadFeaturedProductsAsync());
+    }
+
+    // ── Data Loaders ────────────────────────────────────────────
+    private async Task LoadCategoriesAsync()
+    {
+        _loadingCategories = true;
+        try
+        {
+            var result = await CategoryService.GetAll();
+            if (result.Success && result.Data is not null)
+                _categories = result.Data;
+            else
+                _categoryError = result.Message;
+        }
+        catch (Exception ex)
+        {
+            _categoryError = $"Failed to load categories: {ex.Message}";
+        }
+        finally
+        {
+            _loadingCategories = false;
+        }
+    }
+
+    private async Task LoadFeaturedProductsAsync()
+    {
+        _loadingProducts = true;
+        try
+        {
+            var result = await ProductService.GetAll();
+            if (result.Success && result.Data is not null)
+            {
+                // Show only the first 8 active products as "featured" on the homepage
+                _featuredProducts = result.Data
+                    .Where(p => p.IsActive)
+                    .Take(8)
+                    .ToList();
+            }
+            else
+            {
+                _productError = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            _productError = $"Failed to load products: {ex.Message}";
+        }
+        finally
+        {
+            _loadingProducts = false;
+        }
+    }
+
+    // ── UI Event Handlers ───────────────────────────────────────
+    private void NavigateToShop()
+        => NavigationManager.NavigateTo("/customer/shop");
+
+    private void NavigateToOrders()
+        => NavigationManager.NavigateTo("/customer/orders");
+
+    private void BrowseCategory(int categoryId)
+        => NavigationManager.NavigateTo($"/customer/shop?category={categoryId}");
+
+    // ── Cart Placeholder ────────────────────────────────────────
+    /// <summary>
+    /// UI-ONLY PLACEHOLDER — Add to Cart stub.
+    /// TODO: Wire real CartStateService.AddItem(product) here once cart state
+    ///       integration is finalized. CartState is already injected and ready.
+    /// </summary>
+    private void AddToCartPlaceholder(ProductDto product)
+    {
+        // Placeholder: real implementation will call CartState.AddItem(product)
+        // CartState.AddItem(product);
+        // StateHasChanged();
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────
+    private static string TruncateDescription(string text, int maxLength)
+        => text.Length <= maxLength ? text : text[..maxLength].TrimEnd() + "…";
+}
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCOPED STYLES  (all colors via colors.css variables)
+     ══════════════════════════════════════════════════════════════ -->
+<style>
+    /* ── Google Font ── */
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@@300;400;500;600;700;800&display=swap');
+
+    /* ── Root reset for this page ── */
+    .home-hero *,
+    .home-section *,
+    .home-promo-strip * {
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       HERO SECTION
+       ════════════════════════════════════════════════════════════ */
+    .home-hero {
+        position: relative;
+        background: var(--color-navbar-bg);
+        overflow: hidden;
+        padding-bottom: 0;
+    }
+
+    /* Subtle radial glow behind the text col */
+    .home-hero::before {
+        content: '';
+        position: absolute;
+        top: -60px;
+        left: -80px;
+        width: 480px;
+        height: 480px;
+        background: radial-gradient(circle, rgba(196,132,138,.25) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .hero-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2.5rem;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 4.5rem 3rem 5rem;
+    }
+
+    /* ── Text Column ── */
+    .hero-text-col {
+        flex: 1;
+        max-width: 580px;
+    }
+
+    .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .8rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--color-button-primary);
+        background: rgba(196,132,138,.15);
+        border: 1px solid rgba(196,132,138,.3);
+        border-radius: 50px;
+        padding: .3rem .9rem;
+        margin-bottom: 1.4rem;
+    }
+
+    .hero-headline {
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 800;
+        line-height: 1.18;
+        color: var(--color-page-bg);
+        margin: 0 0 1rem;
+    }
+
+    .hero-headline-accent {
+        color: var(--color-button-primary);
+    }
+
+    .hero-subline {
+        font-size: 1.05rem;
+        font-weight: 400;
+        line-height: 1.65;
+        color: rgba(255,248,220,.65);
+        margin: 0 0 2rem;
+        max-width: 460px;
+    }
+
+    /* CTA Buttons */
+    .hero-cta-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-hero-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: .85rem 2rem;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: .3px;
+        transition: background .18s, transform .12s, box-shadow .18s;
+        box-shadow: 0 4px 18px rgba(196,132,138,.35);
+    }
+
+    .btn-hero-primary:hover {
+        background: var(--color-button-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(196,132,138,.45);
+    }
+
+    .btn-hero-ghost {
+        display: inline-flex;
+        align-items: center;
+        background: transparent;
+        color: var(--color-page-bg);
+        border: 2px solid rgba(255,248,220,.35);
+        border-radius: 12px;
+        padding: .83rem 1.75rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color .18s, background .18s, transform .12s;
+    }
+
+    .btn-hero-ghost:hover {
+        border-color: var(--color-button-primary);
+        background: rgba(196,132,138,.12);
+        transform: translateY(-2px);
+    }
+
+    /* ── Visual Column ── */
+    .hero-visual-col {
+        flex-shrink: 0;
+        position: relative;
+        width: 260px;
+        height: 260px;
+    }
+
+    .hero-badge-ring {
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        border: 3px solid rgba(196,132,138,.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-50%);
+        animation: hero-pulse 4s ease-in-out infinite;
+    }
+
+    @@keyframes hero-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(196,132,138,.25); }
+        50%       { box-shadow: 0 0 0 20px rgba(196,132,138,0); }
+    }
+
+    .hero-badge-inner {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(196,132,138,.3) 0%, rgba(61,28,2,.5) 100%);
+        border: 2px solid rgba(196,132,138,.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+    }
+
+    .hero-badge-icon {
+        font-size: 3.5rem;
+        line-height: 1;
+    }
+
+    .hero-badge-label {
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--color-button-primary);
+    }
+
+    /* Floating stat chips */
+    .hero-chip {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        background: rgba(255,248,220,.12);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255,248,220,.2);
+        border-radius: 14px;
+        padding: .6rem 1rem;
+        white-space: nowrap;
+    }
+
+    .hero-chip--top  { top: 0;   right: -20px; }
+    .hero-chip--bottom { bottom: 0; left: -20px; }
+
+    .chip-icon { font-size: 1.3rem; }
+
+    .chip-text {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }
+
+    .chip-value {
+        font-size: .95rem;
+        font-weight: 800;
+        color: var(--color-page-bg);
+    }
+
+    .chip-label {
+        font-size: .68rem;
+        color: rgba(255,248,220,.6);
+        font-weight: 500;
+    }
+
+    /* Wave separator */
+    .hero-wave {
+        display: block;
+        height: 60px;
+        overflow: hidden;
+        line-height: 0;
+    }
+
+    .hero-wave svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SHARED SECTION STYLES
+       ════════════════════════════════════════════════════════════ */
+    .home-section {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 4rem 2.5rem;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .section-header-left {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        margin: 0 0 .25rem;
+        line-height: 1.2;
+    }
+
+    .section-subtitle {
+        font-size: .95rem;
+        color: var(--color-primary-text);
+        opacity: .55;
+        margin: 0;
+        font-weight: 400;
+    }
+
+    .btn-view-all {
+        flex-shrink: 0;
+        background: transparent;
+        color: var(--color-button-primary);
+        border: 2px solid var(--color-button-primary);
+        border-radius: 10px;
+        padding: .55rem 1.35rem;
+        font-size: .88rem;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: .3px;
+        transition: background .18s, color .18s, transform .12s;
+    }
+
+    .btn-view-all:hover {
+        background: var(--color-button-primary);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+
+    /* Error / Empty states */
+    .section-error,
+    .section-empty {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--color-primary-text);
+        opacity: .6;
+    }
+
+    .empty-icon {
+        display: block;
+        font-size: 3rem;
+        margin-bottom: .75rem;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       CATEGORY GRID
+       ════════════════════════════════════════════════════════════ */
+    .home-section--categories {
+        background: var(--color-page-bg);
+    }
+
+    .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1.4rem;
+    }
+
+    /* Category Card (button) */
+    .cat-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .65rem;
+        padding: 1.35rem 1rem 1rem;
+        background: #fff;
+        border: 2px solid rgba(61,28,2,.06);
+        border-radius: 18px;
+        cursor: pointer;
+        text-align: center;
+        transition: border-color .18s, transform .18s, box-shadow .18s;
+        text-decoration: none;
+        color: inherit;
+        font-family: inherit;
+    }
+
+    .cat-card:hover {
+        border-color: var(--color-border-accent);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 28px rgba(61,28,2,.1);
+    }
+
+    .cat-card-img-wrap {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: rgba(196,132,138,.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .cat-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .cat-card-fallback {
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        background: rgba(196,132,138,.1);
+    }
+
+    .cat-card-name {
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        line-height: 1.3;
+        word-break: break-word;
+    }
+
+    .cat-card-sub {
+        font-size: .72rem;
+        color: var(--color-button-primary);
+        font-weight: 500;
+    }
+
+    /* Category Skeleton */
+    .cat-card--skeleton {
+        pointer-events: none;
+        border-color: transparent;
+        box-shadow: none;
+    }
+
+    .cat-skel-img {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+    }
+
+    .cat-skel-name {
+        width: 80%;
+        height: 14px;
+        border-radius: 6px;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       FEATURED PRODUCTS GRID
+       ════════════════════════════════════════════════════════════ */
+    .home-section--products {
+        background: #fdf5e4;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* Product Card */
+    .product-card {
+        display: flex;
+        flex-direction: column;
+        background: var(--color-card-bg);
+        border: 2px solid rgba(61,28,2,.07);
+        border-radius: 18px;
+        overflow: hidden;
+        transition: transform .18s, box-shadow .18s, border-color .18s;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 14px 38px rgba(61,28,2,.12);
+        border-color: var(--color-border-accent);
+    }
+
+    /* Image area */
+    .product-card-img-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        background: rgba(61,28,2,.04);
+    }
+
+    .product-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .32s;
+        display: block;
+    }
+
+    .product-card:hover .product-card-img {
+        transform: scale(1.06);
+    }
+
+    .product-card-img-fallback {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        background: rgba(196,132,138,.07);
+    }
+
+    /* Stock badge */
+    .stock-badge {
+        position: absolute;
+        top: .6rem;
+        left: .6rem;
+        font-size: .63rem;
+        font-weight: 700;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+        padding: .22rem .6rem;
+        border-radius: 50px;
+        pointer-events: none;
+    }
+
+    .stock-badge--in  { background: #d4edda; color: #155724; }
+    .stock-badge--low { background: #fff3cd; color: #856404; }
+    .stock-badge--out { background: #f8d7da; color: #721c24; }
+
+    /* Card body */
+    .product-card-body {
+        padding: .9rem 1rem .5rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+    }
+
+    .product-card-category {
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: var(--color-button-primary);
+    }
+
+    .product-card-title {
+        font-size: .97rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+    }
+
+    .product-card-desc {
+        font-size: .78rem;
+        color: var(--color-primary-text);
+        opacity: .6;
+        margin: 0;
+        line-height: 1.45;
+    }
+
+    /* Card footer */
+    .product-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: .65rem 1rem .9rem;
+        border-top: 1px solid rgba(61,28,2,.07);
+        margin-top: auto;
+    }
+
+    .product-card-price {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+    }
+
+    /* Add-to-Cart button */
+    .btn-add-to-cart {
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        padding: .42rem .9rem;
+        font-size: .8rem;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: .3px;
+        transition: background .16s, transform .1s;
+    }
+
+    .btn-add-to-cart:hover:not(:disabled) {
+        background: var(--color-button-hover);
+        transform: scale(1.04);
+    }
+
+    .btn-add-to-cart--disabled {
+        background: rgba(61,28,2,.12);
+        color: rgba(61,28,2,.35);
+        cursor: not-allowed;
+    }
+
+    /* Product skeleton */
+    .product-card--skeleton {
+        pointer-events: none;
+        box-shadow: none;
+        border-color: transparent;
+    }
+
+    .prod-skel-img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+    }
+
+    .prod-skel-body {
+        padding: .9rem 1rem .9rem;
+        display: flex;
+        flex-direction: column;
+        gap: .55rem;
+    }
+
+    .prod-skel-category { width: 50%;  height: 10px; border-radius: 5px; }
+    .prod-skel-title    { width: 85%;  height: 14px; border-radius: 6px; }
+    .prod-skel-desc     { width: 75%;  height: 10px; border-radius: 5px; }
+    .prod-skel-price    { width: 40%;  height: 16px; border-radius: 6px; margin-top: .25rem; }
+
+    /* ════════════════════════════════════════════════════════════
+       SKELETON ANIMATION
+       ════════════════════════════════════════════════════════════ */
+    .skeleton {
+        background: linear-gradient(90deg,
+            rgba(61,28,2,.07) 25%,
+            rgba(61,28,2,.14) 50%,
+            rgba(61,28,2,.07) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 8px;
+    }
+
+    @@keyframes shimmer {
+        0%   { background-position: 200% center; }
+        100% { background-position: -200% center; }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PROMOTIONAL STRIP
+       ════════════════════════════════════════════════════════════ */
+    .home-promo-strip {
+        background: var(--color-navbar-bg);
+        padding: 2rem 2.5rem;
+        margin-top: 0;
+    }
+
+    .promo-strip-inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        max-width: 1100px;
+        margin: 0 auto;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+
+    .promo-item {
+        display: flex;
+        align-items: center;
+        gap: .9rem;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .promo-icon {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .promo-item div {
+        display: flex;
+        flex-direction: column;
+        gap: .1rem;
+    }
+
+    .promo-item strong {
+        font-size: .92rem;
+        font-weight: 700;
+        color: var(--color-page-bg);
+        line-height: 1.2;
+    }
+
+    .promo-item span {
+        font-size: .78rem;
+        color: rgba(255,248,220,.55);
+        font-weight: 400;
+    }
+
+    .promo-divider {
+        width: 1px;
+        height: 44px;
+        background: rgba(255,248,220,.15);
+        flex-shrink: 0;
+        align-self: center;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       RESPONSIVE
+       ════════════════════════════════════════════════════════════ */
+    @@media (max-width: 900px) {
+        .hero-inner {
+            flex-direction: column;
+            text-align: center;
+            padding: 3rem 1.5rem 4rem;
+        }
+
+        .hero-subline { max-width: 100%; }
+
+        .hero-cta-row { justify-content: center; }
+
+        .hero-visual-col {
+            width: 200px;
+            height: 200px;
+        }
+
+        .hero-chip--top    { top: -10px; right: 0; }
+        .hero-chip--bottom { bottom: -10px; left: 0; }
+
+        .section-header { flex-direction: column; align-items: flex-start; }
+
+        .home-section { padding: 3rem 1.25rem; }
+
+        .promo-divider { display: none; }
+    }
+
+    @@media (max-width: 560px) {
+        .cat-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+        .product-grid { grid-template-columns: 1fr 1fr; }
+        .promo-strip-inner { gap: 1.25rem; }
+    }
+</style>
