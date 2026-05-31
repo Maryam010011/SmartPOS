@@ -1,0 +1,1544 @@
+@page "/customer/shop"
+@rendermode InteractiveServer
+@layout AdminLayout
+
+@inject IProductService ProductService
+@inject ICategoryService CategoryService
+
+
+<PageTitle>Shop — SmartPOS+ Bakery</PageTitle>
+
+<div class="shop-root">
+
+    <!-- ── TOP HEADER BAR ───────────────────────────────────────── -->
+    <header class="shop-header">
+        <div class="shop-header-inner">
+
+            <div class="shop-brand">
+                <span class="shop-brand-icon">🥐</span>
+                <span class="shop-brand-name">SmartPOS+ Bakery</span>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="search-wrapper">
+                <span class="search-icon">&#128269;</span>
+                <input id="shop-search-input"
+                       class="search-input"
+                       type="text"
+                       placeholder="Search breads, cakes, pastries…"
+                       value="@_searchTerm"
+                       @oninput="OnSearchInput" />
+                @if (!string.IsNullOrEmpty(_searchTerm))
+                {
+                    <button class="search-clear" @onclick="ClearSearch" title="Clear">&#10005;</button>
+                }
+            </div>
+
+            <!-- Cart FAB -->
+            <button id="cart-toggle-btn" class="cart-fab" @onclick="ToggleCart">
+                <span class="cart-fab-icon">🛒</span>
+                @if (CartCount > 0)
+                {
+                    <span class="cart-badge">@CartCount</span>
+                }
+            </button>
+        </div>
+    </header>
+
+    <div class="shop-body">
+
+        <!-- ── CATEGORY SIDEBAR ──────────────────────────────────── -->
+        <aside class="category-sidebar">
+            <h3 class="sidebar-title">Categories</h3>
+
+            <button id="cat-btn-all"
+                    class="cat-pill @(_selectedCategoryId == 0 ? "cat-pill--active" : "")"
+                    @onclick="@(() => SelectCategory(0))">
+                <span class="cat-pill-icon">🏪</span> All Items
+            </button>
+
+            @foreach (var cat in _categories)
+            {
+                <button id="cat-btn-@cat.Id"
+                        class="cat-pill @(_selectedCategoryId == cat.Id ? "cat-pill--active" : "")"
+                        @onclick="@(() => SelectCategory(cat.Id))">
+                    <span class="cat-pill-icon">
+                        @if (!string.IsNullOrEmpty(cat.ImageURL))
+                        {
+                            <img src="@cat.ImageURL" class="cat-thumb" alt="@cat.Name" />
+                        }
+                        else
+                        {
+                            <span>🗂</span>
+                        }
+                    </span>
+                    @cat.Name
+                    @if (cat.SubCategories.Count > 0)
+                    {
+                        <span class="cat-sub-count">(@cat.SubCategories.Count)</span>
+                    }
+                </button>
+            }
+        </aside>
+
+        <!-- ── MAIN CONTENT ──────────────────────────────────────── -->
+        <main class="shop-main">
+
+            <!-- Result meta row -->
+            <div class="result-meta">
+                @if (!string.IsNullOrEmpty(_searchTerm))
+                {
+                    <span class="result-label">Results for <strong>"@_searchTerm"</strong></span>
+                }
+                else if (_selectedCategoryId > 0)
+                {
+                    var catName = _categories.FirstOrDefault(c => c.Id == _selectedCategoryId)?.Name ?? "Category";
+                    <span class="result-label">Showing <strong>@catName</strong></span>
+                }
+                else
+                {
+                    <span class="result-label">All Products</span>
+                }
+                <span class="result-count">@_filteredProducts.Count item@(_filteredProducts.Count != 1 ? "s" : "")</span>
+            </div>
+
+            <!-- Error Banner -->
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="error-banner" role="alert">
+                    <span>⚠️ @_errorMessage</span>
+                    <button class="error-dismiss" @onclick="@(() => _errorMessage = null)">✕</button>
+                </div>
+            }
+
+            <!-- Loading Skeleton -->
+            @if (_isLoading)
+            {
+                <div class="product-grid">
+                    @for (int i = 0; i < 8; i++)
+                    {
+                        <div class="product-card skeleton-card">
+                            <div class="skeleton skeleton-img"></div>
+                            <div class="skeleton-body">
+                                <div class="skeleton skeleton-title"></div>
+                                <div class="skeleton skeleton-sub"></div>
+                                <div class="skeleton skeleton-price"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else if (_filteredProducts.Count == 0)
+            {
+                <!-- Empty State -->
+                <div class="empty-state">
+                    <div class="empty-icon">🧁</div>
+                    <h2 class="empty-title">No products found</h2>
+                    <p class="empty-sub">Try a different search term or browse another category.</p>
+                    <button class="btn-primary" @onclick="ResetFilters">Browse All Products</button>
+                </div>
+            }
+            else
+            {
+                <!-- Product Grid -->
+                <div class="product-grid">
+                    @foreach (var product in _filteredProducts)
+                    {
+                        <div class="product-card" id="product-card-@product.Id">
+                            <!-- Image Container -->
+                            <div class="card-image-wrap" @onclick="@(() => OpenModal(product))">
+                                @if (!string.IsNullOrEmpty(product.ImageURL))
+                                {
+                                    <img src="@product.ImageURL"
+                                         class="card-image"
+                                         alt="@product.Name"
+                                         loading="lazy"
+                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                    <div class="card-image-placeholder" style="display:none;">🥖</div>
+                                }
+                                else
+                                {
+                                    <div class="card-image-placeholder">🥖</div>
+                                }
+
+                                <!-- Stock Badge -->
+                                <span class="stock-badge @StockClass(product.CurrentStock)">
+                                    @StockLabel(product.CurrentStock)
+                                </span>
+
+                                <!-- Quick-view hint -->
+                                <div class="card-quickview-overlay">
+                                    <span>Quick View</span>
+                                </div>
+                            </div>
+
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <div class="card-category">@product.CategoryName</div>
+                                <h3 class="card-title" title="@product.Name">@product.Name</h3>
+                                @if (!string.IsNullOrEmpty(product.Description))
+                                {
+                                    <p class="card-desc">@TruncateDesc(product.Description, 60)</p>
+                                }
+                            </div>
+
+                            <!-- Card Footer -->
+                            <div class="card-footer">
+                                <span class="card-price">Rs. @product.Price.ToString("N0")</span>
+                                <button id="atc-btn-@product.Id"
+                                        class="btn-atc @(product.CurrentStock == 0 ? "btn-atc--disabled" : "")"
+                                        disabled="@(product.CurrentStock == 0)"
+                                        @onclick="@(() => AddToCart(product))">
+                                    @if (product.CurrentStock == 0)
+                                    {
+                                        <span>Unavailable</span>
+                                    }
+                                    else
+                                    {
+                                        <span>+ Cart</span>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </main>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CART SIDEBAR PANEL
+     ══════════════════════════════════════════════════════════════ -->
+@if (_showCart)
+{
+    <div class="cart-overlay" @onclick="ToggleCart"></div>
+}
+
+<div class="cart-sidebar @(_showCart ? "cart-sidebar--open" : "")">
+    <div class="cart-sidebar-header">
+        <h2 class="cart-title">🛒 Your Cart</h2>
+        <button id="cart-close-btn" class="cart-close" @onclick="ToggleCart">&#10005;</button>
+    </div>
+
+    @if (_cartItems.Count == 0)
+    {
+        <div class="cart-empty">
+            <div class="cart-empty-icon">🛒</div>
+            <p>Your cart is empty.</p>
+            <button class="btn-primary" @onclick="ToggleCart">Continue Shopping</button>
+        </div>
+    }
+    else
+    {
+        <div class="cart-items-list">
+            @foreach (var item in _cartItems)
+            {
+                <div class="cart-item" id="cart-item-@item.Product.Id">
+                    <div class="cart-item-img-wrap">
+                        @if (!string.IsNullOrEmpty(item.Product.ImageURL))
+                        {
+                            <img src="@item.Product.ImageURL" class="cart-item-img" alt="@item.Product.Name"
+                                 onerror="this.style.display='none'" />
+                        }
+                        else
+                        {
+                            <span class="cart-item-img-placeholder">🥖</span>
+                        }
+                    </div>
+                    <div class="cart-item-info">
+                        <span class="cart-item-name">@item.Product.Name</span>
+                        <span class="cart-item-unit">Rs. @item.Product.Price.ToString("N0") each</span>
+                        <div class="cart-qty-row">
+                            <button class="qty-btn" id="qty-minus-@item.Product.Id"
+                                    @onclick="@(() => UpdateQuantity(item.Product.Id, -1))">−</button>
+                            <span class="qty-value">@item.Quantity</span>
+                            <button class="qty-btn" id="qty-plus-@item.Product.Id"
+                                    @onclick="@(() => UpdateQuantity(item.Product.Id, +1))">+</button>
+                            <button class="qty-remove" id="qty-remove-@item.Product.Id"
+                                    @onclick="@(() => RemoveFromCart(item.Product.Id))" title="Remove">🗑</button>
+                        </div>
+                    </div>
+                    <span class="cart-item-line">Rs. @((item.Product.Price * item.Quantity).ToString("N0"))</span>
+                </div>
+            }
+        </div>
+
+        <div class="cart-summary">
+            <div class="cart-summary-row">
+                <span>Subtotal (@CartCount items)</span>
+                <strong>Rs. @CartTotal.ToString("N0")</strong>
+            </div>
+            <div class="cart-summary-row cart-summary-note">
+                <span>Tax &amp; delivery calculated at checkout</span>
+            </div>
+            <button id="checkout-btn" class="btn-checkout">Proceed to Checkout →</button>
+            <button class="btn-clear-cart" @onclick="ClearCart">Clear Cart</button>
+        </div>
+    }
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     QUICK-VIEW PRODUCT MODAL
+     ══════════════════════════════════════════════════════════════ -->
+@if (_showModal && _selectedProduct is not null)
+{
+    <div class="modal-backdrop" @onclick="CloseModal"></div>
+
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-product-title">
+        <button id="modal-close-btn" class="modal-close" @onclick="CloseModal">&#10005;</button>
+
+        <div class="modal-image-pane">
+            @if (!string.IsNullOrEmpty(_selectedProduct.ImageURL))
+            {
+                <img src="@_selectedProduct.ImageURL" class="modal-image" alt="@_selectedProduct.Name"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                <div class="modal-image-fallback" style="display:none;">🥖</div>
+            }
+            else
+            {
+                <div class="modal-image-fallback">🥖</div>
+            }
+            <span class="modal-stock-badge @StockClass(_selectedProduct.CurrentStock)">
+                @StockLabel(_selectedProduct.CurrentStock)
+            </span>
+        </div>
+
+        <div class="modal-info-pane">
+            <div class="modal-category">@_selectedProduct.CategoryName</div>
+            <h2 id="modal-product-title" class="modal-product-title">@_selectedProduct.Name</h2>
+            <div class="modal-sku">SKU: @_selectedProduct.SKU</div>
+
+            @if (!string.IsNullOrEmpty(_selectedProduct.Description))
+            {
+                <p class="modal-desc">@_selectedProduct.Description</p>
+            }
+
+            <div class="modal-meta-row">
+                <div class="modal-meta-item">
+                    <span class="modal-meta-label">Supplier</span>
+                    <span class="modal-meta-value">@(string.IsNullOrEmpty(_selectedProduct.SupplierName) || _selectedProduct.SupplierName == "N/A" ? "—" : _selectedProduct.SupplierName)</span>
+                </div>
+                <div class="modal-meta-item">
+                    <span class="modal-meta-label">In Stock</span>
+                    <span class="modal-meta-value">@_selectedProduct.CurrentStock units</span>
+                </div>
+            </div>
+
+            <div class="modal-price-row">
+                <span class="modal-price">Rs. @_selectedProduct.Price.ToString("N0")</span>
+            </div>
+
+            <!-- Quantity selector for modal -->
+            <div class="modal-qty-row">
+                <label class="modal-qty-label">Qty:</label>
+                <button class="qty-btn" @onclick="@(() => { if (_modalQty > 1) _modalQty--; })">−</button>
+                <span class="qty-value modal-qty-display">@_modalQty</span>
+                <button class="qty-btn" @onclick="@(() => _modalQty++)">+</button>
+            </div>
+
+            <button id="modal-atc-btn"
+                    class="btn-primary btn-modal-atc @(_selectedProduct.CurrentStock == 0 ? "btn-atc--disabled" : "")"
+                    disabled="@(_selectedProduct.CurrentStock == 0)"
+                    @onclick="AddFromModal">
+                @(_selectedProduct.CurrentStock == 0 ? "Out of Stock" : "Add to Cart")
+            </button>
+        </div>
+    </div>
+}
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCOPED STYLES  (all colors from colors.css variables)
+     ══════════════════════════════════════════════════════════════ -->
+<style>
+    /* ── Google Font ── */
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@@300;400;500;600;700&display=swap');
+
+    /* ── Reset scope ── */
+    .shop-root *,
+    .cart-sidebar *,
+    .modal-dialog *,
+    .modal-backdrop,
+    .cart-overlay {
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .shop-root {
+        min-height: 100vh;
+        background: var(--color-page-bg);
+        color: var(--color-primary-text);
+    }
+
+    /* ════════════════════════════════════════════
+       HEADER
+       ════════════════════════════════════════════ */
+    .shop-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--color-navbar-bg);
+        box-shadow: 0 2px 16px rgba(61,28,2,.35);
+    }
+
+    .shop-header-inner {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: .75rem 2rem;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+
+    .shop-brand {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        white-space: nowrap;
+        color: var(--color-page-bg);
+        flex-shrink: 0;
+    }
+
+    .shop-brand-icon { font-size: 1.6rem; }
+
+    .shop-brand-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: .4px;
+    }
+
+    /* Search */
+    .search-wrapper {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: .85rem;
+        font-size: 1rem;
+        pointer-events: none;
+        color: var(--color-heading-text);
+        opacity: .55;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: .62rem 2.6rem .62rem 2.4rem;
+        border: 2px solid transparent;
+        border-radius: 50px;
+        background: var(--color-page-bg);
+        color: var(--color-primary-text);
+        font-size: .95rem;
+        font-weight: 500;
+        outline: none;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .search-input:focus {
+        border-color: var(--color-border-accent);
+        box-shadow: 0 0 0 3px rgba(196,132,138,.22);
+    }
+
+    .search-input::placeholder { color: #b0896e; font-weight: 400; }
+
+    .search-clear {
+        position: absolute;
+        right: .75rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: .9rem;
+        color: var(--color-heading-text);
+        opacity: .5;
+        transition: opacity .15s;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .search-clear:hover { opacity: 1; }
+
+    /* Cart FAB */
+    .cart-fab {
+        position: relative;
+        background: var(--color-button-primary);
+        border: none;
+        border-radius: 50px;
+        padding: .55rem 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        transition: background .18s, transform .12s;
+    }
+
+    .cart-fab:hover {
+        background: var(--color-button-hover);
+        transform: scale(1.05);
+    }
+
+    .cart-fab-icon { line-height: 1; }
+
+    .cart-badge {
+        position: absolute;
+        top: -.3rem;
+        right: -.3rem;
+        background: var(--color-navbar-bg);
+        color: var(--color-page-bg);
+        font-size: .65rem;
+        font-weight: 700;
+        border-radius: 50%;
+        min-width: 1.2rem;
+        height: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 .25rem;
+        border: 2px solid var(--color-page-bg);
+    }
+
+    /* ════════════════════════════════════════════
+       BODY LAYOUT
+       ════════════════════════════════════════════ */
+    .shop-body {
+        display: flex;
+        align-items: flex-start;
+        gap: 0;
+        max-width: 1600px;
+        margin: 0 auto;
+        min-height: calc(100vh - 60px);
+    }
+
+    /* ════════════════════════════════════════════
+       CATEGORY SIDEBAR
+       ════════════════════════════════════════════ */
+    .category-sidebar {
+        width: 220px;
+        flex-shrink: 0;
+        background: var(--color-navbar-bg);
+        min-height: calc(100vh - 60px);
+        padding: 1.5rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: .4rem;
+    }
+
+    .sidebar-title {
+        color: var(--color-page-bg);
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin: 0 0 .75rem .25rem;
+        opacity: .65;
+    }
+
+    .cat-pill {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        padding: .55rem .85rem;
+        border-radius: 10px;
+        border: none;
+        background: rgba(255,248,220,.08);
+        color: var(--color-page-bg);
+        font-size: .88rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-align: left;
+        transition: background .16s, color .16s, transform .1s;
+        width: 100%;
+    }
+
+    .cat-pill:hover {
+        background: var(--color-button-primary);
+        transform: translateX(3px);
+    }
+
+    .cat-pill--active {
+        background: var(--color-button-primary);
+        font-weight: 700;
+        transform: translateX(3px);
+    }
+
+    .cat-pill-icon { font-size: .95rem; flex-shrink: 0; }
+
+    .cat-thumb {
+        width: 1.2rem;
+        height: 1.2rem;
+        border-radius: 4px;
+        object-fit: cover;
+    }
+
+    .cat-sub-count {
+        margin-left: auto;
+        font-size: .72rem;
+        opacity: .6;
+        font-weight: 400;
+    }
+
+    /* ════════════════════════════════════════════
+       MAIN CONTENT
+       ════════════════════════════════════════════ */
+    .shop-main {
+        flex: 1;
+        padding: 1.75rem 2rem 3rem;
+        min-width: 0;
+    }
+
+    /* Result meta row */
+    .result-meta {
+        display: flex;
+        align-items: baseline;
+        gap: .75rem;
+        margin-bottom: 1.4rem;
+    }
+
+    .result-label {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+    }
+
+    .result-label strong { color: var(--color-button-primary); }
+
+    .result-count {
+        font-size: .82rem;
+        color: var(--color-heading-text);
+        opacity: .55;
+        font-weight: 400;
+    }
+
+    /* Error banner */
+    .error-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff0f0;
+        border: 1.5px solid #f4b8b8;
+        border-radius: 10px;
+        padding: .75rem 1rem;
+        margin-bottom: 1.25rem;
+        color: #8b2121;
+        font-size: .9rem;
+    }
+
+    .error-dismiss {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: .85rem;
+        color: #8b2121;
+        opacity: .6;
+    }
+
+    /* ════════════════════════════════════════════
+       PRODUCT GRID
+       ════════════════════════════════════════════ */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 1.4rem;
+    }
+
+    /* ── Product Card ── */
+    .product-card {
+        background: var(--color-card-bg);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1.5px solid rgba(61,28,2,.1);
+        display: flex;
+        flex-direction: column;
+        transition: transform .18s, box-shadow .18s, border-color .18s;
+        cursor: pointer;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 36px rgba(61,28,2,.13);
+        border-color: var(--color-border-accent);
+    }
+
+    /* Image container */
+    .card-image-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        background: rgba(61,28,2,.05);
+    }
+
+    .card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform .3s;
+        display: block;
+    }
+
+    .product-card:hover .card-image { transform: scale(1.06); }
+
+    .card-image-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        background: rgba(196,132,138,.08);
+    }
+
+    /* Stock badge */
+    .stock-badge {
+        position: absolute;
+        top: .6rem;
+        left: .6rem;
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+        padding: .22rem .55rem;
+        border-radius: 50px;
+        pointer-events: none;
+    }
+
+    .stock-in { background: #d4edda; color: #155724; }
+    .stock-low { background: #fff3cd; color: #856404; }
+    .stock-out { background: #f8d7da; color: #721c24; }
+
+    /* Quick-view overlay */
+    .card-quickview-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(61,28,2,.42);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-page-bg);
+        font-size: .82rem;
+        font-weight: 600;
+        letter-spacing: .5px;
+        opacity: 0;
+        transition: opacity .2s;
+    }
+
+    .card-image-wrap:hover .card-quickview-overlay { opacity: 1; }
+
+    /* Card Body */
+    .card-body {
+        padding: .85rem .95rem .4rem;
+        flex: 1;
+    }
+
+    .card-category {
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: var(--color-button-primary);
+        margin-bottom: .3rem;
+    }
+
+    .card-title {
+        font-size: .97rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        margin: 0 0 .3rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+    }
+
+    .card-desc {
+        font-size: .78rem;
+        color: var(--color-primary-text);
+        opacity: .6;
+        margin: 0;
+        line-height: 1.45;
+    }
+
+    /* Card Footer */
+    .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: .65rem .95rem .85rem;
+        border-top: 1px solid rgba(61,28,2,.07);
+        margin-top: .5rem;
+    }
+
+    .card-price {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+    }
+
+    .btn-atc {
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: .4rem .85rem;
+        font-size: .8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .16s, transform .1s;
+        letter-spacing: .3px;
+    }
+
+    .btn-atc:hover:not(:disabled) {
+        background: var(--color-button-hover);
+        transform: scale(1.04);
+    }
+
+    .btn-atc--disabled {
+        background: rgba(61,28,2,.15);
+        color: rgba(61,28,2,.4);
+        cursor: not-allowed;
+    }
+
+    /* ════════════════════════════════════════════
+       SKELETON LOADING
+       ════════════════════════════════════════════ */
+    .skeleton-card { pointer-events: none; }
+
+    .skeleton {
+        border-radius: 8px;
+        background: linear-gradient(90deg, rgba(61,28,2,.07) 25%, rgba(61,28,2,.13) 50%, rgba(61,28,2,.07) 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+    }
+
+    .skeleton-img {
+        width: 100%;
+        aspect-ratio: 1/1;
+        border-radius: 0;
+    }
+
+    .skeleton-body { padding: .85rem .95rem .85rem; display: flex; flex-direction: column; gap: .5rem; }
+    .skeleton-title { height: 1rem; width: 75%; }
+    .skeleton-sub { height: .75rem; width: 55%; }
+    .skeleton-price { height: 1rem; width: 40%; margin-top: .3rem; }
+
+    @@keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* ════════════════════════════════════════════
+       EMPTY STATE
+       ════════════════════════════════════════════ */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 5rem 1rem;
+        text-align: center;
+        gap: .75rem;
+    }
+
+    .empty-icon { font-size: 4rem; margin-bottom: .5rem; }
+
+    .empty-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        margin: 0;
+    }
+
+    .empty-sub {
+        font-size: .9rem;
+        color: var(--color-primary-text);
+        opacity: .55;
+        margin: 0;
+    }
+
+    /* ════════════════════════════════════════════
+       BUTTONS (shared)
+       ════════════════════════════════════════════ */
+    .btn-primary {
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: .65rem 1.5rem;
+        font-size: .9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .16s, transform .1s;
+        letter-spacing: .3px;
+        margin-top: .5rem;
+    }
+
+    .btn-primary:hover {
+        background: var(--color-button-hover);
+        transform: scale(1.02);
+    }
+
+    /* ════════════════════════════════════════════
+       CART SIDEBAR
+       ════════════════════════════════════════════ */
+    .cart-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(61,28,2,.35);
+        z-index: 200;
+        animation: fadeInOverlay .2s ease;
+    }
+
+    @@keyframes fadeInOverlay {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .cart-sidebar {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: min(420px, 92vw);
+        height: 100vh;
+        background: var(--color-page-bg);
+        z-index: 201;
+        display: flex;
+        flex-direction: column;
+        transform: translateX(100%);
+        transition: transform .28s cubic-bezier(.4,0,.2,1);
+        box-shadow: -8px 0 40px rgba(61,28,2,.2);
+    }
+
+    .cart-sidebar--open { transform: translateX(0); }
+
+    .cart-sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.1rem 1.25rem;
+        background: var(--color-navbar-bg);
+    }
+
+    .cart-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--color-page-bg);
+    }
+
+    .cart-close {
+        background: rgba(255,248,220,.15);
+        border: none;
+        border-radius: 8px;
+        color: var(--color-page-bg);
+        font-size: 1rem;
+        width: 2rem;
+        height: 2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .15s;
+    }
+
+    .cart-close:hover { background: rgba(255,248,220,.28); }
+
+    .cart-empty {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .75rem;
+        text-align: center;
+        padding: 2rem;
+        color: var(--color-primary-text);
+        opacity: .65;
+    }
+
+    .cart-empty-icon { font-size: 3.5rem; opacity: .4; }
+
+    .cart-items-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: .75rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: .75rem;
+    }
+
+    .cart-item {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        background: rgba(61,28,2,.04);
+        border-radius: 12px;
+        padding: .7rem .85rem;
+        border: 1px solid rgba(61,28,2,.08);
+    }
+
+    .cart-item-img-wrap {
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: rgba(196,132,138,.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cart-item-img { width: 100%; height: 100%; object-fit: cover; }
+    .cart-item-img-placeholder { font-size: 1.5rem; }
+
+    .cart-item-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: .2rem;
+    }
+
+    .cart-item-name {
+        font-size: .88rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cart-item-unit {
+        font-size: .72rem;
+        color: var(--color-primary-text);
+        opacity: .5;
+    }
+
+    .cart-qty-row {
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+        margin-top: .2rem;
+    }
+
+    .qty-btn {
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        width: 1.6rem;
+        height: 1.6rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .14s;
+        flex-shrink: 0;
+        padding: 0;
+    }
+
+    .qty-btn:hover { background: var(--color-button-hover); }
+
+    .qty-value {
+        font-size: .88rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        min-width: 1.2rem;
+        text-align: center;
+    }
+
+    .qty-remove {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: .85rem;
+        opacity: .45;
+        transition: opacity .14s;
+        padding: 0;
+        margin-left: .2rem;
+    }
+
+    .qty-remove:hover { opacity: 1; }
+
+    .cart-item-line {
+        font-size: .9rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Cart Summary */
+    .cart-summary {
+        padding: 1rem 1.25rem 1.5rem;
+        border-top: 1.5px solid rgba(61,28,2,.1);
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .cart-summary-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: .9rem;
+        color: var(--color-primary-text);
+    }
+
+    .cart-summary-row strong {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+    }
+
+    .cart-summary-note {
+        font-size: .73rem;
+        opacity: .5;
+        margin-bottom: .25rem;
+    }
+
+    .btn-checkout {
+        background: var(--color-navbar-bg);
+        color: var(--color-page-bg);
+        border: none;
+        border-radius: 12px;
+        padding: .8rem 1.2rem;
+        font-size: .95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity .16s, transform .1s;
+        margin-top: .25rem;
+        letter-spacing: .3px;
+    }
+
+    .btn-checkout:hover { opacity: .88; transform: scale(1.01); }
+
+    .btn-clear-cart {
+        background: none;
+        border: 1.5px solid rgba(61,28,2,.2);
+        color: var(--color-primary-text);
+        border-radius: 10px;
+        padding: .5rem;
+        font-size: .8rem;
+        cursor: pointer;
+        opacity: .55;
+        transition: opacity .14s, border-color .14s;
+    }
+
+    .btn-clear-cart:hover { opacity: 1; border-color: var(--color-border-accent); }
+
+    /* ════════════════════════════════════════════
+       MODAL
+       ════════════════════════════════════════════ */
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(61,28,2,.5);
+        z-index: 300;
+        animation: fadeInOverlay .2s ease;
+    }
+
+    .modal-dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 301;
+        background: var(--color-card-bg);
+        border-radius: 20px;
+        display: flex;
+        gap: 0;
+        width: min(860px, 95vw);
+        max-height: 92vh;
+        overflow: hidden;
+        box-shadow: 0 24px 80px rgba(61,28,2,.3);
+        animation: modalPop .22s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    @@keyframes modalPop {
+        from { opacity: 0; transform: translate(-50%, -48%) scale(.94); }
+        to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .modal-close {
+        position: absolute;
+        top: .85rem;
+        right: .85rem;
+        background: rgba(61,28,2,.12);
+        border: none;
+        border-radius: 50%;
+        width: 2.1rem;
+        height: 2.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1rem;
+        color: var(--color-heading-text);
+        z-index: 2;
+        transition: background .15s;
+    }
+
+    .modal-close:hover { background: rgba(61,28,2,.22); }
+
+    .modal-image-pane {
+        width: 42%;
+        flex-shrink: 0;
+        position: relative;
+        background: rgba(196,132,138,.08);
+    }
+
+    .modal-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .modal-image-fallback {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+    }
+
+    .modal-stock-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+        padding: .25rem .6rem;
+        border-radius: 50px;
+    }
+
+    .modal-info-pane {
+        flex: 1;
+        padding: 2rem 2rem 1.75rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-category {
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--color-button-primary);
+        margin-bottom: .4rem;
+    }
+
+    .modal-product-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        margin: 0 0 .2rem;
+        line-height: 1.25;
+    }
+
+    .modal-sku {
+        font-size: .72rem;
+        color: var(--color-primary-text);
+        opacity: .45;
+        margin-bottom: .85rem;
+        font-family: 'Courier New', monospace;
+    }
+
+    .modal-desc {
+        font-size: .9rem;
+        color: var(--color-primary-text);
+        line-height: 1.65;
+        margin: 0 0 1rem;
+        opacity: .75;
+    }
+
+    .modal-meta-row {
+        display: flex;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .modal-meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: .2rem;
+    }
+
+    .modal-meta-label {
+        font-size: .68rem;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        color: var(--color-primary-text);
+        opacity: .45;
+        font-weight: 700;
+    }
+
+    .modal-meta-value {
+        font-size: .9rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+    }
+
+    .modal-price-row {
+        margin-bottom: 1rem;
+    }
+
+    .modal-price {
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: var(--color-heading-text);
+        letter-spacing: -.5px;
+    }
+
+    .modal-qty-row {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .modal-qty-label {
+        font-size: .85rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        opacity: .7;
+    }
+
+    .modal-qty-display {
+        font-size: 1rem;
+        min-width: 2rem;
+    }
+
+    .btn-modal-atc {
+        width: 100%;
+        border-radius: 12px;
+        padding: .8rem;
+        font-size: 1rem;
+        letter-spacing: .4px;
+    }
+
+    /* ════════════════════════════════════════════
+       RESPONSIVE BREAKPOINTS
+       ════════════════════════════════════════════ */
+    @@media (max-width: 1024px) {
+        .category-sidebar { width: 180px; }
+        .product-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+    }
+
+    @@media (max-width: 768px) {
+        .shop-body { flex-direction: column; }
+        .category-sidebar {
+            width: 100%;
+            min-height: auto;
+            flex-direction: row;
+            flex-wrap: wrap;
+            padding: .75rem 1rem;
+            gap: .35rem;
+        }
+        .sidebar-title { display: none; }
+        .cat-pill { width: auto; padding: .4rem .75rem; font-size: .8rem; }
+        .cat-pill:hover, .cat-pill--active { transform: none; }
+        .shop-main { padding: 1rem 1rem 2rem; }
+        .shop-header-inner { padding: .6rem 1rem; }
+        .shop-brand-name { display: none; }
+        .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
+        .modal-dialog { flex-direction: column; }
+        .modal-image-pane { width: 100%; height: 220px; }
+        .modal-info-pane { padding: 1.25rem 1.25rem 1.5rem; }
+    }
+
+    @@media (max-width: 480px) {
+        .product-grid { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+        .card-price { font-size: .9rem; }
+        .btn-atc { padding: .35rem .65rem; font-size: .75rem; }
+    }
+</style>
+
+
+@code {
+    /* ── Services ── */
+    private List<ProductDto>  _filteredProducts = new();
+    private List<CategoryDto> _categories       = new();
+
+    /* ── UI State ── */
+    private bool    _isLoading      = true;
+    private string? _errorMessage;
+    private string  _searchTerm     = string.Empty;
+    private int     _selectedCategoryId = 0;   // 0 = All
+
+    /* ── Cart State (in-component) ── */
+    private List<CartItem> _cartItems = new();
+    private bool           _showCart  = false;
+
+    /* ── Modal State ── */
+    private ProductDto? _selectedProduct;
+    private bool        _showModal = false;
+    private int         _modalQty  = 1;
+
+    /* ══════════════════════════════════════════════
+       LIFECYCLE
+       ══════════════════════════════════════════════ */
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+        await LoadProducts();
+    }
+
+    /* ══════════════════════════════════════════════
+       DATA LOADING
+       ══════════════════════════════════════════════ */
+    private async Task LoadCategories()
+    {
+        var result = await CategoryService.GetAll();
+        if (result.Success && result.Data is not null)
+            _categories = result.Data;
+    }
+
+    private async Task LoadProducts()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        ApiResponse<List<ProductDto>> result;
+
+        if (!string.IsNullOrWhiteSpace(_searchTerm))
+            result = await ProductService.Search(_searchTerm);
+        else if (_selectedCategoryId > 0)
+            result = await ProductService.GetByCategory(_selectedCategoryId);
+        else
+            result = await ProductService.GetAll();
+
+        if (result.Success && result.Data is not null)
+            _filteredProducts = result.Data.Where(p => p.IsActive).ToList();
+        else
+            _errorMessage = result.Message;
+
+        _isLoading = false;
+    }
+
+    /* ══════════════════════════════════════════════
+       SEARCH & FILTER
+       ══════════════════════════════════════════════ */
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        _searchTerm         = e.Value?.ToString() ?? string.Empty;
+        _selectedCategoryId = 0;   // reset category when searching
+        await LoadProducts();
+    }
+
+    private async Task ClearSearch()
+    {
+        _searchTerm = string.Empty;
+        await LoadProducts();
+    }
+
+    private async Task SelectCategory(int categoryId)
+    {
+        _selectedCategoryId = categoryId;
+        _searchTerm         = string.Empty;
+        await LoadProducts();
+    }
+
+    private async Task ResetFilters()
+    {
+        _selectedCategoryId = 0;
+        _searchTerm         = string.Empty;
+        await LoadProducts();
+    }
+
+    /* ══════════════════════════════════════════════
+       MODAL
+       ══════════════════════════════════════════════ */
+    private void OpenModal(ProductDto product)
+    {
+        _selectedProduct = product;
+        _modalQty        = 1;
+        _showModal       = true;
+    }
+
+    private void CloseModal()
+    {
+        _showModal       = false;
+        _selectedProduct = null;
+        _modalQty        = 1;
+    }
+
+    private void AddFromModal()
+    {
+        if (_selectedProduct is null) return;
+        AddToCart(_selectedProduct, _modalQty);
+        CloseModal();
+    }
+
+    /* ══════════════════════════════════════════════
+       CART
+       ══════════════════════════════════════════════ */
+    private void AddToCart(ProductDto product, int qty = 1)
+    {
+        var existing = _cartItems.FirstOrDefault(c => c.Product.Id == product.Id);
+        if (existing is not null)
+            existing.Quantity += qty;
+        else
+            _cartItems.Add(new CartItem { Product = product, Quantity = qty });
+
+        _showCart = true;   // open cart drawer on add
+    }
+
+    private void RemoveFromCart(int productId)
+        => _cartItems.RemoveAll(c => c.Product.Id == productId);
+
+    private void UpdateQuantity(int productId, int delta)
+    {
+        var item = _cartItems.FirstOrDefault(c => c.Product.Id == productId);
+        if (item is null) return;
+
+        item.Quantity += delta;
+        if (item.Quantity <= 0)
+            _cartItems.Remove(item);
+    }
+
+    private void ClearCart()  => _cartItems.Clear();
+    private void ToggleCart() => _showCart = !_showCart;
+
+    private decimal CartTotal => _cartItems.Sum(c => c.Product.Price * c.Quantity);
+    private int     CartCount => _cartItems.Sum(c => c.Quantity);
+
+    /* ══════════════════════════════════════════════
+       HELPERS
+       ══════════════════════════════════════════════ */
+    private static string StockLabel(int stock) => stock switch
+    {
+        0      => "Out of Stock",
+        <= 5   => "Low Stock",
+        _      => "In Stock"
+    };
+
+    private static string StockClass(int stock) => stock switch
+    {
+        0      => "stock-out",
+        <= 5   => "stock-low",
+        _      => "stock-in"
+    };
+
+    private static string TruncateDesc(string text, int max)
+        => text.Length <= max ? text : text[..max].TrimEnd() + "…";
+
+    /* ── Local cart item record ── */
+    private sealed class CartItem
+    {
+        public ProductDto Product  { get; set; } = new();
+        public int        Quantity { get; set; } = 1;
+    }
+}
