@@ -4,6 +4,7 @@ using SmartPOS.Shared.DTOs.PurchaseOrders;
 using SmartPOS.Shared.Interfaces;
 using SmartPOS.Web.Data;
 using SmartPOS.Web.Models;
+using SmartPOS.Shared.Enums;
 
 namespace SmartPOS.Web.Services.Shahzain;
 
@@ -35,7 +36,7 @@ public class PurchaseOrderService : IPurchaseOrderService
         {
             var purchaseOrder = await _context.PurchaseOrders
                 .Include(po => po.Supplier)
-                .Include(po => po.POLineItems)
+                .Include(po => po.LineItems)
                 .ThenInclude(li => li.Product)
                 .FirstOrDefaultAsync(po => po.Id == id);
 
@@ -60,7 +61,7 @@ public class PurchaseOrderService : IPurchaseOrderService
         {
             var purchaseOrders = await _context.PurchaseOrders
                 .Include(po => po.Supplier)
-                .Include(po => po.POLineItems)
+                .Include(po => po.LineItems)
                 .ThenInclude(li => li.Product)
                 .ToListAsync();
 
@@ -104,7 +105,7 @@ public class PurchaseOrderService : IPurchaseOrderService
             {
                 SupplierId = dto.SupplierId,
                 UserId = dto.UserId,
-                Status = Enums.POStatus.Draft,
+                Status = POStatus.Draft,
                 OrderDate = DateTime.UtcNow,
                 Notes = dto.Notes ?? string.Empty,
                 TotalCost = 0 // Will be calculated from line items
@@ -119,7 +120,7 @@ public class PurchaseOrderService : IPurchaseOrderService
             {
                 var item = new POLineItem
                 {
-                    PurchaseOrderId = purchaseOrder.Id,
+                    POID = purchaseOrder.Id,
                     ProductId = lineItem.ProductId,
                     OrderedQty = lineItem.OrderedQty,
                     UnitPrice = lineItem.UnitPrice
@@ -154,13 +155,13 @@ public class PurchaseOrderService : IPurchaseOrderService
             if (purchaseOrder == null)
                 return ApiResponse.Fail("Purchase order not found.");
 
-            if (purchaseOrder.Status == Enums.POStatus.Received)
+            if (purchaseOrder.Status == POStatus.Received)
                 return ApiResponse.Fail("Purchase order is already marked as received.");
 
-            if (purchaseOrder.Status == Enums.POStatus.Cancelled)
+            if (purchaseOrder.Status == POStatus.Cancelled)
                 return ApiResponse.Fail("Cannot mark a cancelled purchase order as received.");
 
-            purchaseOrder.Status = Enums.POStatus.Received;
+            purchaseOrder.Status = POStatus.Received;
             purchaseOrder.ReceivedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -186,13 +187,13 @@ public class PurchaseOrderService : IPurchaseOrderService
             if (purchaseOrder == null)
                 return ApiResponse.Fail("Purchase order not found.");
 
-            if (purchaseOrder.Status == Enums.POStatus.Cancelled)
+            if (purchaseOrder.Status == POStatus.Cancelled)
                 return ApiResponse.Fail("Purchase order is already cancelled.");
 
-            if (purchaseOrder.Status == Enums.POStatus.Received)
+            if (purchaseOrder.Status == POStatus.Received)
                 return ApiResponse.Fail("Cannot cancel a purchase order that has been received.");
 
-            purchaseOrder.Status = Enums.POStatus.Cancelled;
+            purchaseOrder.Status = POStatus.Cancelled;
 
             await _context.SaveChangesAsync();
 
@@ -222,7 +223,7 @@ public class PurchaseOrderService : IPurchaseOrderService
             OrderDate = purchaseOrder.OrderDate,
             ReceivedAt = purchaseOrder.ReceivedAt,
             Notes = purchaseOrder.Notes ?? string.Empty,
-            LineItems = purchaseOrder.POLineItems?.Select(li => new POLineItemDto
+            LineItems = purchaseOrder.LineItems?.Select(li => new POLineItemDto
             {
                 ProductId = li.ProductId,
                 ProductName = li.Product?.Name ?? string.Empty,
