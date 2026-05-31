@@ -1,0 +1,1357 @@
+@page "/customer/reviews"
+@rendermode InteractiveServer
+@layout AdminLayout
+
+@inject IProductService  ProductService
+@inject IReviewService   ReviewService
+
+<PageTitle>Reviews — SmartPOS+ Bakery</PageTitle>
+
+<!-- ══════════════════════════════════════════════════════════════
+     PAGE HERO HEADER
+     ══════════════════════════════════════════════════════════════ -->
+<section class="rv-hero">
+    <div class="rv-hero-inner">
+        <div class="rv-hero-text">
+            <span class="rv-hero-eyebrow">⭐ Customer Voices</span>
+            <h1 class="rv-hero-title">Reviews &amp; Feedback</h1>
+            <p class="rv-hero-sub">
+                Share your experience and read what others are saying about our fresh-baked goods.
+            </p>
+        </div>
+        <div class="rv-hero-stat-row">
+            <div class="rv-stat-chip">
+                <span class="rv-stat-icon">📝</span>
+                <div class="rv-stat-body">
+                    <span class="rv-stat-val">@_allReviews.Count</span>
+                    <span class="rv-stat-lbl">Total Reviews</span>
+                </div>
+            </div>
+            <div class="rv-stat-chip">
+                <span class="rv-stat-icon">😊</span>
+                <div class="rv-stat-body">
+                    <span class="rv-stat-val">@_positiveCount</span>
+                    <span class="rv-stat-lbl">Positive</span>
+                </div>
+            </div>
+            <div class="rv-stat-chip">
+                <span class="rv-stat-icon">⭐</span>
+                <div class="rv-stat-body">
+                    <span class="rv-stat-val">@(_allReviews.Count > 0 ? (_allReviews.Average(r => r.Rating)).ToString("F1") : "—")</span>
+                    <span class="rv-stat-lbl">Avg Rating</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MAIN SPLIT LAYOUT
+     ══════════════════════════════════════════════════════════════ -->
+<section class="rv-main-layout">
+
+    <!-- ── LEFT PANEL: Write a Review ──────────────────────────── -->
+    <div class="rv-form-panel">
+        <div class="rv-panel-header">
+            <span class="rv-panel-icon">✍️</span>
+            <div>
+                <h2 class="rv-panel-title">Write a Review</h2>
+                <p class="rv-panel-subtitle">Tell us about your experience</p>
+            </div>
+        </div>
+
+        @if (_submitSuccess)
+        {
+            <div class="rv-success-toast" role="alert">
+                <span class="rv-success-icon">✅</span>
+                <div>
+                    <strong>Review submitted!</strong>
+                    <p>Thank you for your feedback. Your review has been added to the feed.</p>
+                </div>
+                <button class="rv-toast-dismiss" @onclick="DismissSuccess" aria-label="Dismiss">×</button>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(_submitError))
+        {
+            <div class="rv-error-toast" role="alert">
+                <span>⚠️</span>
+                <div>
+                    <strong>Submission failed</strong>
+                    <p>@_submitError</p>
+                </div>
+                <button class="rv-toast-dismiss" @onclick="DismissError" aria-label="Dismiss">×</button>
+            </div>
+        }
+
+        <div class="rv-form-body">
+            <!-- Product Select -->
+            <div class="rv-field">
+                <label class="rv-label" for="rv-product-select">
+                    Select Product <span class="rv-required">*</span>
+                </label>
+                @if (_loadingProducts)
+                {
+                    <div class="rv-select-skeleton skeleton"></div>
+                }
+                else
+                {
+                    <div class="rv-select-wrap">
+                        <select id="rv-product-select"
+                                class="rv-select"
+                                @bind="_selectedProductId"
+                                @bind:after="OnProductChanged">
+                            <option value="0">— Choose a product —</option>
+                            @foreach (var product in _products)
+                            {
+                                <option value="@product.Id">@product.Name</option>
+                            }
+                        </select>
+                        <span class="rv-select-arrow">▾</span>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(_productError))
+                {
+                    <span class="rv-field-error">@_productError</span>
+                }
+            </div>
+
+            <!-- Star Rating -->
+            <div class="rv-field">
+                <label class="rv-label">
+                    Your Rating <span class="rv-required">*</span>
+                </label>
+                <div class="rv-stars-row" role="group" aria-label="Star rating selector">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        int star = i;
+                        <button id="rv-star-@star"
+                                type="button"
+                                class="rv-star @(star <= (_hoverRating > 0 ? _hoverRating : _newReview.Rating) ? "rv-star--filled" : "")"
+                                @onclick="@(() => SetRating(star))"
+                                @onmouseenter="@(() => _hoverRating = star)"
+                                @onmouseleave="@(() => _hoverRating = 0)"
+                                aria-label="@star star@(star == 1 ? "" : "s")">
+                            ★
+                        </button>
+                    }
+                    <span class="rv-star-label">
+                        @if (_newReview.Rating > 0)
+                        {
+                            @RatingLabel(_newReview.Rating)
+                        }
+                        else
+                        {
+                            <span class="rv-star-placeholder">Tap a star to rate</span>
+                        }
+                    </span>
+                </div>
+                @if (_formSubmitted && _newReview.Rating == 0)
+                {
+                    <span class="rv-field-error">Please select a rating.</span>
+                }
+            </div>
+
+            <!-- Comment Textarea -->
+            <div class="rv-field">
+                <label class="rv-label" for="rv-comment">
+                    Your Comment
+                    <span class="rv-label-hint">(optional — our AI will analyze the sentiment)</span>
+                </label>
+                <textarea id="rv-comment"
+                          class="rv-textarea"
+                          placeholder="Describe your experience with this product…"
+                          rows="5"
+                          maxlength="1000"
+                          @bind="_newReview.Comment"
+                          @bind:event="oninput"></textarea>
+                <div class="rv-char-count">
+                    @(_newReview.Comment?.Length ?? 0) / 1000
+                </div>
+            </div>
+
+            <!-- Auth Placeholder Notice -->
+            <div class="rv-auth-notice">
+                <span class="rv-auth-icon">🔐</span>
+                <p>
+                    <!-- AUTH PLACEHOLDER: CustomerId is hardcoded to 1 below as a development stub.
+                         TODO: Replace with the real authenticated customer ID once MaryamJ's
+                         authentication branch (auth-system) is merged into main. Wire this to:
+                         AuthStateService.CurrentUser.Id or equivalent auth state provider. -->
+                    Submitting as <strong>Guest Customer</strong> (Auth integration pending — see code comment).
+                </p>
+            </div>
+
+            <!-- Submit Button -->
+            <button id="rv-submit-btn"
+                    class="rv-submit-btn @(_isSubmitting ? "rv-submit-btn--loading" : "")"
+                    type="button"
+                    disabled="@(_isSubmitting || _selectedProductId == 0 || _newReview.Rating == 0)"
+                    @onclick="SubmitReviewAsync">
+                @if (_isSubmitting)
+                {
+                    <span class="rv-spinner"></span>
+                    <span>Submitting…</span>
+                }
+                else
+                {
+                    <span>Submit Review</span>
+                    <span class="rv-submit-arrow">→</span>
+                }
+            </button>
+        </div>
+    </div>
+
+    <!-- ── RIGHT PANEL: Review Feed ─────────────────────────────── -->
+    <div class="rv-feed-panel">
+        <div class="rv-panel-header">
+            <span class="rv-panel-icon">💬</span>
+            <div>
+                <h2 class="rv-panel-title">
+                    @if (_selectedProductId > 0)
+                    {
+                        @($"Reviews for {_selectedProductName}")
+                    }
+                    else
+                    {
+                        @("All Reviews")
+                    }
+                </h2>
+                <p class="rv-panel-subtitle">
+                    @if (_selectedProductId > 0)
+                    {
+                        @($"{_reviews.Count} review{(_reviews.Count == 1 ? "" : "s")} found")
+                    }
+                    else
+                    {
+                        <span>Select a product to filter</span>
+                    }
+                </p>
+            </div>
+
+            <!-- Feed Filter Pills -->
+            <div class="rv-filter-pills">
+                @foreach (var filter in new[] { "All", "Positive", "Neutral", "Negative" })
+                {
+                    <button id="rv-filter-@filter.ToLower()"
+                            type="button"
+                            class="rv-pill @(_activeSentimentFilter == filter ? "rv-pill--active" : "")"
+                            @onclick="@(() => SetSentimentFilter(filter))">
+                        @filter
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="rv-feed-scroll">
+            @if (_loadingReviews)
+            {
+                @for (int i = 0; i < 3; i++)
+                {
+                    <div class="rv-review-card rv-review-card--skeleton">
+                        <div class="rv-sk rv-sk--header"></div>
+                        <div class="rv-sk rv-sk--body"></div>
+                        <div class="rv-sk rv-sk--body rv-sk--short"></div>
+                    </div>
+                }
+            }
+            else if (!string.IsNullOrEmpty(_feedError))
+            {
+                <div class="rv-feed-empty">
+                    <span class="rv-empty-icon">⚠️</span>
+                    <p class="rv-empty-msg">@_feedError</p>
+                </div>
+            }
+            else if (FilteredReviews.Count == 0)
+            {
+                <div class="rv-feed-empty">
+                    <span class="rv-empty-icon">🌟</span>
+                    <p class="rv-empty-title">No reviews yet</p>
+                    <p class="rv-empty-msg">
+                        @if (_selectedProductId > 0)
+                        {
+                            @("Be the first to share your thoughts on this product!")
+                        }
+                        else
+                        {
+                            @("Select a product on the left and be the first to review it.")
+                        }
+                    </p>
+                </div>
+            }
+            else
+            {
+                @foreach (var review in FilteredReviews)
+                {
+                    <article id="rv-card-@review.Id" class="rv-review-card">
+
+                        <!-- Card Top Row: Avatar + Meta + Sentiment Badge -->
+                        <div class="rv-card-top">
+                            <div class="rv-avatar" aria-hidden="true">
+                                @GetAvatarInitial(review.CustomerName)
+                            </div>
+                            <div class="rv-card-meta">
+                                <span class="rv-card-customer">
+                                    @(string.IsNullOrEmpty(review.CustomerName) ? "Anonymous" : review.CustomerName)
+                                </span>
+                                <span class="rv-card-product">on <em>@review.ProductName</em></span>
+                                <time class="rv-card-date" datetime="@review.CreatedAt.ToString("o")">
+                                    @FormatDate(review.CreatedAt)
+                                </time>
+                            </div>
+                            <span class="rv-sentiment-badge rv-sentiment-badge--@review.Sentiment.ToLower()" aria-label="Sentiment: @review.Sentiment">
+                                @SentimentIcon(review.Sentiment) @review.Sentiment
+                            </span>
+                        </div>
+
+                        <!-- Star Display -->
+                        <div class="rv-card-stars" aria-label="Rating: @review.Rating out of 5">
+                            @for (int s = 1; s <= 5; s++)
+                            {
+                                <span class="rv-card-star @(s <= review.Rating ? "rv-card-star--filled" : "")">★</span>
+                            }
+                            <span class="rv-card-rating-num">@review.Rating.ToString("F0")/5</span>
+                        </div>
+
+                        <!-- Comment -->
+                        @if (!string.IsNullOrWhiteSpace(review.Comment))
+                        {
+                            <p class="rv-card-comment">"@review.Comment"</p>
+                        }
+                        else
+                        {
+                            <p class="rv-card-comment rv-card-comment--empty">No written comment provided.</p>
+                        }
+
+                        <!-- Sentiment Score Bar -->
+                        @if (!string.IsNullOrEmpty(review.Sentiment))
+                        {
+                            <div class="rv-score-bar-wrap" aria-label="Sentiment score">
+                                <span class="rv-score-bar-label">Sentiment Confidence</span>
+                                <div class="rv-score-bar-track">
+                                    <div class="rv-score-bar-fill rv-score-bar-fill--@review.Sentiment.ToLower()"
+                                         style="width: @((review.SentimentScore * 100).ToString("F0"))%">
+                                    </div>
+                                </div>
+                                <span class="rv-score-bar-pct">@((review.SentimentScore * 100).ToString("F0"))%</span>
+                            </div>
+                        }
+                    </article>
+                }
+            }
+        </div>
+    </div>
+
+</section>
+
+@code {
+    // ── State: Products ──────────────────────────────────────────
+    private List<ProductDto>  _products       = new();
+    private bool              _loadingProducts = true;
+    private string?           _productError;
+
+    // ── State: Review Form ───────────────────────────────────────
+    private int               _selectedProductId   = 0;
+    private string            _selectedProductName = string.Empty;
+    private int               _hoverRating         = 0;
+    private bool              _formSubmitted       = false;
+    private bool              _isSubmitting        = false;
+    private bool              _submitSuccess        = false;
+    private string?           _submitError;
+
+    /// <summary>
+    /// The CreateReviewDto being built by the form.
+    /// CustomerId is a hardcoded placeholder (1).
+    ///
+    /// TODO: Replace CustomerId with the real authenticated user's ID once
+    /// MaryamJ's authentication branch (auth-system) is merged into main.
+    /// Wire to: AuthStateService.CurrentUser.Id or the equivalent cascading
+    /// AuthenticationState that her system exposes.
+    /// </summary>
+    private CreateReviewDto _newReview = new()
+    {
+        CustomerId = 1  // ← PLACEHOLDER — see TODO above
+    };
+
+    // ── State: Review Feed ───────────────────────────────────────
+    private List<ReviewDto>  _reviews        = new();
+    private List<ReviewDto>  _allReviews     = new();
+    private bool             _loadingReviews = false;
+    private string?          _feedError;
+    private string           _activeSentimentFilter = "All";
+
+    // ── Computed ─────────────────────────────────────────────────
+    private int _positiveCount => _allReviews.Count(r => r.Sentiment == "Positive");
+
+    private List<ReviewDto> FilteredReviews =>
+        _activeSentimentFilter == "All"
+            ? _reviews
+            : _reviews.Where(r => r.Sentiment == _activeSentimentFilter).ToList();
+
+    // ── Lifecycle ────────────────────────────────────────────────
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadProductsAsync(), LoadAllReviewsAsync());
+    }
+
+    // ── Data Loaders ─────────────────────────────────────────────
+    private async Task LoadProductsAsync()
+    {
+        _loadingProducts = true;
+        try
+        {
+            var result = await ProductService.GetAll();
+            if (result.Success && result.Data is not null)
+                _products = result.Data.Where(p => p.IsActive).OrderBy(p => p.Name).ToList();
+            else
+                _productError = result.Message;
+        }
+        catch (Exception ex)
+        {
+            _productError = $"Could not load products: {ex.Message}";
+        }
+        finally
+        {
+            _loadingProducts = false;
+        }
+    }
+
+    private async Task LoadAllReviewsAsync()
+    {
+        try
+        {
+            var result = await ReviewService.GetAll();
+            if (result.Success && result.Data is not null)
+            {
+                _allReviews = result.Data;
+                _reviews    = result.Data;
+            }
+        }
+        catch { /* Non-critical — stat chips will show 0 */ }
+    }
+
+    private async Task LoadReviewsForProductAsync(int productId)
+    {
+        _loadingReviews = true;
+        _feedError      = null;
+        _reviews        = new();
+        try
+        {
+            var result = await ReviewService.GetByProduct(productId);
+            if (result.Success && result.Data is not null)
+                _reviews = result.Data;
+            else
+                _feedError = result.Message;
+        }
+        catch (Exception ex)
+        {
+            _feedError = $"Could not load reviews: {ex.Message}";
+        }
+        finally
+        {
+            _loadingReviews = false;
+        }
+    }
+
+    // ── Event Handlers ───────────────────────────────────────────
+    private async Task OnProductChanged()
+    {
+        _activeSentimentFilter = "All";
+        _newReview.ProductId   = _selectedProductId;
+
+        var product = _products.FirstOrDefault(p => p.Id == _selectedProductId);
+        _selectedProductName = product?.Name ?? string.Empty;
+
+        if (_selectedProductId > 0)
+            await LoadReviewsForProductAsync(_selectedProductId);
+        else
+            _reviews = _allReviews;
+    }
+
+    private void SetRating(int rating)
+    {
+        _newReview.Rating = rating;
+    }
+
+    private void SetSentimentFilter(string filter)
+    {
+        _activeSentimentFilter = filter;
+    }
+
+    private async Task SubmitReviewAsync()
+    {
+        _formSubmitted = true;
+        _submitError   = null;
+
+        if (_selectedProductId == 0 || _newReview.Rating == 0)
+            return;
+
+        _isSubmitting = true;
+        try
+        {
+            _newReview.ProductId = _selectedProductId;
+
+            var result = await ReviewService.Create(_newReview);
+            if (result.Success && result.Data is not null)
+            {
+                _submitSuccess = true;
+
+                // Prepend new review to the local feeds for instant UI refresh
+                _reviews.Insert(0, result.Data);
+                _allReviews.Insert(0, result.Data);
+
+                // Reset form fields (keep product and CustomerId placeholder)
+                _newReview = new CreateReviewDto
+                {
+                    CustomerId = 1,  // ← PLACEHOLDER — see TODO above
+                    ProductId  = _selectedProductId
+                };
+                _formSubmitted = false;
+                _hoverRating   = 0;
+            }
+            else
+            {
+                _submitError = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            _submitError = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private void DismissSuccess() => _submitSuccess = false;
+    private void DismissError()   => _submitError   = null;
+
+    // ── Helpers ──────────────────────────────────────────────────
+    private static string RatingLabel(int rating) => rating switch
+    {
+        1 => "😞 Poor",
+        2 => "😕 Fair",
+        3 => "😐 Average",
+        4 => "😊 Good",
+        5 => "🤩 Excellent",
+        _ => string.Empty
+    };
+
+    private static string SentimentIcon(string sentiment) => sentiment switch
+    {
+        "Positive" => "😊",
+        "Negative" => "😞",
+        "Neutral"  => "😐",
+        _          => "❓"
+    };
+
+    private static string GetAvatarInitial(string name)
+        => string.IsNullOrEmpty(name) ? "?" : name[0].ToString().ToUpper();
+
+    private static string FormatDate(DateTime dt)
+    {
+        var diff = DateTime.UtcNow - dt.ToUniversalTime();
+        if      (diff.TotalMinutes < 2)  return "just now";
+        else if (diff.TotalHours   < 1)  return $"{(int)diff.TotalMinutes}m ago";
+        else if (diff.TotalDays    < 1)  return $"{(int)diff.TotalHours}h ago";
+        else if (diff.TotalDays    < 7)  return $"{(int)diff.TotalDays}d ago";
+        else return dt.ToString("MMM d, yyyy");
+    }
+}
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCOPED STYLES — ALL COLORS FROM colors.css VARIABLES
+     ══════════════════════════════════════════════════════════════ -->
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@@300;400;500;600;700;800&display=swap');
+
+    /* ── Box-sizing reset ── */
+    .rv-hero *,
+    .rv-main-layout *,
+    .rv-form-panel *,
+    .rv-feed-panel * {
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       HERO SECTION
+       ════════════════════════════════════════════════════════════ */
+    .rv-hero {
+        background: var(--color-navbar-bg);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .rv-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 20% 60%, rgba(196,132,138,.2) 0%, transparent 65%);
+        pointer-events: none;
+    }
+
+    .rv-hero-inner {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 3.5rem 2.5rem 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .rv-hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        font-size: .75rem;
+        font-weight: 700;
+        letter-spacing: 1.8px;
+        text-transform: uppercase;
+        color: var(--color-button-primary);
+        background: rgba(196,132,138,.15);
+        border: 1px solid rgba(196,132,138,.3);
+        border-radius: 50px;
+        padding: .3rem .9rem;
+        margin-bottom: 1rem;
+        display: block;
+        width: fit-content;
+    }
+
+    .rv-hero-title {
+        font-size: clamp(1.75rem, 3.5vw, 2.6rem);
+        font-weight: 800;
+        color: var(--color-page-bg);
+        margin: 0 0 .65rem;
+        line-height: 1.15;
+    }
+
+    .rv-hero-sub {
+        font-size: .98rem;
+        color: rgba(255,248,220,.65);
+        margin: 0;
+        max-width: 480px;
+        line-height: 1.6;
+    }
+
+    /* Stat chips row */
+    .rv-hero-stat-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .rv-stat-chip {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        background: rgba(255,248,220,.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,248,220,.2);
+        border-radius: 14px;
+        padding: .75rem 1.1rem;
+        min-width: 120px;
+    }
+
+    .rv-stat-icon { font-size: 1.5rem; }
+
+    .rv-stat-body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .rv-stat-val {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--color-page-bg);
+        line-height: 1;
+    }
+
+    .rv-stat-lbl {
+        font-size: .7rem;
+        color: rgba(255,248,220,.55);
+        font-weight: 500;
+        margin-top: .15rem;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       SPLIT LAYOUT
+       ════════════════════════════════════════════════════════════ */
+    .rv-main-layout {
+        max-width: 1280px;
+        margin: 2.5rem auto 4rem;
+        padding: 0 2rem;
+        display: grid;
+        grid-template-columns: minmax(340px, 440px) 1fr;
+        gap: 1.75rem;
+        align-items: start;
+    }
+
+    @@media (max-width: 900px) {
+        .rv-main-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       PANEL SHARED
+       ════════════════════════════════════════════════════════════ */
+    .rv-form-panel,
+    .rv-feed-panel {
+        background: #fff;
+        border: 1px solid rgba(61,28,2,.09);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(61,28,2,.07);
+    }
+
+    .rv-panel-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.5rem 1.75rem 1.2rem;
+        border-bottom: 1px solid rgba(61,28,2,.07);
+        background: var(--color-card-bg);
+        flex-wrap: wrap;
+    }
+
+    .rv-panel-icon {
+        font-size: 1.6rem;
+        flex-shrink: 0;
+        margin-top: .1rem;
+    }
+
+    .rv-panel-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        margin: 0 0 .2rem;
+    }
+
+    .rv-panel-subtitle {
+        font-size: .82rem;
+        color: var(--color-primary-text);
+        opacity: .55;
+        margin: 0;
+    }
+
+    /* ════════════════════════════════════════════════════════════
+       FORM PANEL
+       ════════════════════════════════════════════════════════════ */
+    .rv-form-body {
+        padding: 1.5rem 1.75rem 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.35rem;
+    }
+
+    /* Field */
+    .rv-field {
+        display: flex;
+        flex-direction: column;
+        gap: .45rem;
+    }
+
+    .rv-label {
+        font-size: .82rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        letter-spacing: .2px;
+    }
+
+    .rv-label-hint {
+        font-weight: 400;
+        opacity: .55;
+        font-size: .75rem;
+    }
+
+    .rv-required {
+        color: #c0392b;
+        margin-left: 2px;
+    }
+
+    .rv-field-error {
+        font-size: .76rem;
+        color: #c0392b;
+        font-weight: 600;
+    }
+
+    /* Select */
+    .rv-select-wrap {
+        position: relative;
+    }
+
+    .rv-select {
+        width: 100%;
+        appearance: none;
+        -webkit-appearance: none;
+        background: var(--color-page-bg);
+        border: 1.5px solid rgba(61,28,2,.18);
+        border-radius: 10px;
+        padding: .7rem 2.4rem .7rem .85rem;
+        font-size: .9rem;
+        font-weight: 500;
+        color: var(--color-primary-text);
+        cursor: pointer;
+        transition: border-color .18s, box-shadow .18s;
+        outline: none;
+    }
+
+    .rv-select:focus {
+        border-color: var(--color-border-accent);
+        box-shadow: 0 0 0 3px rgba(196,132,138,.18);
+    }
+
+    .rv-select-arrow {
+        position: absolute;
+        right: .85rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: .85rem;
+        color: var(--color-button-primary);
+        pointer-events: none;
+    }
+
+    .rv-select-skeleton {
+        height: 42px;
+        border-radius: 10px;
+        background: linear-gradient(90deg, rgba(61,28,2,.07) 25%, rgba(61,28,2,.12) 50%, rgba(61,28,2,.07) 75%);
+        background-size: 200% 100%;
+        animation: rv-shimmer 1.4s infinite;
+    }
+
+    /* Star Rating */
+    .rv-stars-row {
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+    .rv-star {
+        font-size: 2rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0 .1rem;
+        color: rgba(61,28,2,.15);
+        transition: color .12s, transform .1s;
+        line-height: 1;
+    }
+
+    .rv-star--filled,
+    .rv-star:hover {
+        color: #F5A623;
+    }
+
+    .rv-star:hover {
+        transform: scale(1.18);
+    }
+
+    .rv-star-label {
+        font-size: .85rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        margin-left: .4rem;
+    }
+
+    .rv-star-placeholder {
+        font-weight: 400;
+        opacity: .45;
+    }
+
+    /* Textarea */
+    .rv-textarea {
+        width: 100%;
+        resize: vertical;
+        background: var(--color-page-bg);
+        border: 1.5px solid rgba(61,28,2,.18);
+        border-radius: 10px;
+        padding: .75rem .9rem;
+        font-size: .9rem;
+        color: var(--color-primary-text);
+        line-height: 1.6;
+        outline: none;
+        transition: border-color .18s, box-shadow .18s;
+        min-height: 110px;
+    }
+
+    .rv-textarea:focus {
+        border-color: var(--color-border-accent);
+        box-shadow: 0 0 0 3px rgba(196,132,138,.18);
+    }
+
+    .rv-textarea::placeholder {
+        color: rgba(61,28,2,.35);
+    }
+
+    .rv-char-count {
+        font-size: .73rem;
+        color: var(--color-primary-text);
+        opacity: .45;
+        text-align: right;
+    }
+
+    /* Auth Notice */
+    .rv-auth-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: .65rem;
+        background: rgba(196,132,138,.08);
+        border: 1px solid rgba(196,132,138,.25);
+        border-radius: 10px;
+        padding: .75rem 1rem;
+    }
+
+    .rv-auth-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: .05rem; }
+
+    .rv-auth-notice p {
+        font-size: .8rem;
+        color: var(--color-primary-text);
+        margin: 0;
+        line-height: 1.5;
+        opacity: .75;
+    }
+
+    .rv-auth-notice strong {
+        opacity: 1;
+        color: var(--color-heading-text);
+    }
+
+    /* Submit Button */
+    .rv-submit-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .55rem;
+        width: 100%;
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: .9rem 1.5rem;
+        font-size: .95rem;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: .3px;
+        transition: background .18s, transform .12s, box-shadow .18s, opacity .18s;
+        box-shadow: 0 4px 18px rgba(196,132,138,.3);
+        margin-top: .25rem;
+    }
+
+    .rv-submit-btn:hover:not(:disabled) {
+        background: var(--color-button-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 26px rgba(196,132,138,.4);
+    }
+
+    .rv-submit-btn:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .rv-submit-arrow {
+        font-size: 1.1rem;
+        transition: transform .18s;
+    }
+
+    .rv-submit-btn:hover:not(:disabled) .rv-submit-arrow {
+        transform: translateX(4px);
+    }
+
+    /* Spinner */
+    .rv-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,.4);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: rv-spin 0.75s linear infinite;
+        flex-shrink: 0;
+    }
+
+    /* Toasts */
+    .rv-success-toast,
+    .rv-error-toast {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        border-radius: 12px;
+        padding: 1rem 1.2rem;
+        margin: 1.25rem 1.75rem 0;
+        font-size: .85rem;
+        position: relative;
+    }
+
+    .rv-success-toast {
+        background: #E8F5E9;
+        border: 1px solid #A5D6A7;
+        color: #2E7D32;
+    }
+
+    .rv-error-toast {
+        background: #FFEBEE;
+        border: 1px solid #EF9A9A;
+        color: #C62828;
+    }
+
+    .rv-success-icon { font-size: 1.2rem; flex-shrink: 0; }
+
+    .rv-success-toast strong,
+    .rv-error-toast strong {
+        display: block;
+        font-weight: 700;
+        margin-bottom: .15rem;
+    }
+
+    .rv-success-toast p,
+    .rv-error-toast p {
+        margin: 0;
+        opacity: .85;
+    }
+
+    .rv-toast-dismiss {
+        position: absolute;
+        top: .6rem;
+        right: .7rem;
+        background: none;
+        border: none;
+        font-size: 1.1rem;
+        cursor: pointer;
+        line-height: 1;
+        opacity: .6;
+        color: inherit;
+        padding: 0;
+    }
+
+    .rv-toast-dismiss:hover { opacity: 1; }
+
+    /* ════════════════════════════════════════════════════════════
+       FEED PANEL
+       ════════════════════════════════════════════════════════════ */
+    .rv-feed-panel .rv-panel-header {
+        align-items: center;
+    }
+
+    .rv-filter-pills {
+        display: flex;
+        gap: .5rem;
+        margin-left: auto;
+        flex-wrap: wrap;
+    }
+
+    .rv-pill {
+        font-size: .75rem;
+        font-weight: 600;
+        padding: .35rem .85rem;
+        border-radius: 50px;
+        border: 1.5px solid rgba(61,28,2,.18);
+        background: transparent;
+        color: var(--color-primary-text);
+        cursor: pointer;
+        transition: border-color .15s, background .15s, color .15s;
+    }
+
+    .rv-pill:hover {
+        border-color: var(--color-border-accent);
+        color: var(--color-button-primary);
+    }
+
+    .rv-pill--active {
+        background: var(--color-button-primary);
+        border-color: var(--color-button-primary);
+        color: #fff;
+    }
+
+    /* Scrollable feed */
+    .rv-feed-scroll {
+        padding: 1.25rem 1.5rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+        max-height: 700px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(196,132,138,.4) transparent;
+    }
+
+    .rv-feed-scroll::-webkit-scrollbar { width: 5px; }
+    .rv-feed-scroll::-webkit-scrollbar-track { background: transparent; }
+    .rv-feed-scroll::-webkit-scrollbar-thumb {
+        background: rgba(196,132,138,.4);
+        border-radius: 4px;
+    }
+
+    /* Empty / Error state */
+    .rv-feed-empty {
+        text-align: center;
+        padding: 3.5rem 1rem 3rem;
+        color: var(--color-primary-text);
+    }
+
+    .rv-empty-icon {
+        display: block;
+        font-size: 2.8rem;
+        margin-bottom: .75rem;
+    }
+
+    .rv-empty-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        margin: 0 0 .4rem;
+    }
+
+    .rv-empty-msg {
+        font-size: .88rem;
+        opacity: .55;
+        margin: 0;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    /* ── Review Card ── */
+    .rv-review-card {
+        background: var(--color-page-bg);
+        border: 1px solid rgba(61,28,2,.08);
+        border-radius: 14px;
+        padding: 1.1rem 1.25rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: .65rem;
+        transition: box-shadow .18s, border-color .18s;
+        animation: rv-fade-in .25s ease;
+    }
+
+    .rv-review-card:hover {
+        box-shadow: 0 6px 22px rgba(61,28,2,.09);
+        border-color: rgba(196,132,138,.3);
+    }
+
+    /* Card Top Row */
+    .rv-card-top {
+        display: flex;
+        align-items: flex-start;
+        gap: .85rem;
+    }
+
+    .rv-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--color-button-primary), var(--color-button-hover));
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .rv-card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: .12rem;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rv-card-customer {
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .rv-card-product {
+        font-size: .77rem;
+        color: var(--color-primary-text);
+        opacity: .6;
+    }
+
+    .rv-card-product em {
+        font-style: normal;
+        font-weight: 600;
+        opacity: 1;
+    }
+
+    .rv-card-date {
+        font-size: .73rem;
+        color: var(--color-primary-text);
+        opacity: .4;
+    }
+
+    /* Sentiment Badge */
+    .rv-sentiment-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        font-size: .73rem;
+        font-weight: 700;
+        letter-spacing: .4px;
+        padding: .3rem .75rem;
+        border-radius: 50px;
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    /* Positive — Soft Pastel Green (harmonizes with Buttermilk bg) */
+    .rv-sentiment-badge--positive {
+        background: #E8F5E9;
+        color: #2E7D32;
+        border: 1px solid #A5D6A7;
+    }
+
+    /* Neutral — Warm Taupe/Mocha Grey (complements Chocolate Brown brand) */
+    .rv-sentiment-badge--neutral {
+        background: #EFEBE9;
+        color: #5D4037;
+        border: 1px solid #BCAAA4;
+    }
+
+    /* Negative — Soft Pastel Red */
+    .rv-sentiment-badge--negative {
+        background: #FFEBEE;
+        color: #C62828;
+        border: 1px solid #EF9A9A;
+    }
+
+    /* Empty badge when sentiment is not yet determined */
+    .rv-sentiment-badge-- {
+        background: rgba(61,28,2,.07);
+        color: var(--color-primary-text);
+        border: 1px solid rgba(61,28,2,.15);
+    }
+
+    /* Star Display (read-only) */
+    .rv-card-stars {
+        display: flex;
+        align-items: center;
+        gap: .1rem;
+    }
+
+    .rv-card-star {
+        font-size: 1.05rem;
+        color: rgba(61,28,2,.15);
+    }
+
+    .rv-card-star--filled {
+        color: #F5A623;
+    }
+
+    .rv-card-rating-num {
+        font-size: .75rem;
+        font-weight: 700;
+        color: var(--color-primary-text);
+        opacity: .5;
+        margin-left: .4rem;
+    }
+
+    /* Comment */
+    .rv-card-comment {
+        font-size: .88rem;
+        color: var(--color-primary-text);
+        line-height: 1.65;
+        margin: 0;
+        font-style: italic;
+    }
+
+    .rv-card-comment--empty {
+        opacity: .38;
+        font-style: normal;
+    }
+
+    /* Sentiment Score Bar */
+    .rv-score-bar-wrap {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        margin-top: .1rem;
+    }
+
+    .rv-score-bar-label {
+        font-size: .7rem;
+        color: var(--color-primary-text);
+        opacity: .45;
+        white-space: nowrap;
+    }
+
+    .rv-score-bar-track {
+        flex: 1;
+        height: 5px;
+        background: rgba(61,28,2,.1);
+        border-radius: 50px;
+        overflow: hidden;
+    }
+
+    .rv-score-bar-fill {
+        height: 100%;
+        border-radius: 50px;
+        transition: width .4s ease;
+    }
+
+    .rv-score-bar-fill--positive { background: #66BB6A; }
+    .rv-score-bar-fill--neutral  { background: #8D6E63; }
+    .rv-score-bar-fill--negative { background: #EF5350; }
+
+    .rv-score-bar-pct {
+        font-size: .7rem;
+        font-weight: 700;
+        color: var(--color-primary-text);
+        opacity: .45;
+        min-width: 30px;
+        text-align: right;
+    }
+
+    /* ── Skeleton Screens ── */
+    .rv-review-card--skeleton {
+        pointer-events: none;
+        gap: .85rem;
+    }
+
+    .skeleton,
+    .rv-sk {
+        background: linear-gradient(90deg, rgba(61,28,2,.07) 25%, rgba(61,28,2,.12) 50%, rgba(61,28,2,.07) 75%);
+        background-size: 200% 100%;
+        animation: rv-shimmer 1.4s infinite;
+        border-radius: 6px;
+    }
+
+    .rv-sk--header {
+        height: 40px;
+        width: 60%;
+    }
+
+    .rv-sk--body {
+        height: 14px;
+        width: 100%;
+    }
+
+    .rv-sk--short {
+        width: 75%;
+    }
+
+    /* ── Animations ── */
+    @@keyframes rv-shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    @@keyframes rv-spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @@keyframes rv-fade-in {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+</style>
