@@ -1,0 +1,1105 @@
+@page "/manager/low-stock"
+@rendermode InteractiveServer
+
+@inject IInventoryService InventoryService
+@inject IProductService ProductService
+@inject NavigationManager Navigation
+
+<PageTitle>Low Stock &amp; Reorder Alerts</PageTitle>
+
+<div class="ls-page p-4">
+
+    @* ── Page Header & KPI Summary ───────────────────────────────── *@
+    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-start gap-4 mb-5">
+        <div>
+            <div class="ls-page-eyebrow mb-1">Inventory Intelligence</div>
+            <h1 class="ls-page-title mb-1">Low Stock &amp; Reorder Alerts</h1>
+            <p class="ls-page-subtitle mb-0">
+                Monitor products approaching their reorder thresholds and take immediate action.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-3 flex-shrink-0">
+            <div class="ls-kpi-card ls-kpi-critical">
+                <div class="ls-kpi-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="ls-kpi-label">Critical Items</div>
+                    <div class="ls-kpi-value">@CriticalCount</div>
+                </div>
+            </div>
+            <div class="ls-kpi-card ls-kpi-warning">
+                <div class="ls-kpi-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="ls-kpi-label">At Reorder Level</div>
+                    <div class="ls-kpi-value">@AtLevelCount</div>
+                </div>
+            </div>
+            <div class="ls-kpi-card ls-kpi-total">
+                <div class="ls-kpi-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M0 2.5A.5.5 0 0 1 .5 2H2a.5.5 0 0 1 .485.379L2.89 4H14.5a.5.5 0 0 1 .485.621l-1.5 6A.5.5 0 0 1 13 11H4a.5.5 0 0 1-.485-.379L1.61 3H.5a.5.5 0 0 1-.5-.5M3.14 5l1.25 5h8.22l1.25-5zM5 13a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0m9-1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="ls-kpi-label">Total Alerts</div>
+                    <div class="ls-kpi-value">@TotalAlerts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Status Messages ─────────────────────────────────────────── *@
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="ls-alert ls-alert-error mb-4" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="flex-shrink-0">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+            </svg>
+            <div><strong>Failed to load.</strong> @ErrorMessage</div>
+        </div>
+    }
+
+    @* ── Search, Filter & Refresh Controls ──────────────────────── *@
+    <div class="ls-controls-bar mb-4">
+        <div class="ls-search-wrap">
+            <svg class="ls-search-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.099zm-5.242 1.156a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11"/>
+            </svg>
+            <input id="ls-search-input"
+                   class="ls-search-input"
+                   type="text"
+                   placeholder="Search by product name, SKU, or ID…"
+                   value="@SearchText"
+                   @oninput="OnSearchInput" />
+            @if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                <button class="ls-search-clear" type="button" @onclick="ClearSearch" aria-label="Clear search">&times;</button>
+            }
+        </div>
+        <div class="d-flex gap-2 flex-shrink-0">
+            <button id="ls-sort-toggle"
+                    class="btn ls-filter-btn @(SortByUrgency ? "ls-filter-btn-active" : "")"
+                    type="button"
+                    @onclick="ToggleSortByUrgency">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                    <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
+                </svg>
+                @(SortByUrgency ? "Most Urgent First" : "Sort: Default")
+            </button>
+            <button id="ls-refresh-btn"
+                    class="btn ls-refresh-btn"
+                    type="button"
+                    @onclick="RefreshAsync"
+                    disabled="@IsLoading"
+                    title="Refresh alerts">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" class="@(IsLoading ? "ls-spin" : "")">
+                    <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
+                </svg>
+                <span class="ms-1 d-none d-sm-inline">@(IsLoading ? "Refreshing…" : "Refresh")</span>
+            </button>
+        </div>
+    </div>
+
+    @* ── Main Content: Loading / Empty / Table ────────────────────── *@
+    @if (lowStockItems == null)
+    {
+        @* Loading skeleton state *@
+        <div class="ls-card">
+            <div class="ls-skeleton-header p-3 ls-border-bottom">
+                <div class="ls-skeleton ls-skeleton-text" style="width: 180px; height: 16px;"></div>
+                <div class="ls-skeleton ls-skeleton-text" style="width: 80px; height: 24px; border-radius: 20px;"></div>
+            </div>
+            <div class="table-responsive">
+                <table class="table ls-table mb-0">
+                    <thead class="ls-table-head">
+                        <tr>
+                            <th>Product</th>
+                            <th>SKU / ID</th>
+                            <th>Current Stock</th>
+                            <th>Reorder Level</th>
+                            <th>Deficit</th>
+                            <th>Last Updated</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var s = 0; s < 5; s++)
+                        {
+                            <tr>
+                                <td><div class="ls-skeleton ls-skeleton-text" style="width: 130px; height: 14px;"></div></td>
+                                <td><div class="ls-skeleton ls-skeleton-text" style="width: 80px; height: 14px;"></div></td>
+                                <td><div class="ls-skeleton ls-skeleton-text" style="width: 60px; height: 14px;"></div></td>
+                                <td><div class="ls-skeleton ls-skeleton-text" style="width: 60px; height: 14px;"></div></td>
+                                <td><div class="ls-skeleton ls-skeleton-text" style="width: 50px; height: 14px;"></div></td>
+                                <td><div class="ls-skeleton ls-skeleton-text" style="width: 100px; height: 14px;"></div></td>
+                                <td class="text-end"><div class="ls-skeleton ls-skeleton-text" style="width: 110px; height: 32px; border-radius: 6px; margin-left: auto;"></div></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <section class="ls-card">
+            @* Table header strip *@
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 p-3 ls-border-bottom">
+                <div>
+                    <h2 class="ls-section-title mb-0">Alert Register</h2>
+                    <p class="ls-section-subtitle mb-0">Products at or below their reorder threshold require immediate procurement action.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    @if (!string.IsNullOrWhiteSpace(SearchText))
+                    {
+                        <span class="ls-filter-tag">
+                            &ldquo;@SearchText&rdquo;
+                            <button class="ls-filter-tag-close" type="button" @onclick="ClearSearch">&times;</button>
+                        </span>
+                    }
+                    <span class="ls-count-badge">@DisplayedItems.Count alert(s)</span>
+                </div>
+            </div>
+
+            @* Data table *@
+            <div class="table-responsive">
+                <table class="table ls-table mb-0" id="ls-alert-table">
+                    <thead class="ls-table-head">
+                        <tr>
+                            <th scope="col">Product</th>
+                            <th scope="col">SKU / ID</th>
+                            <th scope="col">Current Stock</th>
+                            <th scope="col">Reorder Level</th>
+                            <th scope="col">Deficit</th>
+                            <th scope="col">Last Updated</th>
+                            <th scope="col" class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (DisplayedItems.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="7" class="p-5 text-center">
+                                    <div class="ls-empty-state">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                            <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                                        </svg>
+                                        <div class="ls-empty-title">
+                                            @(string.IsNullOrWhiteSpace(SearchText)
+                                                ? "All Clear — No Low Stock Items"
+                                                : "No Results Found")
+                                        </div>
+                                        <div class="ls-empty-subtitle">
+                                            @(string.IsNullOrWhiteSpace(SearchText)
+                                                ? "All inventory levels are currently above their reorder thresholds."
+                                                : $"No alerts match \"{SearchText}\". Try a different search term.")
+                                        </div>
+                                        @if (!string.IsNullOrWhiteSpace(SearchText))
+                                        {
+                                            <button class="btn ls-btn-outline mt-3" type="button" @onclick="ClearSearch">Clear Search</button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in PagedItems)
+                            {
+                                var deficit = item.ReorderLevel - item.Quantity;
+                                var isCritical = item.Quantity == 0;
+                                var urgencyClass = GetUrgencyRowClass(item);
+
+                                <tr class="ls-table-row @urgencyClass" id="ls-row-@item.Id">
+                                    @* Product Name + Supplier *@
+                                    <td class="p-3">
+                                        <div class="ls-product-name">@item.ProductName</div>
+                                        <div class="ls-product-supplier">@GetSupplier(item.ProductId)</div>
+                                    </td>
+                                    @* SKU / Product ID *@
+                                    <td class="p-3">
+                                        <div class="ls-sku-pill">@GetSku(item.ProductId)</div>
+                                        <div class="ls-product-id">ID: @item.ProductId</div>
+                                    </td>
+                                    @* Current Stock with urgency badge *@
+                                    <td class="p-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="ls-stock-value @(isCritical ? "ls-stock-zero" : "ls-stock-low")">@item.Quantity</span>
+                                            <span class="ls-urgency-badge @GetUrgencyBadgeClass(item)">
+                                                @GetUrgencyLabel(item)
+                                            </span>
+                                        </div>
+                                    </td>
+                                    @* Reorder Level *@
+                                    <td class="p-3">
+                                        <span class="ls-reorder-level">@item.ReorderLevel</span>
+                                    </td>
+                                    @* Deficit *@
+                                    <td class="p-3">
+                                        <span class="ls-deficit @(deficit > 0 ? "ls-deficit-positive" : "ls-deficit-met")">
+                                            @(deficit > 0 ? $"+{deficit}" : "—")
+                                        </span>
+                                    </td>
+                                    @* Last Updated *@
+                                    <td class="p-3">
+                                        <span class="ls-date">@item.LastUpdated.ToLocalTime().ToString("dd MMM yyyy")</span>
+                                        <div class="ls-time">@item.LastUpdated.ToLocalTime().ToString("HH:mm")</div>
+                                    </td>
+                                    @* Quick Reorder Button *@
+                                    <td class="p-3 text-end">
+                                        <button id="ls-reorder-@item.Id"
+                                                class="btn ls-btn-reorder"
+                                                type="button"
+                                                @onclick="() => NavigateToPurchaseOrders(item)">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                                            </svg>
+                                            Quick Reorder
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @* Pagination Footer *@
+            @if (TotalPages > 1)
+            {
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 p-3 ls-border-top">
+                    <p class="mb-0 ls-page-info">
+                        Showing <strong>@PagedItems.Count</strong> of <strong>@DisplayedItems.Count</strong> alerts
+                    </p>
+                    <div class="btn-group" role="group" aria-label="Alert list pagination">
+                        <button class="btn ls-btn-outline btn-sm" type="button" @onclick="PreviousPage" disabled="@IsFirstPage">&lsaquo;</button>
+                        @foreach (var page in Enumerable.Range(1, TotalPages))
+                        {
+                            <button class="btn @(page == CurrentPage ? "ls-btn-primary" : "ls-btn-outline") btn-sm ls-page-btn"
+                                    type="button"
+                                    @onclick="() => GoToPage(page)">
+                                @(page)
+                            </button>
+                        }
+                        <button class="btn ls-btn-outline btn-sm" type="button" @onclick="NextPage" disabled="@IsLastPage">&rsaquo;</button>
+                    </div>
+                </div>
+            }
+            else if (DisplayedItems.Count > 0)
+            {
+                <div class="p-3 ls-border-top">
+                    <p class="mb-0 ls-page-info">Showing all <strong>@DisplayedItems.Count</strong> alert(s)</p>
+                </div>
+            }
+        </section>
+    }
+
+    @* ── Quick Navigation Links ──────────────────────────────────── *@
+    <div class="d-flex flex-wrap gap-3 mt-4">
+        <button class="btn ls-nav-link-btn" type="button" @onclick='() => Navigation.NavigateTo("/manager/inventory")'>
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                <path d="M5 10.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0-2a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
+                <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2m0 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
+            </svg>
+            View Full Inventory
+        </button>
+        <button class="btn ls-nav-link-btn" type="button" @onclick='() => Navigation.NavigateTo("/manager/purchase-orders")'>
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                <path d="M0 2.5A.5.5 0 0 1 .5 2H2a.5.5 0 0 1 .485.379L2.89 4H14.5a.5.5 0 0 1 .485.621l-1.5 6A.5.5 0 0 1 13 11H4a.5.5 0 0 1-.485-.379L1.61 3H.5a.5.5 0 0 1-.5-.5M3.14 5l1.25 5h8.22l1.25-5zM5 13a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0m9-1a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-2 1a2 2 0 1 1 4 0 2 2 0 0 1-4 0"/>
+            </svg>
+            All Purchase Orders
+        </button>
+    </div>
+</div>
+
+@* ─────────────────────────────────────────────────────────────────── *@
+@*  STYLES                                                             *@
+@* ─────────────────────────────────────────────────────────────────── *@
+<style>
+    /* ── Page container ─────────────────────────────────────────── */
+    .ls-page {
+        background-color: var(--color-page-bg);
+        color: var(--color-primary-text);
+        min-height: 100%;
+    }
+
+    /* ── Page header typography ─────────────────────────────────── */
+    .ls-page-eyebrow {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--color-accent);
+    }
+
+    .ls-page-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        line-height: 1.2;
+    }
+
+    .ls-page-subtitle {
+        font-size: 0.9rem;
+        color: color-mix(in srgb, var(--color-primary-text) 65%, transparent);
+        max-width: 480px;
+    }
+
+    /* ── KPI Cards ──────────────────────────────────────────────── */
+    .ls-kpi-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 22px;
+        border-radius: 12px;
+        background-color: var(--color-card-bg);
+        border: 1px solid color-mix(in srgb, var(--color-border-accent) 25%, transparent);
+        min-width: 160px;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .ls-kpi-card:hover {
+        box-shadow: 0 6px 20px color-mix(in srgb, var(--color-border-accent) 18%, transparent);
+        transform: translateY(-2px);
+    }
+
+    .ls-kpi-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        flex-shrink: 0;
+    }
+
+    .ls-kpi-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: color-mix(in srgb, var(--color-primary-text) 55%, transparent);
+        margin-bottom: 3px;
+    }
+
+    .ls-kpi-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        line-height: 1;
+    }
+
+    /* Critical = Dusty Rose accent (zero stock items) */
+    .ls-kpi-critical .ls-kpi-icon {
+        background-color: color-mix(in srgb, var(--color-accent) 15%, var(--color-card-bg));
+        color: var(--color-accent);
+        border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+    }
+
+    .ls-kpi-critical { border-left: 3px solid var(--color-accent); }
+
+    /* Warning = muted border (at-level items) */
+    .ls-kpi-warning .ls-kpi-icon {
+        background-color: color-mix(in srgb, var(--color-border-accent) 12%, var(--color-card-bg));
+        color: color-mix(in srgb, var(--color-heading-text) 80%, var(--color-accent));
+        border: 1px solid color-mix(in srgb, var(--color-border-accent) 25%, transparent);
+    }
+
+    .ls-kpi-warning { border-left: 3px solid var(--color-border-accent); }
+
+    /* Total = neutral */
+    .ls-kpi-total .ls-kpi-icon {
+        background-color: color-mix(in srgb, var(--color-navbar-bg) 8%, var(--color-card-bg));
+        color: color-mix(in srgb, var(--color-heading-text) 75%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-navbar-bg) 15%, transparent);
+    }
+
+    .ls-kpi-total { border-left: 3px solid color-mix(in srgb, var(--color-navbar-bg) 30%, transparent); }
+
+    /* ── Alert messages ─────────────────────────────────────────── */
+    .ls-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        border: 1px solid;
+    }
+
+    .ls-alert-error {
+        background-color: color-mix(in srgb, var(--color-border-accent) 8%, var(--color-page-bg));
+        border-color: color-mix(in srgb, var(--color-border-accent) 40%, transparent);
+        color: var(--color-heading-text);
+    }
+
+    /* ── Controls bar ───────────────────────────────────────────── */
+    .ls-controls-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+    }
+
+    /* ── Search ─────────────────────────────────────────────────── */
+    .ls-search-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        flex: 1;
+        min-width: 240px;
+    }
+
+    .ls-search-icon {
+        position: absolute;
+        left: 12px;
+        color: color-mix(in srgb, var(--color-primary-text) 45%, transparent);
+        pointer-events: none;
+    }
+
+    .ls-search-input {
+        width: 100%;
+        padding: 9px 36px 9px 36px;
+        background-color: var(--color-card-bg);
+        border: 1px solid color-mix(in srgb, var(--color-border-accent) 35%, transparent);
+        border-radius: 8px;
+        color: var(--color-primary-text);
+        font-size: 0.875rem;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .ls-search-input::placeholder {
+        color: color-mix(in srgb, var(--color-primary-text) 40%, transparent);
+    }
+
+    .ls-search-input:focus {
+        border-color: var(--color-border-accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 12%, transparent);
+    }
+
+    .ls-search-clear {
+        position: absolute;
+        right: 10px;
+        background: none;
+        border: none;
+        color: color-mix(in srgb, var(--color-primary-text) 45%, transparent);
+        cursor: pointer;
+        font-size: 1.1rem;
+        line-height: 1;
+        padding: 2px 4px;
+        transition: color 0.15s ease;
+    }
+
+    .ls-search-clear:hover { color: var(--color-primary-text); }
+
+    /* ── Filter / Refresh buttons ───────────────────────────────── */
+    .ls-filter-btn {
+        background-color: var(--color-card-bg);
+        border: 1px solid color-mix(in srgb, var(--color-border-accent) 35%, transparent);
+        color: var(--color-primary-text);
+        padding: 8px 14px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .ls-filter-btn:hover {
+        background-color: color-mix(in srgb, var(--color-border-accent) 10%, var(--color-card-bg));
+        border-color: var(--color-border-accent);
+    }
+
+    .ls-filter-btn-active {
+        background-color: color-mix(in srgb, var(--color-accent) 12%, var(--color-card-bg));
+        border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+        color: var(--color-heading-text);
+    }
+
+    .ls-refresh-btn {
+        background-color: var(--color-card-bg);
+        border: 1px solid color-mix(in srgb, var(--color-border-accent) 35%, transparent);
+        color: var(--color-primary-text);
+        padding: 8px 14px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.15s ease;
+    }
+
+    .ls-refresh-btn:hover:not(:disabled) {
+        background-color: color-mix(in srgb, var(--color-border-accent) 10%, var(--color-card-bg));
+        border-color: var(--color-border-accent);
+    }
+
+    .ls-refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    @@keyframes ls-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .ls-spin { animation: ls-spin 0.8s linear infinite; }
+
+    /* ── Card ───────────────────────────────────────────────────── */
+    .ls-card {
+        background-color: var(--color-card-bg);
+        border: 1px solid color-mix(in srgb, var(--color-border-accent) 25%, transparent);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .ls-border-bottom { border-bottom: 1px solid color-mix(in srgb, var(--color-border-accent) 20%, transparent); }
+    .ls-border-top    { border-top:    1px solid color-mix(in srgb, var(--color-border-accent) 20%, transparent); }
+
+    /* ── Section header ─────────────────────────────────────────── */
+    .ls-section-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+    }
+
+    .ls-section-subtitle {
+        font-size: 0.78rem;
+        color: color-mix(in srgb, var(--color-primary-text) 55%, transparent);
+        margin-top: 2px;
+    }
+
+    .ls-count-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background-color: var(--color-badge);
+        color: var(--color-page-bg);
+        white-space: nowrap;
+    }
+
+    .ls-filter-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: color-mix(in srgb, var(--color-accent) 12%, var(--color-card-bg));
+        border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+        color: var(--color-heading-text);
+    }
+
+    .ls-filter-tag-close {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1;
+        color: color-mix(in srgb, var(--color-primary-text) 55%, transparent);
+        transition: color 0.15s ease;
+    }
+
+    .ls-filter-tag-close:hover { color: var(--color-heading-text); }
+
+    /* ── Table ──────────────────────────────────────────────────── */
+    .ls-table { color: var(--color-primary-text); }
+
+    .ls-table-head {
+        background-color: color-mix(in srgb, var(--color-card-bg) 60%, var(--color-page-bg));
+        border-bottom: 1px solid color-mix(in srgb, var(--color-border-accent) 20%, transparent);
+    }
+
+    .ls-table-head th {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: color-mix(in srgb, var(--color-primary-text) 60%, transparent);
+        padding: 10px 12px;
+        white-space: nowrap;
+    }
+
+    .ls-table tbody tr { border-bottom: 1px solid color-mix(in srgb, var(--color-border-accent) 15%, transparent); }
+    .ls-table tbody tr:last-child { border-bottom: none; }
+
+    /* ── Table row urgency highlighting ────────────────────────── */
+    .ls-table-row { transition: background-color 0.12s ease; }
+
+    .ls-table-row:hover {
+        background-color: color-mix(in srgb, var(--color-border-accent) 6%, var(--color-card-bg));
+    }
+
+    .ls-row-out-of-stock {
+        background-color: color-mix(in srgb, var(--color-accent) 6%, var(--color-card-bg));
+    }
+
+    .ls-row-out-of-stock:hover {
+        background-color: color-mix(in srgb, var(--color-accent) 10%, var(--color-card-bg));
+    }
+
+    .ls-row-critical {
+        background-color: color-mix(in srgb, var(--color-accent) 4%, var(--color-card-bg));
+    }
+
+    /* ── Table cell content ─────────────────────────────────────── */
+    .ls-product-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--color-heading-text);
+    }
+
+    .ls-product-supplier {
+        font-size: 0.75rem;
+        color: color-mix(in srgb, var(--color-primary-text) 55%, transparent);
+        margin-top: 2px;
+    }
+
+    .ls-sku-pill {
+        display: inline-block;
+        font-family: 'Courier New', monospace;
+        font-size: 0.75rem;
+        font-weight: 700;
+        background-color: color-mix(in srgb, var(--color-border-accent) 12%, var(--color-page-bg));
+        color: var(--color-heading-text);
+        padding: 2px 8px;
+        border-radius: 5px;
+        border: 1px solid color-mix(in srgb, var(--color-border-accent) 25%, transparent);
+    }
+
+    .ls-product-id {
+        font-size: 0.72rem;
+        color: color-mix(in srgb, var(--color-primary-text) 45%, transparent);
+        margin-top: 4px;
+    }
+
+    .ls-stock-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .ls-stock-zero { color: var(--color-accent); }
+    .ls-stock-low  { color: color-mix(in srgb, var(--color-accent) 85%, var(--color-heading-text)); }
+
+    /* ── Urgency badges ─────────────────────────────────────────── */
+    .ls-urgency-badge {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 2px 7px;
+        border-radius: 4px;
+        border: 1px solid;
+    }
+
+    .ls-badge-out-of-stock {
+        background-color: color-mix(in srgb, var(--color-accent) 18%, var(--color-card-bg));
+        border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
+        color: var(--color-accent);
+    }
+
+    .ls-badge-critical {
+        background-color: color-mix(in srgb, var(--color-accent) 10%, var(--color-card-bg));
+        border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+        color: color-mix(in srgb, var(--color-accent) 90%, var(--color-heading-text));
+    }
+
+    .ls-badge-warning {
+        background-color: color-mix(in srgb, var(--color-border-accent) 12%, var(--color-card-bg));
+        border-color: color-mix(in srgb, var(--color-border-accent) 35%, transparent);
+        color: color-mix(in srgb, var(--color-heading-text) 80%, var(--color-accent));
+    }
+
+    /* ── Reorder level & deficit cells ─────────────────────────── */
+    .ls-reorder-level {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: color-mix(in srgb, var(--color-primary-text) 75%, transparent);
+    }
+
+    .ls-deficit {
+        font-size: 0.875rem;
+        font-weight: 700;
+    }
+
+    .ls-deficit-positive { color: var(--color-accent); }
+    .ls-deficit-met      { color: color-mix(in srgb, var(--color-primary-text) 40%, transparent); }
+
+    /* ── Date cells ─────────────────────────────────────────────── */
+    .ls-date {
+        font-size: 0.825rem;
+        color: var(--color-primary-text);
+    }
+
+    .ls-time {
+        font-size: 0.72rem;
+        color: color-mix(in srgb, var(--color-primary-text) 45%, transparent);
+        margin-top: 2px;
+    }
+
+    /* ── Quick Reorder button ───────────────────────────────────── */
+    .ls-btn-reorder {
+        display: inline-flex;
+        align-items: center;
+        background-color: var(--color-button-primary);
+        border: 1px solid var(--color-button-primary);
+        color: var(--color-page-bg);
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 7px 14px;
+        border-radius: 7px;
+        transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .ls-btn-reorder:hover {
+        background-color: var(--color-button-hover);
+        border-color: var(--color-button-hover);
+        color: var(--color-page-bg);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--color-button-primary) 30%, transparent);
+    }
+
+    .ls-btn-reorder:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    /* ── Primary & Outline buttons ──────────────────────────────── */
+    .ls-btn-primary {
+        background-color: var(--color-button-primary);
+        border: 1px solid var(--color-button-primary);
+        color: var(--color-page-bg);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .ls-btn-primary:hover, .ls-btn-primary:focus {
+        background-color: var(--color-button-hover);
+        border-color: var(--color-button-hover);
+        color: var(--color-page-bg);
+    }
+
+    .ls-btn-outline {
+        background-color: transparent;
+        border: 1px solid color-mix(in srgb, var(--color-border-accent) 40%, transparent);
+        color: var(--color-primary-text);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .ls-btn-outline:hover, .ls-btn-outline:focus {
+        background-color: color-mix(in srgb, var(--color-border-accent) 10%, transparent);
+        border-color: var(--color-border-accent);
+        color: var(--color-primary-text);
+    }
+
+    /* ── Pagination ─────────────────────────────────────────────── */
+    .ls-page-info {
+        font-size: 0.8rem;
+        color: color-mix(in srgb, var(--color-primary-text) 60%, transparent);
+    }
+
+    .ls-page-btn { min-width: 34px; }
+
+    /* ── Empty state ────────────────────────────────────────────── */
+    .ls-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 20px 0;
+        color: color-mix(in srgb, var(--color-primary-text) 45%, transparent);
+    }
+
+    .ls-empty-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+    }
+
+    .ls-empty-subtitle {
+        font-size: 0.85rem;
+        color: color-mix(in srgb, var(--color-primary-text) 55%, transparent);
+        max-width: 360px;
+    }
+
+    /* ── Skeleton loading ───────────────────────────────────────── */
+    .ls-skeleton {
+        background: linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--color-border-accent) 15%, var(--color-card-bg)) 25%,
+            color-mix(in srgb, var(--color-border-accent) 25%, var(--color-card-bg)) 50%,
+            color-mix(in srgb, var(--color-border-accent) 15%, var(--color-card-bg)) 75%
+        );
+        background-size: 200% 100%;
+        animation: ls-shimmer 1.4s ease-in-out infinite;
+        border-radius: 4px;
+    }
+
+    .ls-skeleton-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ls-skeleton-text { display: block; }
+
+    @@keyframes ls-shimmer {
+        from { background-position: 200% 0; }
+        to   { background-position: -200% 0; }
+    }
+
+    /* ── Navigation shortcut buttons ────────────────────────────── */
+    .ls-nav-link-btn {
+        display: inline-flex;
+        align-items: center;
+        background-color: transparent;
+        border: 1px solid color-mix(in srgb, var(--color-border-accent) 30%, transparent);
+        color: color-mix(in srgb, var(--color-primary-text) 70%, transparent);
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 7px 14px;
+        border-radius: 7px;
+        transition: all 0.15s ease;
+    }
+
+    .ls-nav-link-btn:hover {
+        background-color: color-mix(in srgb, var(--color-border-accent) 8%, var(--color-card-bg));
+        border-color: var(--color-border-accent);
+        color: var(--color-heading-text);
+    }
+</style>
+
+@* ─────────────────────────────────────────────────────────────────── *@
+@*  CODE BLOCK                                                         *@
+@* ─────────────────────────────────────────────────────────────────── *@
+@code {
+    // ── Data ─────────────────────────────────────────────────────────
+    /// <summary>
+    /// Null until the first load completes — drives the loading skeleton state.
+    /// </summary>
+    private List<InventoryDto>? lowStockItems;
+
+    private List<ProductDto> Products { get; set; } = new();
+    private Dictionary<int, ProductDto> ProductLookup { get; set; } = new();
+
+    // ── UI State ─────────────────────────────────────────────────────
+    private bool IsLoading { get; set; }
+    private string? ErrorMessage { get; set; }
+
+    // ── Search & Sort ─────────────────────────────────────────────────
+    private string _searchText = string.Empty;
+    private string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (_searchText == value) return;
+            _searchText = value;
+            CurrentPage = 1;
+        }
+    }
+
+    private bool SortByUrgency { get; set; } = true;
+
+    // ── Pagination ────────────────────────────────────────────────────
+    private int CurrentPage { get; set; } = 1;
+    private const int PageSize = 12;
+
+    // ── Computed lists ────────────────────────────────────────────────
+    /// <summary>
+    /// Items filtered by search text and sorted by the current sort mode.
+    /// </summary>
+    private IReadOnlyList<InventoryDto> DisplayedItems
+    {
+        get
+        {
+            if (lowStockItems == null) return Array.Empty<InventoryDto>();
+
+            IEnumerable<InventoryDto> query = lowStockItems;
+
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                var term = SearchText.Trim();
+                query = query.Where(item =>
+                    item.ProductName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    item.ProductId.ToString().Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    GetSku(item.ProductId).Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                    GetSupplier(item.ProductId).Contains(term, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (SortByUrgency)
+            {
+                // Sort: out-of-stock first, then by deficit descending
+                query = query
+                    .OrderByDescending(item => item.Quantity == 0)
+                    .ThenByDescending(item => item.ReorderLevel - item.Quantity);
+            }
+            else
+            {
+                query = query.OrderBy(item => item.ProductName);
+            }
+
+            return query.ToList();
+        }
+    }
+
+    private IReadOnlyList<InventoryDto> PagedItems =>
+        DisplayedItems
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize)
+            .ToList();
+
+    private int TotalPages => Math.Max(1, (int)Math.Ceiling(DisplayedItems.Count / (double)PageSize));
+    private bool IsFirstPage => CurrentPage <= 1;
+    private bool IsLastPage  => CurrentPage >= TotalPages;
+
+    // ── KPI Metrics ───────────────────────────────────────────────────
+    private int TotalAlerts    => lowStockItems?.Count ?? 0;
+    private int CriticalCount  => lowStockItems?.Count(i => i.Quantity == 0) ?? 0;
+    private int AtLevelCount   => lowStockItems?.Count(i => i.Quantity > 0 && i.Quantity <= i.ReorderLevel) ?? 0;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────
+    protected override async Task OnInitializedAsync()
+    {
+        // lowStockItems stays null during this await — skeleton renders
+        await LoadDataAsync();
+    }
+
+    // ── Data loading ──────────────────────────────────────────────────
+    private async Task LoadDataAsync()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+
+        try
+        {
+            var lowStockTask  = InventoryService.GetLowStock();
+            var productsTask  = ProductService.GetAll();
+
+            await Task.WhenAll(lowStockTask, productsTask);
+
+            var lowStockResponse = await lowStockTask;
+            var productsResponse = await productsTask;
+
+            if (!lowStockResponse.Success)
+            {
+                ErrorMessage   = lowStockResponse.Message;
+                lowStockItems  = new();
+            }
+            else
+            {
+                lowStockItems = lowStockResponse.Data ?? new();
+            }
+
+            if (productsResponse.Success && productsResponse.Data is not null)
+            {
+                Products      = productsResponse.Data;
+                ProductLookup = Products.ToDictionary(p => p.Id);
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage  = $"Unexpected error loading alerts: {ex.Message}";
+            lowStockItems = new();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        if (IsLoading) return;
+
+        // Trigger skeleton by resetting to null momentarily
+        lowStockItems = null;
+        CurrentPage   = 1;
+        StateHasChanged();
+
+        await LoadDataAsync();
+    }
+
+    // ── Navigation ────────────────────────────────────────────────────
+    /// <summary>
+    /// Navigates to the Purchase Orders page with the productId pre-selected
+    /// via query parameter, allowing the PO form to auto-populate the product.
+    /// </summary>
+    private void NavigateToPurchaseOrders(InventoryDto item)
+    {
+        Navigation.NavigateTo($"/manager/purchase-orders?productId={item.ProductId}&productName={Uri.EscapeDataString(item.ProductName)}");
+    }
+
+    // ── Search & Sort handlers ────────────────────────────────────────
+    private void OnSearchInput(ChangeEventArgs args)
+    {
+        SearchText = args.Value?.ToString() ?? string.Empty;
+    }
+
+    private void ClearSearch()
+    {
+        SearchText  = string.Empty;
+        CurrentPage = 1;
+    }
+
+    private void ToggleSortByUrgency()
+    {
+        SortByUrgency = !SortByUrgency;
+        CurrentPage   = 1;
+    }
+
+    // ── Pagination ────────────────────────────────────────────────────
+    private void NextPage()     { if (!IsLastPage)  CurrentPage++; }
+    private void PreviousPage() { if (!IsFirstPage) CurrentPage--; }
+    private void GoToPage(int page) => CurrentPage = page;
+
+    // ── Lookup helpers ────────────────────────────────────────────────
+    private string GetSku(int productId)
+        => ProductLookup.TryGetValue(productId, out var p) ? p.SKU : "N/A";
+
+    private string GetSupplier(int productId)
+        => ProductLookup.TryGetValue(productId, out var p) && !string.IsNullOrWhiteSpace(p.SupplierName)
+            ? p.SupplierName
+            : "No Supplier";
+
+    // ── Urgency classification helpers ────────────────────────────────
+    private static string GetUrgencyRowClass(InventoryDto item)
+    {
+        if (item.Quantity == 0)            return "ls-row-out-of-stock";
+        var deficit = item.ReorderLevel - item.Quantity;
+        if (deficit >= item.ReorderLevel / 2 && item.ReorderLevel > 0)
+            return "ls-row-critical";
+        return string.Empty;
+    }
+
+    private static string GetUrgencyBadgeClass(InventoryDto item)
+    {
+        if (item.Quantity == 0) return "ls-badge-out-of-stock";
+        var deficit = item.ReorderLevel - item.Quantity;
+        if (deficit >= item.ReorderLevel / 2 && item.ReorderLevel > 0)
+            return "ls-badge-critical";
+        return "ls-badge-warning";
+    }
+
+    private static string GetUrgencyLabel(InventoryDto item)
+    {
+        if (item.Quantity == 0) return "Out of Stock";
+        var deficit = item.ReorderLevel - item.Quantity;
+        if (deficit >= item.ReorderLevel / 2 && item.ReorderLevel > 0)
+            return "Critical";
+        return "Low Stock";
+    }
+}
