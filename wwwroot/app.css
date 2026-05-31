@@ -55,6 +55,7 @@ body {
     border-radius: 50%;
     filter: blur(40px);
 }
+
 .deco1 {
     width: 400px;
     height: 400px;
@@ -62,6 +63,7 @@ body {
     left: -100px;
     transform: rotate(30deg);
 }
+
 .deco2 {
     width: 350px;
     height: 350px;
@@ -69,6 +71,7 @@ body {
     right: -120px;
     transform: rotate(-25deg);
 }
+
 .deco3 {
     width: 300px;
     height: 300px;
@@ -367,6 +370,7 @@ body {
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -665,4 +669,3 @@ body {
     right: 0.75rem;
     top: 0.5rem;
 }
-

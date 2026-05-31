@@ -1,13 +1,9 @@
 @inherits LayoutComponentBase
 
 <NavBar />
-<main class="main-content" style="margin-left: 0; min-height: calc(100vh - 56px - 40px); margin-top: 56px; background: var(--color-page-bg);">
-    @Body
-</main>
-<Footer />
-
-<div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+<div class="layout-wrapper">
+    <main class="main-content" style="margin-left: 0; padding: 1.5rem; background: var(--color-page-bg); min-height: calc(100vh - 56px - 40px);">
+        @Body
+    </main>
 </div>
+<Footer />

@@ -1,0 +1,129 @@
+@page "/login"
+@attribute [AllowAnonymous]
+@layout MainLayout
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+@using SmartPOS.Shared.Interfaces
+
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">SP+</div>
+            <h2>SmartPOS+</h2>
+            <p class="text-muted">Sign in to your account</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Error))
+        {
+            <div class="alert alert-danger py-2 small">@Error</div>
+        }
+
+        <EditForm Model="@Model" OnValidSubmit="HandleLogin" FormName="loginForm">
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Email</label>
+                <InputText @bind-Value="Model.Email" class="form-control" placeholder="you@example.com" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Password</label>
+                <InputText @bind-Value="Model.Password" type="password" class="form-control" placeholder="••••••••" />
+            </div>
+            <button type="submit" class="btn btn-burnt-orange w-100 py-2 fw-semibold" disabled="@IsLoading">
+                @if (IsLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                Sign In
+            </button>
+        </EditForm>
+
+        <div class="login-hint mt-3">
+            <small class="text-muted">Demo accounts:</small><br />
+            <small class="text-muted">admin@smartpos.com / manager@pos.com / cashier@pos.com</small><br />
+            <small class="text-muted">Password: <strong>password123</strong> (admin/manager/cashier)</small>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f0e8 0%, #e8dcc8 100%); padding: 1rem; }
+    .login-card { background: white; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.1); padding: 2.5rem; width: 100%; max-width: 400px; }
+    .login-header { text-align: center; margin-bottom: 1.5rem; }
+    .login-logo { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 16px; background: var(--color-button-primary); color: white; font-weight: 800; font-size: 1.5rem; margin-bottom: 1rem; }
+    .login-header h2 { font-weight: 700; color: #333; margin: 0; }
+    .login-hint { background: #f8f6f3; border-radius: 8px; padding: 0.75rem; text-align: center; line-height: 1.6; }
+</style>
+
+@code {
+    private LoginModel Model = new();
+    private bool IsLoading;
+    private string? Error;
+
+    private class LoginModel
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+
+    protected override void OnInitialized()
+    {
+        Error = null;
+    }
+
+    private async Task HandleLogin()
+    {
+        IsLoading = true;
+        Error = null;
+        StateHasChanged();
+
+        try
+        {
+            using var http = new HttpClient { BaseAddress = new Uri(Navigation.BaseUri) };
+            var payload = new { email = Model.Email, password = Model.Password };
+            var response = await http.PostAsJsonAsync("/api/auth/login", payload);
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+
+            if (result != null && result.success && result.user != null)
+            {
+                var role = result.user.role?.ToLower() ?? "";
+                var redirect = role switch
+                {
+                    "admin" => "/admin/users",
+                    "manager" => "/manager/promotions",
+                    "cashier" => "/cashier/pos",
+                    "customer" => "/customer/shop",
+                    _ => "/"
+                };
+                Navigation.NavigateTo(redirect, forceLoad: true);
+            }
+            else
+            {
+                Error = result?.message ?? "Invalid email or password.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = $"Connection error: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private class LoginResponse
+    {
+        public bool success { get; set; }
+        public string? message { get; set; }
+        public string? token { get; set; }
+        public UserInfo? user { get; set; }
+    }
+
+    private class UserInfo
+    {
+        public int id { get; set; }
+        public string? name { get; set; }
+        public string? email { get; set; }
+        public string? role { get; set; }
+    }
+}

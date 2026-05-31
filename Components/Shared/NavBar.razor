@@ -1,10 +1,39 @@
+@inject NavigationManager Navigation
+@inject HttpClient Http
+
 <nav class="navbar-pos">
     <div class="navbar-left">
         <span class="navbar-brand">🎂 SmartPOS+</span>
     </div>
     <div class="navbar-right">
-        <span class="navbar-user">Admin User</span>
-        <span class="navbar-role-badge">Admin</span>
-        <a href="/login" class="navbar-logout-btn">Logout</a>
+        <AuthorizeView>
+            <Authorized>
+                <span class="navbar-user">@context.User.Identity?.Name</span>
+                <span class="navbar-role-badge">@GetRoleBadge(context)</span>
+                <button class="navbar-logout-btn" @onclick="Logout">Logout</button>
+            </Authorized>
+            <NotAuthorized>
+                <a href="/login" class="navbar-logout-btn">Sign In</a>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </nav>
+
+@code {
+    private string GetRoleBadge(AuthenticationState state)
+    {
+        var role = state.User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+        return role;
+    }
+
+    private async Task Logout()
+    {
+        try
+        {
+            using var client = new HttpClient { BaseAddress = new Uri(Navigation.BaseUri) };
+            await client.PostAsync("/api/auth/logout", null);
+        }
+        catch { }
+        Navigation.NavigateTo("/login", forceLoad: true);
+    }
+}

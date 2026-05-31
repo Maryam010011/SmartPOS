@@ -1,22 +1,33 @@
 @inherits LayoutComponentBase
 
 <NavBar />
-<div class="layout-wrapper">
-    <aside class="sidebar">
-        <nav class="sidebar-nav">
-            <NavLink class="nav-item" href="/cashier/pos" Match="NavLinkMatch.Prefix">
-                🖥 <span>POS Terminal</span>
-            </NavLink>
-            <NavLink class="nav-item" href="/cashier/sales-history" Match="NavLinkMatch.Prefix">
-                📜 <span>Sales History</span>
-            </NavLink>
-            <NavLink class="nav-item" href="/cashier/customer-lookup" Match="NavLinkMatch.Prefix">
-                👤 <span>Customer Lookup</span>
-            </NavLink>
-        </nav>
-    </aside>
-    <main class="main-content">
-        @Body
-    </main>
-</div>
-<Footer />
+<AuthorizeView Roles="Cashier,Manager,Admin">
+    <Authorized>
+        <div class="layout-wrapper">
+            <aside class="sidebar">
+                <nav class="sidebar-nav">
+                    <NavLink class="nav-item" href="/cashier/pos" Match="NavLinkMatch.Prefix">
+                        🖥 <span>POS Terminal</span>
+                    </NavLink>
+                    <NavLink class="nav-item" href="/cashier/sales-history" Match="NavLinkMatch.Prefix">
+                        📜 <span>Sales History</span>
+                    </NavLink>
+                    <NavLink class="nav-item" href="/cashier/customer-lookup" Match="NavLinkMatch.Prefix">
+                        👤 <span>Customer Lookup</span>
+                    </NavLink>
+                </nav>
+            </aside>
+            <main class="main-content">
+                @Body
+            </main>
+        </div>
+        <Footer />
+    </Authorized>
+    <NotAuthorized>
+        <div class="container py-5 text-center">
+            <h2 class="text-danger">Access Denied</h2>
+            <p>You need Cashier or higher privileges to view this page.</p>
+            <a href="/login" class="btn btn-burnt-orange">Sign In</a>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
