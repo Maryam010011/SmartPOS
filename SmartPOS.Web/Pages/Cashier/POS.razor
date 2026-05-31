@@ -1,0 +1,1400 @@
+@page "/cashier/pos"
+@rendermode @(new InteractiveServerRenderMode())
+@implements IDisposable
+
+@inject IProductService  ProductService
+@inject ICategoryService CategoryService
+@inject ISaleService     SaleService
+
+@* ─────────────────────────────────────────────────────────────────────────
+   SmartPOS+ — Point of Sale (Cashier)
+   Branch  : shahzain/ui-admin
+   Layout  : Full-screen split-panel (product browser | cart + checkout)
+   Theme   : colors.css design tokens only – no hard-coded hex values
+   Render  : InteractiveServerRenderMode (matches Program.cs registration)
+   ───────────────────────────────────────────────────────────────────────── *@
+
+<PageTitle>POS — SmartPOS+</PageTitle>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCOPED STYLES
+     All colours map strictly to tokens defined in colors.css
+     ══════════════════════════════════════════════════════════════ -->
+<style>
+    /* ── Root Shell ─────────────────────────────────────────────── */
+    .pos-shell {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+        background-color: var(--color-page-bg);
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    /* ── Top Nav Bar ────────────────────────────────────────────── */
+    .pos-topbar {
+        background-color: var(--color-navbar-bg);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        height: 56px;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,.35);
+        z-index: 10;
+    }
+    .pos-topbar-brand {
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: .03em;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+    .pos-topbar-brand span.dot {
+        width: 9px; height: 9px;
+        border-radius: 50%;
+        background: var(--color-button-primary);
+        display: inline-block;
+    }
+    .pos-topbar-time {
+        font-size: .85rem;
+        opacity: .75;
+    }
+    .pos-topbar-cashier {
+        font-size: .85rem;
+        background: rgba(255,255,255,.12);
+        border-radius: 20px;
+        padding: .25rem .85rem;
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+    }
+
+    /* ── Main Split Panel ───────────────────────────────────────── */
+    .pos-body {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    /* ── LEFT — Product Browser ─────────────────────────────────── */
+    .pos-left {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 1rem 1rem 1rem 1.25rem;
+        gap: .75rem;
+        border-right: 2px solid rgba(61,28,2,.12);
+    }
+
+    /* Search + filter row */
+    .pos-search-row {
+        display: flex;
+        gap: .6rem;
+        align-items: center;
+    }
+    .pos-search-input {
+        flex: 1;
+        border: 1.5px solid rgba(61,28,2,.22);
+        border-radius: 8px;
+        padding: .45rem .9rem;
+        font-size: .92rem;
+        background: #fff;
+        color: var(--color-primary-text);
+        outline: none;
+        transition: border-color .18s;
+    }
+    .pos-search-input:focus {
+        border-color: var(--color-button-primary);
+        box-shadow: 0 0 0 3px rgba(196,132,138,.18);
+    }
+    .pos-search-icon {
+        color: var(--color-button-primary);
+        font-size: 1.1rem;
+        pointer-events: none;
+    }
+
+    /* Category pills */
+    .pos-cats {
+        display: flex;
+        gap: .5rem;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+    }
+    .pos-cat-pill {
+        border: 1.5px solid var(--color-border-accent);
+        border-radius: 20px;
+        padding: .28rem .85rem;
+        font-size: .82rem;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        color: var(--color-primary-text);
+        background: transparent;
+        transition: background .15s, color .15s;
+        user-select: none;
+    }
+    .pos-cat-pill:hover {
+        background: var(--color-button-hover);
+        color: #fff;
+        border-color: var(--color-button-hover);
+    }
+    .pos-cat-pill.active {
+        background: var(--color-button-primary);
+        color: #fff;
+        border-color: var(--color-button-primary);
+    }
+
+    /* Product Grid */
+    .pos-product-grid {
+        flex: 1;
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+        gap: .75rem;
+        padding-right: 4px;
+        scrollbar-width: thin;
+    }
+    .pos-product-card {
+        background: #fff;
+        border: 1.5px solid rgba(61,28,2,.1);
+        border-radius: 12px;
+        padding: .85rem .75rem .75rem;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        transition: transform .15s, box-shadow .15s, border-color .15s;
+        position: relative;
+        overflow: hidden;
+    }
+    .pos-product-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(196,132,138,.22);
+        border-color: var(--color-border-accent);
+    }
+    .pos-product-card:active {
+        transform: scale(.97);
+    }
+    .pos-product-card.out-of-stock {
+        opacity: .5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    .pos-product-thumb {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 8px;
+        background: var(--color-page-bg);
+    }
+    .pos-product-thumb-placeholder {
+        width: 100%;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        background: var(--color-page-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+    }
+    .pos-product-name {
+        font-size: .82rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        line-height: 1.25;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    .pos-product-price {
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--color-button-primary);
+    }
+    .pos-product-stock {
+        font-size: .72rem;
+        color: #6c757d;
+    }
+    .pos-product-stock.low { color: #dc3545; font-weight: 600; }
+    .pos-add-badge {
+        position: absolute;
+        top: 6px; right: 6px;
+        width: 22px; height: 22px;
+        background: var(--color-button-primary);
+        border-radius: 50%;
+        color: #fff;
+        font-size: .8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(.6);
+        transition: opacity .15s, transform .15s;
+    }
+    .pos-product-card:hover .pos-add-badge {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    /* Loading / empty states */
+    .pos-loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        flex-direction: column;
+        gap: .75rem;
+        color: var(--color-heading-text);
+        opacity: .55;
+    }
+    .pos-spinner {
+        width: 36px; height: 36px;
+        border: 3px solid rgba(61,28,2,.15);
+        border-top-color: var(--color-button-primary);
+        border-radius: 50%;
+        animation: pos-spin .7s linear infinite;
+    }
+    @@keyframes pos-spin { to { transform: rotate(360deg); } }
+
+    /* ── RIGHT — Cart Panel ─────────────────────────────────────── */
+    .pos-right {
+        width: 360px;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        background: var(--color-card-bg);
+        padding: 1rem 1.1rem;
+        gap: .75rem;
+        overflow: hidden;
+    }
+
+    .pos-cart-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .pos-cart-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+    .pos-cart-count {
+        background: var(--color-badge);
+        color: #fff;
+        border-radius: 20px;
+        font-size: .72rem;
+        padding: .1rem .5rem;
+        font-weight: 700;
+    }
+    .pos-clear-btn {
+        font-size: .78rem;
+        color: #dc3545;
+        border: 1px solid #dc3545;
+        background: transparent;
+        border-radius: 6px;
+        padding: .2rem .6rem;
+        cursor: pointer;
+        transition: background .15s;
+    }
+    .pos-clear-btn:hover { background: #dc3545; color: #fff; }
+
+    /* Cart items list */
+    .pos-cart-items {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: .55rem;
+        scrollbar-width: thin;
+        padding-right: 2px;
+    }
+    .pos-cart-item {
+        background: #fff;
+        border: 1.5px solid rgba(61,28,2,.1);
+        border-radius: 10px;
+        padding: .65rem .75rem;
+        display: flex;
+        align-items: flex-start;
+        gap: .55rem;
+        animation: pos-slide-in .18s ease;
+    }
+    @@keyframes pos-slide-in {
+        from { opacity: 0; transform: translateX(12px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+    .pos-cart-item-info { flex: 1; min-width: 0; }
+    .pos-cart-item-name {
+        font-size: .82rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .pos-cart-item-price {
+        font-size: .78rem;
+        color: var(--color-button-primary);
+        font-weight: 600;
+    }
+    .pos-qty-ctrl {
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+        flex-shrink: 0;
+    }
+    .pos-qty-btn {
+        width: 26px; height: 26px;
+        border: 1.5px solid var(--color-border-accent);
+        background: transparent;
+        border-radius: 6px;
+        font-size: .95rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-heading-text);
+        transition: background .12s;
+        padding: 0;
+        line-height: 1;
+    }
+    .pos-qty-btn:hover { background: var(--color-button-primary); color: #fff; border-color: var(--color-button-primary); }
+    .pos-qty-value {
+        font-size: .88rem;
+        font-weight: 700;
+        min-width: 22px;
+        text-align: center;
+        color: var(--color-heading-text);
+    }
+    .pos-remove-btn {
+        background: transparent;
+        border: none;
+        color: #dc3545;
+        font-size: 1rem;
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: background .12s;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+    .pos-remove-btn:hover { background: rgba(220,53,69,.1); }
+
+    .pos-cart-empty {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .6rem;
+        color: rgba(61,28,2,.35);
+        font-size: .88rem;
+    }
+    .pos-cart-empty-icon { font-size: 2.5rem; }
+
+    /* ── Promo Code ─────────────────────────────────────────────── */
+    .pos-promo-row {
+        display: flex;
+        gap: .45rem;
+    }
+    .pos-promo-input {
+        flex: 1;
+        border: 1.5px solid rgba(61,28,2,.2);
+        border-radius: 8px;
+        padding: .38rem .75rem;
+        font-size: .82rem;
+        background: #fff;
+        color: var(--color-primary-text);
+        outline: none;
+        transition: border-color .15s;
+    }
+    .pos-promo-input:focus { border-color: var(--color-button-primary); }
+    .pos-promo-btn {
+        border: 1.5px solid var(--color-button-primary);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--color-button-primary);
+        font-size: .8rem;
+        font-weight: 600;
+        padding: .38rem .75rem;
+        cursor: pointer;
+        transition: background .15s, color .15s;
+        white-space: nowrap;
+    }
+    .pos-promo-btn:hover { background: var(--color-button-primary); color: #fff; }
+
+    /* ── Totals Summary ─────────────────────────────────────────── */
+    .pos-totals {
+        background: #fff;
+        border: 1.5px solid rgba(61,28,2,.12);
+        border-radius: 12px;
+        padding: .85rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+    }
+    .pos-totals-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: .84rem;
+        color: var(--color-primary-text);
+    }
+    .pos-totals-row.total {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        border-top: 1.5px solid rgba(61,28,2,.12);
+        padding-top: .45rem;
+        margin-top: .15rem;
+    }
+    .pos-totals-row.discount { color: #28a745; }
+
+    /* ── Checkout Button ────────────────────────────────────────── */
+    .pos-checkout-btn {
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        padding: .85rem 1rem;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        width: 100%;
+        transition: background .18s, transform .12s;
+        letter-spacing: .02em;
+    }
+    .pos-checkout-btn:hover:not(:disabled) { background: var(--color-button-hover); transform: translateY(-1px); }
+    .pos-checkout-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ── MODAL Overlay ──────────────────────────────────────────── */
+    .pos-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.48);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        animation: pos-fade-in .18s ease;
+    }
+    @@keyframes pos-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+    .pos-modal {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 24px 80px rgba(0,0,0,.25);
+        padding: 2rem;
+        width: 100%;
+        max-width: 480px;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        animation: pos-slide-up .22s ease;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    @@keyframes pos-slide-up {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .pos-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .pos-modal-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+    }
+    .pos-modal-close {
+        background: transparent;
+        border: none;
+        font-size: 1.3rem;
+        cursor: pointer;
+        color: rgba(61,28,2,.45);
+        line-height: 1;
+        padding: 2px 6px;
+        border-radius: 6px;
+        transition: background .12s;
+    }
+    .pos-modal-close:hover { background: rgba(61,28,2,.08); }
+
+    /* Modal form fields */
+    .pos-field { display: flex; flex-direction: column; gap: .3rem; }
+    .pos-field label { font-size: .82rem; font-weight: 600; color: var(--color-heading-text); }
+    .pos-field select, .pos-field input {
+        border: 1.5px solid rgba(61,28,2,.2);
+        border-radius: 8px;
+        padding: .5rem .75rem;
+        font-size: .9rem;
+        background: var(--color-card-bg);
+        color: var(--color-primary-text);
+        outline: none;
+        transition: border-color .15s;
+        width: 100%;
+    }
+    .pos-field select:focus, .pos-field input:focus { border-color: var(--color-button-primary); }
+
+    /* Payment method cards */
+    .pos-pay-methods {
+        display: flex;
+        gap: .6rem;
+    }
+    .pos-pay-card {
+        flex: 1;
+        border: 1.5px solid rgba(61,28,2,.18);
+        border-radius: 10px;
+        padding: .65rem .5rem;
+        text-align: center;
+        cursor: pointer;
+        font-size: .82rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        transition: border-color .15s, background .15s;
+        user-select: none;
+    }
+    .pos-pay-card .pay-icon { font-size: 1.4rem; margin-bottom: .15rem; display: block; }
+    .pos-pay-card.selected {
+        border-color: var(--color-button-primary);
+        background: rgba(196,132,138,.1);
+        color: var(--color-button-primary);
+    }
+
+    /* Modal item summary */
+    .pos-modal-items {
+        max-height: 160px;
+        overflow-y: auto;
+        border: 1.5px solid rgba(61,28,2,.1);
+        border-radius: 8px;
+        padding: .5rem .75rem;
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+        scrollbar-width: thin;
+    }
+    .pos-modal-item-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: .82rem;
+        color: var(--color-primary-text);
+    }
+
+    .pos-modal-footer {
+        display: flex;
+        gap: .65rem;
+    }
+    .pos-modal-cancel {
+        flex: 1;
+        border: 1.5px solid rgba(61,28,2,.2);
+        background: transparent;
+        border-radius: 10px;
+        padding: .6rem;
+        font-size: .9rem;
+        cursor: pointer;
+        color: var(--color-heading-text);
+        transition: background .12s;
+    }
+    .pos-modal-cancel:hover { background: rgba(61,28,2,.06); }
+    .pos-modal-confirm {
+        flex: 2;
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: .6rem;
+        font-size: .9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .15s;
+    }
+    .pos-modal-confirm:hover:not(:disabled) { background: var(--color-button-hover); }
+    .pos-modal-confirm:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ── Receipt Modal ──────────────────────────────────────────── */
+    .pos-receipt {
+        border: 1.5px dashed rgba(61,28,2,.25);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        background: var(--color-card-bg);
+    }
+    .pos-receipt-header { text-align: center; margin-bottom: .75rem; }
+    .pos-receipt-header h3 { font-size: 1rem; font-weight: 700; color: var(--color-heading-text); margin: 0; }
+    .pos-receipt-header p  { font-size: .75rem; color: rgba(61,28,2,.5); margin: .15rem 0 0; }
+    .pos-receipt-divider { border: none; border-top: 1px dashed rgba(61,28,2,.2); margin: .6rem 0; }
+    .pos-receipt-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: .82rem;
+        color: var(--color-primary-text);
+        margin-bottom: .2rem;
+    }
+    .pos-receipt-row.total {
+        font-weight: 700;
+        font-size: .95rem;
+        color: var(--color-heading-text);
+        margin-top: .3rem;
+        padding-top: .3rem;
+        border-top: 1px solid rgba(61,28,2,.15);
+    }
+    .pos-receipt-success-icon {
+        text-align: center;
+        font-size: 2.2rem;
+        margin-bottom: .2rem;
+    }
+    .pos-new-sale-btn {
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: .65rem;
+        width: 100%;
+        font-size: .95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .15s;
+        margin-top: .25rem;
+    }
+    .pos-new-sale-btn:hover { background: var(--color-button-hover); }
+
+    /* ── Misc Utilities ─────────────────────────────────────────── */
+    .pos-alert {
+        font-size: .82rem;
+        padding: .45rem .85rem;
+        border-radius: 8px;
+        border: 1px solid;
+    }
+    .pos-alert.error { color: #842029; background: #f8d7da; border-color: #f5c2c7; }
+    .pos-alert.success { color: #0f5132; background: #d1e7dd; border-color: #badbcc; }
+
+    .pos-divider { border: none; border-top: 1.5px solid rgba(61,28,2,.1); }
+</style>
+
+<!-- ══════════════════════════════════════════════════════════════
+     POS SHELL
+     ══════════════════════════════════════════════════════════════ -->
+<div class="pos-shell">
+
+    <!-- TOP BAR -->
+    <div class="pos-topbar">
+        <div class="pos-topbar-brand">
+            <span class="dot"></span>
+            SmartPOS+ &nbsp;<span style="opacity:.5;font-weight:400;">Cashier</span>
+        </div>
+        <span class="pos-topbar-time">@currentTime</span>
+        <div class="pos-topbar-cashier">
+            <span>&#128100;</span>
+            <span>Cashier</span>
+        </div>
+    </div>
+
+    <!-- MAIN BODY -->
+    <div class="pos-body">
+
+        <!-- ════════════════════════════════════════════════════════
+             LEFT — PRODUCT BROWSER
+             ════════════════════════════════════════════════════════ -->
+        <div class="pos-left">
+
+            <!-- Search row -->
+            <div class="pos-search-row">
+                <input id="pos-search"
+                       class="pos-search-input"
+                       type="search"
+                       placeholder="&#128269; Search products by name or SKU…"
+                       value="@searchKeyword"
+                       @oninput="OnSearchInput" />
+            </div>
+
+            <!-- Error banner -->
+            @if (!string.IsNullOrWhiteSpace(productError))
+            {
+                <div class="pos-alert error">@productError</div>
+            }
+
+            <!-- Category pills -->
+            <div class="pos-cats">
+                <button id="cat-pill-all"
+                        class="pos-cat-pill @(selectedCategoryId == 0 ? "active" : "")"
+                        @onclick="() => SelectCategory(0)">
+                    All
+                </button>
+                @foreach (var cat in categories)
+                {
+                    var catId = cat.Id;
+                    <button id="cat-pill-@catId"
+                            class="pos-cat-pill @(selectedCategoryId == catId ? "active" : "")"
+                            @onclick="() => SelectCategory(catId)">
+                        @cat.Name
+                    </button>
+                }
+            </div>
+
+            <!-- Product grid -->
+            @if (isLoadingProducts)
+            {
+                <div class="pos-loader">
+                    <div class="pos-spinner"></div>
+                    <span>Loading products…</span>
+                </div>
+            }
+            else if (filteredProducts.Count == 0)
+            {
+                <div class="pos-loader">
+                    <span style="font-size:2rem;">&#128681;</span>
+                    <span>No products found</span>
+                </div>
+            }
+            else
+            {
+                <div class="pos-product-grid">
+                    @foreach (var product in filteredProducts)
+                    {
+                        var p = product; // capture for lambda
+                        var oos = p.CurrentStock == 0;
+                        <div id="product-card-@p.Id"
+                             class="pos-product-card @(oos ? "out-of-stock" : "")"
+                             @onclick="() => AddToCart(p)"
+                             title="@p.Name">
+                            <div class="pos-add-badge">+</div>
+                            @if (!string.IsNullOrWhiteSpace(p.ImageURL))
+                            {
+                                <img class="pos-product-thumb"
+                                     src="@p.ImageURL"
+                                     alt="@p.Name"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                <div class="pos-product-thumb-placeholder" style="display:none;">&#127874;</div>
+                            }
+                            else
+                            {
+                                <div class="pos-product-thumb-placeholder">&#127874;</div>
+                            }
+                            <div class="pos-product-name">@p.Name</div>
+                            <div class="pos-product-price">Rs. @p.Price.ToString("N2")</div>
+                            <div class="pos-product-stock @(oos ? "low" : (p.CurrentStock <= 5 ? "low" : ""))">
+                                @(oos ? "Out of stock" : $"Stock: {p.CurrentStock}")
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════
+             RIGHT — CART + CHECKOUT PANEL
+             ════════════════════════════════════════════════════════ -->
+        <div class="pos-right">
+
+            <!-- Cart header -->
+            <div class="pos-cart-header">
+                <div class="pos-cart-title">
+                    &#128722; Cart
+                    @if (cartItems.Count > 0)
+                    {
+                        <span class="pos-cart-count">@cartItems.Sum(x => x.Quantity)</span>
+                    }
+                </div>
+                @if (cartItems.Count > 0)
+                {
+                    <button id="btn-clear-cart" class="pos-clear-btn" @onclick="ClearCart">Clear</button>
+                }
+            </div>
+
+            <!-- Cart items -->
+            @if (cartItems.Count == 0)
+            {
+                <div class="pos-cart-empty">
+                    <span class="pos-cart-empty-icon">&#128722;</span>
+                    <span>Cart is empty</span>
+                    <span style="font-size:.78rem;opacity:.6;">Tap a product to add it</span>
+                </div>
+            }
+            else
+            {
+                <div class="pos-cart-items">
+                    @foreach (var item in cartItems)
+                    {
+                        var ci = item; // capture
+                        <div class="pos-cart-item">
+                            <div class="pos-cart-item-info">
+                                <div class="pos-cart-item-name" title="@ci.ProductName">@ci.ProductName</div>
+                                <div class="pos-cart-item-price">
+                                    Rs. @((ci.UnitPrice * ci.Quantity).ToString("N2"))
+                                    <span style="opacity:.55;font-weight:400;font-size:.75rem;">
+                                        (@ci.Quantity × @ci.UnitPrice.ToString("N2"))
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="pos-qty-ctrl">
+                                <button class="pos-qty-btn"
+                                        id="btn-dec-@ci.ProductId"
+                                        @onclick="() => ChangeQty(ci, -1)">&#8722;</button>
+                                <span class="pos-qty-value">@ci.Quantity</span>
+                                <button class="pos-qty-btn"
+                                        id="btn-inc-@ci.ProductId"
+                                        @onclick="() => ChangeQty(ci, +1)">+</button>
+                            </div>
+                            <button class="pos-remove-btn"
+                                    id="btn-rem-@ci.ProductId"
+                                    @onclick="() => RemoveFromCart(ci)"
+                                    title="Remove">&#215;</button>
+                        </div>
+                    }
+                </div>
+            }
+
+            <hr class="pos-divider" />
+
+            <!-- Promo code -->
+            <div class="pos-promo-row">
+                <input id="pos-promo-code"
+                       class="pos-promo-input"
+                       type="text"
+                       placeholder="Promo / coupon code"
+                       @bind="promoCode"
+                       @bind:event="oninput" />
+                <button id="btn-apply-promo"
+                        class="pos-promo-btn"
+                        @onclick="ApplyPromo"
+                        disabled="@(string.IsNullOrWhiteSpace(promoCode))">
+                    Apply
+                </button>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(promoMessage))
+            {
+                <div class="pos-alert @(promoApplied ? "success" : "error")">@promoMessage</div>
+            }
+
+            <hr class="pos-divider" />
+
+            <!-- Totals -->
+            <div class="pos-totals">
+                <div class="pos-totals-row">
+                    <span>Subtotal</span>
+                    <span>Rs. @SubTotal.ToString("N2")</span>
+                </div>
+                @if (discountAmount > 0)
+                {
+                    <div class="pos-totals-row discount">
+                        <span>Discount</span>
+                        <span>- Rs. @discountAmount.ToString("N2")</span>
+                    </div>
+                }
+                <div class="pos-totals-row">
+                    <span>Tax (17% GST)</span>
+                    <span>Rs. @TaxAmount.ToString("N2")</span>
+                </div>
+                <div class="pos-totals-row total">
+                    <span>Total</span>
+                    <span>Rs. @TotalAmount.ToString("N2")</span>
+                </div>
+            </div>
+
+            <!-- Checkout button -->
+            <button id="btn-checkout"
+                    class="pos-checkout-btn"
+                    @onclick="OpenCheckoutModal"
+                    disabled="@(cartItems.Count == 0)">
+                &#10003;&nbsp; Proceed to Checkout
+            </button>
+
+        </div>
+        <!-- end pos-right -->
+
+    </div>
+    <!-- end pos-body -->
+
+</div>
+<!-- end pos-shell -->
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHECKOUT MODAL
+     ══════════════════════════════════════════════════════════════ -->
+@if (showCheckoutModal)
+{
+    <div class="pos-modal-overlay" id="modal-checkout-overlay">
+        <div class="pos-modal" id="modal-checkout">
+
+            <!-- Header -->
+            <div class="pos-modal-header">
+                <span class="pos-modal-title">&#128179; Checkout</span>
+                <button id="btn-close-checkout-modal"
+                        class="pos-modal-close"
+                        @onclick="CloseCheckoutModal">&#215;</button>
+            </div>
+
+            <!-- Order summary -->
+            <div>
+                <div style="font-size:.8rem;font-weight:600;color:var(--color-heading-text);margin-bottom:.4rem;">
+                    Order Summary
+                </div>
+                <div class="pos-modal-items">
+                    @foreach (var item in cartItems)
+                    {
+                        <div class="pos-modal-item-row">
+                            <span>@item.ProductName × @item.Quantity</span>
+                            <span>Rs. @((item.UnitPrice * item.Quantity).ToString("N2"))</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Payment method -->
+            <div class="pos-field">
+                <label>Payment Method</label>
+                <div class="pos-pay-methods">
+                    <div id="pay-cash"
+                         class="pos-pay-card @(selectedPayment == PaymentMethod.Cash ? "selected" : "")"
+                         @onclick='() => selectedPayment = PaymentMethod.Cash'>
+                        <span class="pay-icon">&#128181;</span>
+                        Cash
+                    </div>
+                    <div id="pay-card"
+                         class="pos-pay-card @(selectedPayment == PaymentMethod.Card ? "selected" : "")"
+                         @onclick='() => selectedPayment = PaymentMethod.Card'>
+                        <span class="pay-icon">&#128179;</span>
+                        Card
+                    </div>
+                    <div id="pay-online"
+                         class="pos-pay-card @(selectedPayment == PaymentMethod.Online ? "selected" : "")"
+                         @onclick='() => selectedPayment = PaymentMethod.Online'>
+                        <span class="pay-icon">&#128241;</span>
+                        Online
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sale type -->
+            <div class="pos-field">
+                <label>Sale Type</label>
+                <select id="checkout-sale-type" @bind="selectedSaleType">
+                    <option value="@SaleType.Onsite">Onsite</option>
+                    <option value="@SaleType.Online">Online</option>
+                </select>
+            </div>
+
+            <!-- Customer ID (optional) -->
+            <div class="pos-field">
+                <label>Customer ID <span style="opacity:.55;font-weight:400;">(optional)</span></label>
+                <input id="checkout-customer-id"
+                       type="number"
+                       min="0"
+                       placeholder="Leave blank for walk-in customer"
+                       @bind="checkoutCustomerId" />
+            </div>
+
+            <!-- Totals recap -->
+            <div class="pos-totals">
+                <div class="pos-totals-row">
+                    <span>Subtotal</span>
+                    <span>Rs. @SubTotal.ToString("N2")</span>
+                </div>
+                @if (discountAmount > 0)
+                {
+                    <div class="pos-totals-row discount">
+                        <span>Discount</span>
+                        <span>- Rs. @discountAmount.ToString("N2")</span>
+                    </div>
+                }
+                <div class="pos-totals-row">
+                    <span>Tax (17% GST)</span>
+                    <span>Rs. @TaxAmount.ToString("N2")</span>
+                </div>
+                <div class="pos-totals-row total">
+                    <span>Total Payable</span>
+                    <span>Rs. @TotalAmount.ToString("N2")</span>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(checkoutError))
+            {
+                <div class="pos-alert error">@checkoutError</div>
+            }
+
+            <!-- Footer buttons -->
+            <div class="pos-modal-footer">
+                <button id="btn-cancel-checkout" class="pos-modal-cancel" @onclick="CloseCheckoutModal">
+                    Cancel
+                </button>
+                <button id="btn-confirm-sale"
+                        class="pos-modal-confirm"
+                        @onclick="ConfirmSaleAsync"
+                        disabled="@isProcessingSale">
+                    @if (isProcessingSale)
+                    {
+                        <span>Processing…</span>
+                    }
+                    else
+                    {
+                        <span>&#10003; Confirm Sale</span>
+                    }
+                </button>
+            </div>
+
+        </div>
+    </div>
+}
+
+<!-- ══════════════════════════════════════════════════════════════
+     RECEIPT MODAL (shown after successful sale)
+     ══════════════════════════════════════════════════════════════ -->
+@if (showReceiptModal && lastSaleResult != null)
+{
+    <div class="pos-modal-overlay" id="modal-receipt-overlay">
+        <div class="pos-modal" id="modal-receipt">
+
+            <div class="pos-modal-header">
+                <span class="pos-modal-title">Receipt</span>
+                <button id="btn-close-receipt-modal"
+                        class="pos-modal-close"
+                        @onclick="CloseReceiptAndReset">&#215;</button>
+            </div>
+
+            <div class="pos-receipt">
+                <div class="pos-receipt-header">
+                    <div style="font-size:2rem;">&#9989;</div>
+                    <h3>Sale Successful!</h3>
+                    <p>Receipt #@lastSaleResult.ReceiptNumber</p>
+                    <p>@lastSaleResult.SaleDate.ToLocalTime().ToString("dd MMM yyyy — hh:mm tt")</p>
+                </div>
+
+                <hr class="pos-receipt-divider" />
+
+                @foreach (var item in lastSaleResult.Items)
+                {
+                    <div class="pos-receipt-row">
+                        <span>@item.ProductName × @item.Quantity</span>
+                        <span>Rs. @item.LineTotal.ToString("N2")</span>
+                    </div>
+                }
+
+                <hr class="pos-receipt-divider" />
+
+                <div class="pos-receipt-row">
+                    <span>Subtotal</span>
+                    <span>Rs. @lastSaleResult.SubTotal.ToString("N2")</span>
+                </div>
+                @if (lastSaleResult.DiscountAmount > 0)
+                {
+                    <div class="pos-receipt-row" style="color:#28a745;">
+                        <span>Discount</span>
+                        <span>- Rs. @lastSaleResult.DiscountAmount.ToString("N2")</span>
+                    </div>
+                }
+                <div class="pos-receipt-row">
+                    <span>Tax (17% GST)</span>
+                    <span>Rs. @lastSaleResult.TaxAmount.ToString("N2")</span>
+                </div>
+                <div class="pos-receipt-row total">
+                    <span>Total Paid</span>
+                    <span>Rs. @lastSaleResult.TotalAmount.ToString("N2")</span>
+                </div>
+
+                <hr class="pos-receipt-divider" />
+                <div style="text-align:center;font-size:.75rem;color:rgba(61,28,2,.45);margin-top:.25rem;">
+                    Thank you for your purchase!
+                </div>
+            </div>
+
+            <button id="btn-new-sale" class="pos-new-sale-btn" @onclick="CloseReceiptAndReset">
+                + New Sale
+            </button>
+
+        </div>
+    </div>
+}
+
+
+@code {
+    // ── Services are injected at the top of the file ──────────────
+
+    // ── Clock ──────────────────────────────────────────────────────
+    private string currentTime = string.Empty;
+    private System.Threading.Timer? _clockTimer;
+
+    // ── Data ───────────────────────────────────────────────────────
+    private List<ProductDto>  allProducts      = new();
+    private List<CategoryDto> categories       = new();
+    private bool              isLoadingProducts;
+    private string            productError     = string.Empty;
+
+    // ── Filtering ──────────────────────────────────────────────────
+    private string searchKeyword      = string.Empty;
+    private int    selectedCategoryId = 0;
+
+    private List<ProductDto> filteredProducts =>
+        allProducts
+            .Where(p => p.IsActive)
+            .Where(p => selectedCategoryId == 0 || p.CategoryId == selectedCategoryId)
+            .Where(p => string.IsNullOrWhiteSpace(searchKeyword)
+                        || p.Name.Contains(searchKeyword, StringComparison.OrdinalIgnoreCase)
+                        || p.SKU.Contains(searchKeyword,  StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+    // ── Cart ───────────────────────────────────────────────────────
+    private List<CartLineItem> cartItems = new();
+
+    // ── Promo ──────────────────────────────────────────────────────
+    private string promoCode      = string.Empty;
+    private string promoMessage   = string.Empty;
+    private bool   promoApplied;
+    private decimal discountAmount;
+
+    // ── Totals ─────────────────────────────────────────────────────
+    private const decimal TaxRate = 0.17m;
+    private decimal SubTotal    => cartItems.Sum(i => i.UnitPrice * i.Quantity);
+    private decimal Taxable     => SubTotal - discountAmount;
+    private decimal TaxAmount   => Math.Round(Taxable * TaxRate, 2);
+    private decimal TotalAmount => Taxable + TaxAmount;
+
+    // ── Checkout Modal ─────────────────────────────────────────────
+    private bool          showCheckoutModal;
+    private PaymentMethod selectedPayment    = PaymentMethod.Cash;
+    private SaleType      selectedSaleType   = SaleType.Onsite;
+    private int?          checkoutCustomerId;
+    private string        checkoutError      = string.Empty;
+    private bool          isProcessingSale;
+
+    // ── Receipt Modal ──────────────────────────────────────────────
+    private bool           showReceiptModal;
+    private SaleResultDto? lastSaleResult;
+
+    // ── Lifecycle ─────────────────────────────────────────────────
+
+    protected override async Task OnInitializedAsync()
+    {
+        UpdateClock();
+        _clockTimer = new System.Threading.Timer(
+            _ => { UpdateClock(); InvokeAsync(StateHasChanged); },
+            null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+
+        await LoadDataAsync();
+    }
+
+    private void UpdateClock()
+    {
+        currentTime = DateTime.Now.ToString("ddd, dd MMM yyyy — hh:mm:ss tt");
+    }
+
+    private async Task LoadDataAsync()
+    {
+        isLoadingProducts = true;
+        productError      = string.Empty;
+
+        try
+        {
+            var catTask  = CategoryService.GetAll();
+            var prodTask = ProductService.GetAll();
+            await Task.WhenAll(catTask, prodTask);
+
+            var catResp  = catTask.Result;
+            var prodResp = prodTask.Result;
+
+            if (catResp.Success && catResp.Data != null)
+                categories = catResp.Data;
+            else
+                productError = catResp.Message;
+
+            if (prodResp.Success && prodResp.Data != null)
+                allProducts = prodResp.Data;
+            else
+                productError = string.IsNullOrWhiteSpace(productError)
+                              ? prodResp.Message
+                              : productError;
+        }
+        catch (Exception ex)
+        {
+            productError = $"Failed to load data: {ex.Message}";
+        }
+        finally
+        {
+            isLoadingProducts = false;
+        }
+    }
+
+    // ── Filtering & Search ────────────────────────────────────────
+
+    private void SelectCategory(int catId)
+    {
+        selectedCategoryId = catId;
+        searchKeyword = string.Empty;
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchKeyword = e.Value?.ToString() ?? string.Empty;
+        selectedCategoryId = 0; // reset filter when searching
+    }
+
+    // ── Cart Operations ───────────────────────────────────────────
+
+    private void AddToCart(ProductDto product)
+    {
+        var existing = cartItems.FirstOrDefault(i => i.ProductId == product.Id);
+        if (existing is not null)
+        {
+            existing.Quantity++;
+        }
+        else
+        {
+            cartItems.Add(new CartLineItem
+            {
+                ProductId   = product.Id,
+                ProductName = product.Name,
+                UnitPrice   = product.Price,
+                Quantity    = 1
+            });
+        }
+    }
+
+    private void ChangeQty(CartLineItem item, int delta)
+    {
+        item.Quantity += delta;
+        if (item.Quantity <= 0)
+            cartItems.Remove(item);
+    }
+
+    private void RemoveFromCart(CartLineItem item)
+    {
+        cartItems.Remove(item);
+    }
+
+    private void ClearCart()
+    {
+        cartItems.Clear();
+        ResetPromo();
+    }
+
+    // ── Promo ─────────────────────────────────────────────────────
+
+    private void ApplyPromo()
+    {
+        // Promo service integration is pending (IPromotionService belongs to Maryam Jahangir).
+        // For now we accept the code and note it will be sent in CreateSaleDto.PromoCode
+        // so SaleService can handle it when the Promotion module is wired up.
+        if (string.IsNullOrWhiteSpace(promoCode))
+        {
+            promoMessage = "Please enter a promo code.";
+            promoApplied = false;
+            return;
+        }
+
+        // Optimistic: accept code and let SaleService validate server-side
+        promoApplied  = true;
+        promoMessage  = $"Code \"{promoCode.Trim().ToUpper()}\" will be applied at checkout.";
+        discountAmount = 0m; // actual discount calculated server-side
+    }
+
+    private void ResetPromo()
+    {
+        promoCode      = string.Empty;
+        promoMessage   = string.Empty;
+        promoApplied   = false;
+        discountAmount = 0m;
+    }
+
+    // ── Checkout Modal ────────────────────────────────────────────
+
+    private void OpenCheckoutModal()
+    {
+        checkoutError = string.Empty;
+        showCheckoutModal = true;
+    }
+
+    private void CloseCheckoutModal()
+    {
+        showCheckoutModal = false;
+        checkoutError     = string.Empty;
+    }
+
+    private async Task ConfirmSaleAsync()
+    {
+        if (cartItems.Count == 0) return;
+
+        isProcessingSale = true;
+        checkoutError    = string.Empty;
+
+        try
+        {
+            var dto = new CreateSaleDto
+            {
+                // UserId = 1 placeholder; replace with real auth context when auth module lands
+                UserId        = 1,
+                CustomerId    = checkoutCustomerId > 0 ? checkoutCustomerId : null,
+                PromoCode     = promoApplied ? promoCode.Trim() : null,
+                SaleType      = selectedSaleType,
+                PaymentMethod = selectedPayment,
+                Items         = cartItems.Select(ci => new SaleItemDto
+                {
+                    ProductId   = ci.ProductId,
+                    ProductName = ci.ProductName,
+                    Quantity    = ci.Quantity,
+                    UnitPrice   = ci.UnitPrice,
+                    LineTotal   = ci.UnitPrice * ci.Quantity
+                }).ToList()
+            };
+
+            var response = await SaleService.ProcessSale(dto);
+
+            if (response.Success && response.Data != null)
+            {
+                lastSaleResult    = response.Data;
+                showCheckoutModal = false;
+                showReceiptModal  = true;
+                // Cart and promo cleared after receipt is dismissed
+            }
+            else
+            {
+                checkoutError = response.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            checkoutError = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            isProcessingSale = false;
+        }
+    }
+
+    // ── Receipt / Reset ───────────────────────────────────────────
+
+    private void CloseReceiptAndReset()
+    {
+        showReceiptModal  = false;
+        lastSaleResult    = null;
+        cartItems.Clear();
+        ResetPromo();
+        checkoutCustomerId = null;
+        selectedPayment    = PaymentMethod.Cash;
+        selectedSaleType   = SaleType.Onsite;
+    }
+
+    // ── Dispose ───────────────────────────────────────────────────
+
+    public void Dispose()
+    {
+        _clockTimer?.Dispose();
+    }
+
+    // ── Inner model — local cart line item ────────────────────────
+
+    private class CartLineItem
+    {
+        public int     ProductId   { get; set; }
+        public string  ProductName { get; set; } = string.Empty;
+        public decimal UnitPrice   { get; set; }
+        public int     Quantity    { get; set; }
+    }
+}
