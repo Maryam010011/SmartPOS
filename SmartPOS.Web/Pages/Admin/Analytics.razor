@@ -1,0 +1,1264 @@
+@page "/admin/analytics"
+@rendermode @(Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer)
+@layout AdminLayout
+@using SmartPOS.Shared.DTOs.Weather
+
+@inject ISaleService SaleService
+@inject IWeatherService WeatherService
+
+<PageTitle>Analytics — SmartPOS+</PageTitle>
+
+<div class="analytics-page">
+
+    <!-- ── Page Header ─────────────────────────────────────────────── -->
+    <header class="page-header">
+        <div class="page-title">
+            <h1>Sales Analytics</h1>
+            <p>Real-time revenue intelligence and store performance metrics.</p>
+        </div>
+        <div class="header-actions">
+            @if (lastRefreshed.HasValue)
+            {
+                <span class="last-refreshed">Updated @lastRefreshed.Value.ToLocalTime().ToString("hh:mm tt")</span>
+            }
+            <button class="btn btn-outline" @onclick="RefreshAsync" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner"></span>
+                    <span>Refreshing...</span>
+                }
+                else
+                {
+                    <span class="icon-refresh">↻</span>
+                    <span>Refresh</span>
+                }
+            </button>
+        </div>
+    </header>
+
+    <!-- ── Status Alert ────────────────────────────────────────────── -->
+    @if (!string.IsNullOrWhiteSpace(statusMessage))
+    {
+        <div class="alert @(isStatusSuccess ? "alert-success" : "alert-error")">
+            <span>@statusMessage</span>
+            <button class="btn btn-text" @onclick="ClearStatus">✕</button>
+        </div>
+    }
+
+    <!-- ── Filter Bar ──────────────────────────────────────────────── -->
+    <section class="filter-bar">
+        <div class="filter-group">
+            <span class="filter-label">Period Preset</span>
+            <div class="period-pills">
+                <button class="pill @(activePeriodPreset == "today"  ? "pill-active" : "")" @onclick='() => ApplyPreset("today")'>Today</button>
+                <button class="pill @(activePeriodPreset == "7d"     ? "pill-active" : "")" @onclick='() => ApplyPreset("7d")'>Last 7 Days</button>
+                <button class="pill @(activePeriodPreset == "30d"    ? "pill-active" : "")" @onclick='() => ApplyPreset("30d")'>Last 30 Days</button>
+                <button class="pill @(activePeriodPreset == "mtd"    ? "pill-active" : "")" @onclick='() => ApplyPreset("mtd")'>Month to Date</button>
+                <button class="pill @(activePeriodPreset == "custom" ? "pill-active" : "")" @onclick='() => ApplyPreset("custom")'>Custom Range</button>
+            </div>
+        </div>
+
+        @if (activePeriodPreset == "custom")
+        {
+            <div class="filter-group">
+                <span class="filter-label">From</span>
+                <input id="analytics-date-from" type="date" class="filter-input"
+                       value="@filter.From?.ToString("yyyy-MM-dd")"
+                       @onchange="e => OnDateChange(e, true)" />
+            </div>
+            <div class="filter-group">
+                <span class="filter-label">To</span>
+                <input id="analytics-date-to" type="date" class="filter-input"
+                       value="@filter.To?.ToString("yyyy-MM-dd")"
+                       @onchange="e => OnDateChange(e, false)" />
+            </div>
+        }
+
+        <div class="filter-group">
+            <span class="filter-label">Granularity</span>
+            <select id="analytics-granularity" class="filter-select"
+                    value="@filter.Period"
+                    @onchange="OnPeriodGranularityChange">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <span class="filter-label">Sale Type</span>
+            <select id="analytics-sale-type" class="filter-select"
+                    value="@selectedSaleType"
+                    @onchange="OnSaleTypeChange">
+                <option value="">All Types</option>
+                <option value="Onsite">Onsite</option>
+                <option value="Online">Online</option>
+            </select>
+        </div>
+
+        <div class="filter-actions">
+            <button id="analytics-apply-btn" class="btn btn-primary" @onclick="RefreshAsync" disabled="@isLoading">
+                Apply Filters
+            </button>
+            <button id="analytics-reset-btn" class="btn btn-outline" @onclick="ResetFilters" disabled="@isLoading">
+                Reset
+            </button>
+        </div>
+    </section>
+
+    <!-- ── KPI Cards + Weather ──────────────────────────────────────── -->
+    <section class="kpi-grid">
+
+        <!-- Total Revenue -->
+        <div class="kpi-card kpi-revenue">
+            <div class="kpi-icon-wrap">₨</div>
+            <div class="kpi-content">
+                <span class="kpi-label">Total Revenue</span>
+                @if (isLoading)
+                {
+                    <span class="kpi-value kpi-skeleton">——</span>
+                }
+                else
+                {
+                    <span class="kpi-value">@(analytics?.TotalRevenue.ToString("N0") ?? "0")</span>
+                    <span class="kpi-unit">Pakistani Rupee</span>
+                }
+            </div>
+        </div>
+
+        <!-- Total Transactions -->
+        <div class="kpi-card kpi-transactions">
+            <div class="kpi-icon-wrap">#</div>
+            <div class="kpi-content">
+                <span class="kpi-label">Total Transactions</span>
+                @if (isLoading)
+                {
+                    <span class="kpi-value kpi-skeleton">——</span>
+                }
+                else
+                {
+                    <span class="kpi-value">@(analytics?.TotalTransactions.ToString("N0") ?? "0")</span>
+                    <span class="kpi-unit">Completed Sales</span>
+                }
+            </div>
+        </div>
+
+        <!-- Average Order Value -->
+        <div class="kpi-card kpi-aov">
+            <div class="kpi-icon-wrap">⌀</div>
+            <div class="kpi-content">
+                <span class="kpi-label">Avg. Order Value</span>
+                @if (isLoading)
+                {
+                    <span class="kpi-value kpi-skeleton">——</span>
+                }
+                else
+                {
+                    <span class="kpi-value">@(analytics?.AverageOrderValue.ToString("N0") ?? "0")</span>
+                    <span class="kpi-unit">PKR per Sale</span>
+                }
+            </div>
+        </div>
+
+        <!-- Chart Intervals -->
+        <div class="kpi-card kpi-intervals">
+            <div class="kpi-icon-wrap">≡</div>
+            <div class="kpi-content">
+                <span class="kpi-label">Chart Intervals</span>
+                @if (isLoading)
+                {
+                    <span class="kpi-value kpi-skeleton">——</span>
+                }
+                else
+                {
+                    <span class="kpi-value">@(analytics?.ChartData?.Count ?? 0)</span>
+                    <span class="kpi-unit">@filter.Period periods</span>
+                }
+            </div>
+        </div>
+
+        <!-- Weather Widget -->
+        <div class="kpi-card kpi-weather">
+            @if (isLoadingWeather)
+            {
+                <div class="weather-loading">
+                    <span class="spinner"></span>
+                    <span>Fetching weather…</span>
+                </div>
+            }
+            else if (weather != null)
+            {
+                <div class="weather-city-row">
+                    <span class="weather-icon">🌤</span>
+                    <span class="weather-city">@weather.City</span>
+                </div>
+                <div class="weather-temp">@weather.Temperature.ToString("F1")°C</div>
+                <div class="weather-condition">@weather.Condition</div>
+                <div class="weather-fetched">Updated @weather.FetchedAt.ToLocalTime().ToString("hh:mm tt")</div>
+            }
+            else
+            {
+                <div class="weather-city-row">
+                    <span class="weather-icon">🌤</span>
+                    <span class="weather-city">Local Store</span>
+                </div>
+                <div class="weather-unavailable">Weather service unavailable</div>
+            }
+        </div>
+
+    </section>
+
+    <!-- ── Revenue Trend Chart ──────────────────────────────────────── -->
+    <section class="card chart-card">
+        <div class="card-header">
+            <div>
+                <h2>Revenue Trend</h2>
+                <p class="card-subtitle">
+                    @filter.Period revenue from
+                    @filter.From?.ToString("dd MMM yyyy") to @filter.To?.ToString("dd MMM yyyy")
+                </p>
+            </div>
+            <div class="chart-legend">
+                <span class="legend-dot legend-revenue"></span>
+                <span>Revenue (PKR)</span>
+                <span class="legend-sep">·</span>
+                <span class="legend-dot legend-txns"></span>
+                <span>Transactions</span>
+            </div>
+        </div>
+        <div class="card-body">
+            @if (isLoading)
+            {
+                <div class="loading-state">
+                    <span class="spinner"></span>
+                    <span>Building chart data…</span>
+                </div>
+            }
+            else if (analytics == null || !analytics.ChartData.Any())
+            {
+                <div class="empty-state">No revenue data available for the selected period and filters.</div>
+            }
+            else
+            {
+                <div class="chart-container">
+                    @{
+                        var pts       = analytics.ChartData;
+                        decimal maxRev  = pts.Max(p => p.Revenue);
+                        int     maxTxn  = pts.Max(p => p.Transactions);
+                        if (maxRev == 0) maxRev = 1;
+                        if (maxTxn == 0) maxTxn = 1;
+
+                        const int  CH        = 180;  // chart height px
+                        const int  SVG_W     = 800;
+                        int        barCount  = pts.Count;
+                        double     slot      = barCount > 0 ? (double)SVG_W / barCount : SVG_W;
+                        double     bw        = Math.Max(slot * 0.55, 3);
+                        double     gap       = (slot - bw) / 2.0;
+                    }
+
+                    <svg id="analytics-revenue-chart"
+                         viewBox="0 0 @SVG_W @(CH + 50)"
+                         class="revenue-svg"
+                         preserveAspectRatio="none">
+
+                        <!-- Y grid lines -->
+                        @for (int yi = 0; yi <= 4; yi++)
+                        {
+                            double yy = CH - yi * CH / 4.0;
+                            decimal lv = maxRev * yi / 4;
+                            <line x1="0" y1="@yy.ToString("F0")" x2="@SVG_W" y2="@yy.ToString("F0")"
+                                  stroke="rgba(61,28,2,0.07)" stroke-width="1" stroke-dasharray="4 3" />
+                            @((MarkupString)$@"<text x=""4"" y=""{(yy - 4):F0}"" font-size=""8"" fill=""rgba(61,28,2,0.38)"" font-family=""system-ui"">{lv:N0}</text>")
+                        }
+
+                        <!-- Revenue Bars -->
+                        @for (int i = 0; i < pts.Count; i++)
+                        {
+                            var pt   = pts[i];
+                            double bh  = (double)pt.Revenue / (double)maxRev * CH;
+                            double bx  = i * slot + gap;
+                            double by  = CH - bh;
+
+                            <rect x="@bx.ToString("F1")"
+                                  y="@by.ToString("F1")"
+                                  width="@bw.ToString("F1")"
+                                  height="@bh.ToString("F1")"
+                                  rx="3" ry="3"
+                                  fill="var(--color-button-primary)"
+                                  opacity="0.82"
+                                  class="chart-bar">
+                                <title>@pt.Label — PKR @pt.Revenue.ToString("N2") · @pt.Transactions txns</title>
+                            </rect>
+
+                            <!-- Transactions dot overlay -->
+                            <circle cx="@((bx + bw / 2.0).ToString("F1"))" 
+                                    cy="@((CH - ((double)pt.Transactions / (double)maxTxn * CH)).ToString("F1"))"
+                                    r="3.5" fill="var(--color-navbar-bg)" opacity="0.7"
+                                    class="chart-dot">
+                                <title>@pt.Label — @pt.Transactions transactions</title>
+                            </circle>
+
+                            <!-- X-axis Labels (only when few points) -->
+                            @if (barCount <= 16)
+                            {
+                                @((MarkupString)$@"<text x=""{(bx + bw / 2):F1}"" y=""{CH + 16}"" text-anchor=""middle"" font-size=""7.5"" fill=""var(--color-text-muted)"" font-family=""system-ui"">{System.Net.WebUtility.HtmlEncode(pt.Label)}</text>")
+                            }
+                        }
+
+                        <!-- Trend line through dots -->
+                        @if (pts.Count > 1)
+                        {
+                            string polyline = string.Join(" ", pts.Select((pt, i) =>
+                            {
+                                double doty = CH - ((double)pt.Transactions / (double)maxTxn * CH);
+                                double dotx = i * slot + gap + bw / 2.0;
+                                return $"{dotx.ToString("F1")},{doty.ToString("F1")}";
+                            }));
+                            <polyline points="@polyline"
+                                      fill="none"
+                                      stroke="var(--color-navbar-bg)"
+                                      stroke-width="1.5"
+                                      opacity="0.45"
+                                      stroke-linejoin="round"
+                                      stroke-linecap="round" />
+                        }
+
+                        <!-- X-axis baseline -->
+                        <line x1="0" y1="@CH" x2="@SVG_W" y2="@CH"
+                              stroke="rgba(61,28,2,0.18)" stroke-width="1.5" />
+                    </svg>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- ── Bottom Row: Top Products + Period Breakdown ──────────────── -->
+    <div class="bottom-grid">
+
+        <!-- Top Products -->
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Top Products</h2>
+                    <p class="card-subtitle">Ranked by units sold — top 10</p>
+                </div>
+                @if (!isLoadingSales && topProducts.Any())
+                {
+                    <span class="badge">@topProducts.Count products</span>
+                }
+            </div>
+            <div class="card-body">
+                @if (isLoadingSales)
+                {
+                    <div class="loading-state">
+                        <span class="spinner"></span>
+                        <span>Aggregating product sales…</span>
+                    </div>
+                }
+                else if (!topProducts.Any())
+                {
+                    <div class="empty-state">No product sales data for this period.</div>
+                }
+                else
+                {
+                    var totalProdRev = topProducts.Sum(p => p.TotalRevenue);
+                    <table class="table" id="analytics-top-products-table">
+                        <thead>
+                            <tr>
+                                <th class="rank-col">#</th>
+                                <th>Product</th>
+                                <th class="num-col">Units</th>
+                                <th class="num-col">Revenue (PKR)</th>
+                                <th class="share-col">Share</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < topProducts.Count; i++)
+                            {
+                                var p     = topProducts[i];
+                                double pct = totalProdRev > 0
+                                    ? (double)p.TotalRevenue / (double)totalProdRev * 100
+                                    : 0;
+                                <tr class="@(i % 2 == 1 ? "row-alt" : "")">
+                                    <td><span class="rank-badge @(i < 3 ? "rank-top" : "")">@(i + 1)</span></td>
+                                    <td class="product-name-cell">@p.ProductName</td>
+                                    <td class="num-col">@p.TotalQuantity.ToString("N0")</td>
+                                    <td class="num-col revenue-cell">@p.TotalRevenue.ToString("N2")</td>
+                                    <td class="share-col">
+                                        <div class="share-bar-wrap">
+                                            <div class="share-bar" style="width:@(Math.Min(pct, 100).ToString("F1"))%"></div>
+                                            <span class="share-pct">@pct.ToString("F1")%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </section>
+
+        <!-- Period Breakdown -->
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h2>Period Breakdown</h2>
+                    <p class="card-subtitle">Revenue and transactions per @filter.Period interval</p>
+                </div>
+                @if (!isLoading && analytics?.ChartData != null)
+                {
+                    <span class="badge">@analytics.ChartData.Count intervals</span>
+                }
+            </div>
+            <div class="card-body">
+                @if (isLoading)
+                {
+                    <div class="loading-state">
+                        <span class="spinner"></span>
+                        <span>Loading breakdown…</span>
+                    </div>
+                }
+                else if (analytics == null || !analytics.ChartData.Any())
+                {
+                    <div class="empty-state">No breakdown data available for this period.</div>
+                }
+                else
+                {
+                    <div class="table-scroll">
+                        <table class="table" id="analytics-breakdown-table">
+                            <thead>
+                                <tr>
+                                    <th>Interval</th>
+                                    <th class="num-col">Revenue (PKR)</th>
+                                    <th class="num-col">Transactions</th>
+                                    <th class="num-col">Avg / Sale</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < analytics.ChartData.Count; i++)
+                                {
+                                    var pt     = analytics.ChartData[i];
+                                    decimal avg = pt.Transactions > 0 ? pt.Revenue / pt.Transactions : 0;
+                                    <tr class="@(i % 2 == 1 ? "row-alt" : "")">
+                                        <td><span class="period-chip">@pt.Label</span></td>
+                                        <td class="num-col revenue-cell">@pt.Revenue.ToString("N2")</td>
+                                        <td class="num-col">@pt.Transactions</td>
+                                        <td class="num-col">@avg.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-footer-row">
+                                    <td><strong>Total</strong></td>
+                                    <td class="num-col"><strong>@analytics.TotalRevenue.ToString("N2")</strong></td>
+                                    <td class="num-col"><strong>@analytics.TotalTransactions</strong></td>
+                                    <td class="num-col"><strong>@analytics.AverageOrderValue.ToString("N2")</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                }
+            </div>
+        </section>
+
+    </div>
+
+</div>
+
+@code {
+
+    // ── State ──────────────────────────────────────────────────────────
+    private SaleAnalyticsDto?   analytics;
+    private WeatherDto?         weather;
+    private List<TopProductRow> topProducts = new();
+
+    private SaleFilterDto filter = new()
+    {
+        Period = "daily",
+        From   = DateTime.Today.AddDays(-7),
+        To     = DateTime.Today
+    };
+
+    private string activePeriodPreset = "7d";
+    private string selectedSaleType   = "";
+
+    private bool isLoading;
+    private bool isLoadingWeather;
+    private bool isLoadingSales;
+
+    private DateTime? lastRefreshed;
+    private string?   statusMessage;
+    private bool      isStatusSuccess;
+
+    // ── Lifecycle ──────────────────────────────────────────────────────
+    protected override async Task OnInitializedAsync()
+    {
+        // Fire all three data loads concurrently — never block on each other
+        await Task.WhenAll(
+            LoadAnalyticsAsync(),
+            LoadWeatherAsync(),
+            LoadTopProductsAsync()
+        );
+        lastRefreshed = DateTime.UtcNow;
+    }
+
+    // ── Data Loaders ───────────────────────────────────────────────────
+
+    private async Task LoadAnalyticsAsync()
+    {
+        isLoading = true;
+        var result = await SaleService.GetAnalytics(filter);
+        if (result.Success && result.Data != null)
+        {
+            analytics = result.Data;
+        }
+        else
+        {
+            analytics = null;
+            SetStatus(result.Message ?? "Failed to load analytics data.", false);
+        }
+        isLoading = false;
+    }
+
+    private async Task LoadWeatherAsync()
+    {
+        isLoadingWeather = true;
+        var result = await WeatherService.GetCurrentWeather("Lahore");
+        weather = (result.Success && result.Data != null) ? result.Data : null;
+        isLoadingWeather = false;
+    }
+
+    private async Task LoadTopProductsAsync()
+    {
+        isLoadingSales = true;
+        var result = await SaleService.GetAll(filter);
+        if (result.Success && result.Data != null)
+        {
+            topProducts = result.Data
+                .Where(s => s.Items != null && s.Items.Any())
+                .SelectMany(s => s.Items)
+                .GroupBy(item => item.ProductName)
+                .Select(g => new TopProductRow
+                {
+                    ProductName   = g.Key,
+                    TotalQuantity = g.Sum(i => i.Quantity),
+                    TotalRevenue  = g.Sum(i => i.LineTotal)
+                })
+                .OrderByDescending(p => p.TotalQuantity)
+                .Take(10)
+                .ToList();
+        }
+        else
+        {
+            topProducts = new();
+        }
+        isLoadingSales = false;
+    }
+
+    // ── User Actions ───────────────────────────────────────────────────
+
+    private async Task RefreshAsync()
+    {
+        ClearStatus();
+        StateHasChanged();
+        await Task.WhenAll(
+            LoadAnalyticsAsync(),
+            LoadWeatherAsync(),
+            LoadTopProductsAsync()
+        );
+        lastRefreshed = DateTime.UtcNow;
+    }
+
+    private async Task ApplyPreset(string preset)
+    {
+        activePeriodPreset = preset;
+        var today = DateTime.Today;
+
+        switch (preset)
+        {
+            case "today":
+                filter.From   = today;
+                filter.To     = today;
+                filter.Period = "daily";
+                break;
+            case "7d":
+                filter.From   = today.AddDays(-7);
+                filter.To     = today;
+                filter.Period = "daily";
+                break;
+            case "30d":
+                filter.From   = today.AddDays(-30);
+                filter.To     = today;
+                filter.Period = "daily";
+                break;
+            case "mtd":
+                filter.From   = new DateTime(today.Year, today.Month, 1);
+                filter.To     = today;
+                filter.Period = "daily";
+                break;
+            case "custom":
+                // Reveal date pickers; keep the current date range
+                break;
+        }
+
+        if (preset != "custom")
+            await RefreshAsync();
+    }
+
+    private void OnDateChange(ChangeEventArgs e, bool isFrom)
+    {
+        if (DateTime.TryParse(e.Value?.ToString(), out var dt))
+        {
+            if (isFrom) filter.From = dt;
+            else        filter.To   = dt;
+        }
+    }
+
+    private async Task OnPeriodGranularityChange(ChangeEventArgs e)
+    {
+        filter.Period = e.Value?.ToString() ?? "daily";
+        await RefreshAsync();
+    }
+
+    private async Task OnSaleTypeChange(ChangeEventArgs e)
+    {
+        selectedSaleType = e.Value?.ToString() ?? "";
+        filter.SaleType  = selectedSaleType switch
+        {
+            "Onsite" => SmartPOS.Shared.Enums.SaleType.Onsite,
+            "Online" => SmartPOS.Shared.Enums.SaleType.Online,
+            _        => (SmartPOS.Shared.Enums.SaleType?)null
+        };
+        await RefreshAsync();
+    }
+
+    private async Task ResetFilters()
+    {
+        filter = new SaleFilterDto
+        {
+            Period = "daily",
+            From   = DateTime.Today.AddDays(-7),
+            To     = DateTime.Today
+        };
+        activePeriodPreset = "7d";
+        selectedSaleType   = "";
+        ClearStatus();
+        await RefreshAsync();
+    }
+
+    private void SetStatus(string msg, bool success)
+    {
+        statusMessage   = msg;
+        isStatusSuccess = success;
+    }
+
+    private void ClearStatus() => statusMessage = null;
+
+    // ── Inner record ──────────────────────────────────────────────────
+    private sealed class TopProductRow
+    {
+        public string  ProductName   { get; set; } = string.Empty;
+        public int     TotalQuantity { get; set; }
+        public decimal TotalRevenue  { get; set; }
+    }
+}
+
+<style>
+
+    /* ═══════════════════════════════════════════════════════════
+       Analytics Page — SmartPOS+ Bakery Theme
+       All colors reference tokens from wwwroot/css/colors.css
+       ═══════════════════════════════════════════════════════════ */
+
+    /* ── Page Shell ──────────────────────────────────────────── */
+    .analytics-page {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.75rem;
+        background-color: var(--color-page-bg);
+        color: var(--color-primary-text);
+        min-height: 100vh;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    /* ── Page Header ─────────────────────────────────────────── */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-title h1 {
+        margin: 0;
+        font-size: 1.9rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        letter-spacing: -0.025em;
+    }
+
+    .page-title p {
+        margin: 0.3rem 0 0;
+        font-size: 0.9rem;
+        color: var(--color-primary-text);
+        opacity: 0.6;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .last-refreshed {
+        font-size: 0.8rem;
+        opacity: 0.5;
+        color: var(--color-primary-text);
+    }
+
+    .icon-refresh {
+        display: inline-block;
+        transition: transform 0.45s ease;
+        font-size: 1.1rem;
+    }
+    .btn-outline:hover:enabled .icon-refresh {
+        transform: rotate(180deg);
+    }
+
+    /* ── Alerts ──────────────────────────────────────────────── */
+    .alert {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 1.1rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--color-border-accent);
+        background-color: var(--color-card-bg);
+        font-size: 0.9rem;
+    }
+    .alert-success { border-color: var(--color-accent); }
+    .alert-error   { border-color: var(--color-navbar-bg); }
+
+    /* ── Filter Bar ──────────────────────────────────────────── */
+    .filter-bar {
+        display: flex;
+        align-items: flex-end;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+        background-color: var(--color-card-bg);
+        border: 1px solid var(--color-border-accent);
+        border-radius: 0.9rem;
+        padding: 1.1rem 1.35rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .filter-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--color-primary-text);
+        opacity: 0.55;
+    }
+
+    .period-pills {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .pill {
+        padding: 0.42rem 0.9rem;
+        border-radius: 2rem;
+        border: 1px solid var(--color-border-accent);
+        background: transparent;
+        color: var(--color-primary-text);
+        font-size: 0.84rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        line-height: 1.4;
+    }
+    .pill:hover {
+        background-color: rgba(196, 132, 138, 0.12);
+        border-color: var(--color-button-primary);
+    }
+    .pill-active {
+        background-color: var(--color-button-primary);
+        border-color: var(--color-button-primary);
+        color: var(--color-card-bg);
+        font-weight: 600;
+    }
+
+    .filter-select,
+    .filter-input {
+        padding: 0.52rem 0.85rem;
+        border: 1px solid var(--color-border-accent);
+        border-radius: 0.55rem;
+        background-color: var(--color-page-bg);
+        color: var(--color-primary-text);
+        font-size: 0.88rem;
+        min-width: 130px;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        font-family: inherit;
+    }
+    .filter-select:focus,
+    .filter-input:focus {
+        border-color: var(--color-button-primary);
+        box-shadow: 0 0 0 3px rgba(196, 132, 138, 0.18);
+    }
+
+    .filter-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    /* ── Buttons ─────────────────────────────────────────────── */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.52rem 1.1rem;
+        border-radius: 0.55rem;
+        border: 1px solid transparent;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background-color 0.2s ease, border-color 0.2s ease,
+                    transform 0.12s ease, box-shadow 0.2s ease;
+        white-space: nowrap;
+        line-height: 1.4;
+    }
+    .btn:active:enabled { transform: scale(0.97); }
+
+    .btn-primary {
+        background-color: var(--color-button-primary);
+        color: var(--color-card-bg);
+    }
+    .btn-primary:hover:enabled {
+        background-color: var(--color-button-hover);
+        box-shadow: 0 4px 14px rgba(196, 132, 138, 0.38);
+    }
+
+    .btn-outline {
+        background-color: transparent;
+        border-color: var(--color-border-accent);
+        color: var(--color-primary-text);
+    }
+    .btn-outline:hover:enabled {
+        background-color: rgba(196, 132, 138, 0.09);
+        border-color: var(--color-button-primary);
+    }
+
+    .btn-text {
+        background: transparent;
+        border: none;
+        padding: 0 0.25rem;
+        color: var(--color-primary-text);
+        opacity: 0.55;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: opacity 0.15s ease;
+    }
+    .btn-text:hover { opacity: 1; }
+
+    .btn:disabled {
+        opacity: 0.48;
+        cursor: not-allowed;
+    }
+
+    /* ── KPI Grid ────────────────────────────────────────────── */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 1.1rem;
+    }
+
+    .kpi-card {
+        background-color: var(--color-card-bg);
+        border: 1px solid var(--color-border-accent);
+        border-radius: 0.9rem;
+        padding: 1.25rem 1.3rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow 0.25s ease, transform 0.2s ease;
+    }
+    .kpi-card:hover {
+        box-shadow: 0 10px 32px rgba(61, 28, 2, 0.09);
+        transform: translateY(-2px);
+    }
+
+    /* Colored top accent line per card */
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 3px;
+        border-radius: 0.9rem 0.9rem 0 0;
+    }
+    .kpi-revenue::before      { background: var(--color-button-primary); }
+    .kpi-transactions::before { background: var(--color-navbar-bg); }
+    .kpi-aov::before          { background: var(--color-accent); }
+    .kpi-intervals::before    { background: rgba(61,28,2,0.4); }
+    .kpi-weather::before      { background: linear-gradient(90deg, #87CEEB 0%, var(--color-button-primary) 100%); }
+
+    .kpi-icon-wrap {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--color-button-primary);
+        opacity: 0.65;
+        line-height: 1;
+    }
+
+    .kpi-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+    }
+
+    .kpi-label {
+        font-size: 0.73rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--color-primary-text);
+        opacity: 0.52;
+    }
+
+    .kpi-value {
+        font-size: 1.85rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        letter-spacing: -0.035em;
+        line-height: 1.1;
+    }
+
+    .kpi-skeleton {
+        opacity: 0.22;
+        animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    .kpi-unit {
+        font-size: 0.76rem;
+        color: var(--color-primary-text);
+        opacity: 0.48;
+        font-weight: 500;
+        margin-top: 0.1rem;
+    }
+
+    /* ── Weather Card Specifics ───────────────────────────────── */
+    .kpi-weather {
+        background: linear-gradient(140deg, var(--color-card-bg) 0%, rgba(196,132,138,0.06) 100%);
+    }
+
+    .weather-loading {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        opacity: 0.6;
+    }
+
+    .weather-city-row {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+
+    .weather-icon  { font-size: 1.55rem; }
+
+    .weather-city {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        text-transform: capitalize;
+    }
+
+    .weather-temp {
+        font-size: 1.85rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        letter-spacing: -0.035em;
+        line-height: 1.1;
+    }
+
+    .weather-condition {
+        font-size: 0.84rem;
+        color: var(--color-primary-text);
+        opacity: 0.62;
+        text-transform: capitalize;
+    }
+
+    .weather-fetched {
+        font-size: 0.73rem;
+        opacity: 0.38;
+        margin-top: 0.25rem;
+    }
+
+    .weather-unavailable {
+        font-size: 0.84rem;
+        opacity: 0.48;
+        font-style: italic;
+    }
+
+    /* ── Cards ───────────────────────────────────────────────── */
+    .card {
+        background-color: var(--color-card-bg);
+        border: 1px solid var(--color-border-accent);
+        border-radius: 0.9rem;
+        padding: 1.4rem;
+        transition: box-shadow 0.25s ease;
+    }
+    .card:hover {
+        box-shadow: 0 6px 24px rgba(61, 28, 2, 0.07);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.1rem;
+        gap: 1rem;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        letter-spacing: -0.01em;
+    }
+
+    .card-subtitle {
+        margin: 0.2rem 0 0;
+        font-size: 0.8rem;
+        opacity: 0.52;
+        color: var(--color-primary-text);
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.65rem;
+        border-radius: 2rem;
+        background-color: rgba(196,132,138,0.14);
+        color: var(--color-heading-text);
+        font-size: 0.76rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    /* ── Chart ───────────────────────────────────────────────── */
+    .chart-legend {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: 0.8rem;
+        opacity: 0.62;
+        flex-shrink: 0;
+    }
+
+    .legend-sep { opacity: 0.35; }
+
+    .legend-dot {
+        width: 9px; height: 9px;
+        border-radius: 50%;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+    .legend-revenue { background: var(--color-button-primary); }
+    .legend-txns    { background: var(--color-navbar-bg); }
+
+    .chart-container {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .revenue-svg {
+        width: 100%;
+        min-height: 230px;
+        display: block;
+    }
+
+    .chart-bar {
+        cursor: pointer;
+        transition: opacity 0.18s ease, filter 0.18s ease;
+    }
+    .chart-bar:hover { opacity: 1 !important; filter: brightness(1.08); }
+
+    .chart-dot {
+        cursor: pointer;
+        transition: r 0.18s ease;
+    }
+    .chart-dot:hover { r: 5; }
+
+    /* ── Bottom Grid ─────────────────────────────────────────── */
+    .bottom-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+        gap: 1.5rem;
+    }
+
+    /* ── Tables ──────────────────────────────────────────────── */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.87rem;
+    }
+
+    .table th {
+        text-align: left;
+        padding: 0.6rem 0.75rem;
+        border-bottom: 2px solid var(--color-border-accent);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--color-primary-text);
+        opacity: 0.58;
+        white-space: nowrap;
+    }
+
+    .table td {
+        padding: 0.62rem 0.75rem;
+        border-bottom: 1px solid rgba(196, 132, 138, 0.14);
+        vertical-align: middle;
+        color: var(--color-primary-text);
+    }
+
+    .row-alt { background-color: rgba(196,132,138,0.04); }
+
+    .table-footer-row td {
+        border-top: 2px solid var(--color-border-accent);
+        border-bottom: none;
+        background-color: rgba(61, 28, 2, 0.025);
+        padding-top: 0.8rem;
+        color: var(--color-heading-text);
+    }
+
+    .num-col  { text-align: right; white-space: nowrap; }
+    .rank-col { width: 44px; text-align: center; }
+    .share-col{ width: 140px; }
+
+    .rank-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px; height: 24px;
+        border-radius: 50%;
+        background-color: rgba(196,132,138,0.18);
+        color: var(--color-heading-text);
+        font-size: 0.74rem;
+        font-weight: 700;
+    }
+    .rank-top {
+        background-color: var(--color-button-primary);
+        color: var(--color-card-bg);
+    }
+
+    .product-name-cell {
+        font-weight: 600;
+        color: var(--color-heading-text);
+    }
+
+    .revenue-cell {
+        font-weight: 600;
+        color: var(--color-heading-text);
+    }
+
+    .share-bar-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .share-bar {
+        height: 5px;
+        border-radius: 3px;
+        background-color: var(--color-button-primary);
+        min-width: 2px;
+        max-width: 75px;
+        transition: width 0.45s ease;
+    }
+
+    .share-pct {
+        font-size: 0.76rem;
+        opacity: 0.58;
+        white-space: nowrap;
+    }
+
+    .period-chip {
+        display: inline-block;
+        padding: 0.18rem 0.55rem;
+        background-color: rgba(61,28,2,0.06);
+        border-radius: 0.3rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        font-family: 'Courier New', monospace;
+        letter-spacing: 0.02em;
+    }
+
+    .table-scroll {
+        max-height: 370px;
+        overflow-y: auto;
+        border-radius: 0.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border-accent) transparent;
+    }
+
+    /* ── Loading / Empty States ──────────────────────────────── */
+    .loading-state,
+    .empty-state {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.88rem;
+        padding: 1.2rem 1rem;
+        border: 1.5px dashed var(--color-border-accent);
+        border-radius: 0.7rem;
+        opacity: 0.65;
+    }
+
+    /* ── Spinner ─────────────────────────────────────────────── */
+    .spinner {
+        display: inline-block;
+        width: 14px; height: 14px;
+        border: 2px solid var(--color-border-accent);
+        border-top-color: var(--color-button-primary);
+        border-radius: 50%;
+        animation: spin 0.72s linear infinite;
+        flex-shrink: 0;
+    }
+
+    /* ── Keyframes ───────────────────────────────────────────── */
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @@keyframes pulse {
+        0%, 100% { opacity: 0.22; }
+        50%       { opacity: 0.44; }
+    }
+
+</style>

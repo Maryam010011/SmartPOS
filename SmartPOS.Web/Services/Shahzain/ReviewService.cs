@@ -192,8 +192,8 @@ namespace SmartPOS.Web.Services.Shahzain
                 ProductId = review.ProductId,
                 ProductName = review.Product?.Name ?? "Unknown",
                 Rating = review.Rating,
-                Comment = review.Comment,
-                Sentiment = review.Sentiment,
+                Comment = review.Comment ?? string.Empty,
+                Sentiment = review.Sentiment ?? string.Empty,
                 SentimentScore = review.SentimentScore.HasValue ? (float)review.SentimentScore.Value : 0f,
                 CreatedAt = review.CreatedAt
             };
