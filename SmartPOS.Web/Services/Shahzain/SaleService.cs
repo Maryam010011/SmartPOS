@@ -14,17 +14,17 @@ namespace SmartPOS.Web.Services.Shahzain
     /// </summary>
     public class SaleService : ISaleService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
         private readonly IInventoryService _inventoryService;
 
         /// <summary>
         /// Initialises a new instance of <see cref="SaleService"/>.
         /// </summary>
-        /// <param name="context">The application database context.</param>
+        /// <param name="factory">The application database context factory.</param>
         /// <param name="inventoryService">The inventory service used to deduct stock after a sale.</param>
-        public SaleService(AppDbContext context, IInventoryService inventoryService)
+        public SaleService(IDbContextFactory<AppDbContext> factory, IInventoryService inventoryService)
         {
-            _context = context;
+            _factory = factory;
             _inventoryService = inventoryService;
         }
 
@@ -48,6 +48,7 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
+                using var context = _factory.CreateDbContext();
                 // ── Validate items ───────────────────────────
                 if (dto.Items == null || !dto.Items.Any())
                     return ApiResponse<SaleResultDto>.Fail("Sale must contain at least one item.");
@@ -57,7 +58,7 @@ namespace SmartPOS.Web.Services.Shahzain
 
                 foreach (var item in dto.Items)
                 {
-                    var product = await _context.Products.FindAsync(item.ProductId);
+                    var product = await context.Products.FindAsync(item.ProductId);
 
                     if (product == null)
                         return ApiResponse<SaleResultDto>.Fail($"Product with ID {item.ProductId} not found.");
@@ -118,8 +119,8 @@ namespace SmartPOS.Web.Services.Shahzain
                     Status = SaleStatus.Completed
                 };
 
-                _context.Sales.Add(sale);
-                await _context.SaveChangesAsync();
+                context.Sales.Add(sale);
+                await context.SaveChangesAsync();
 
                 // Assign the generated SaleId to each item and persist
                 foreach (var si in saleItems)
@@ -127,8 +128,8 @@ namespace SmartPOS.Web.Services.Shahzain
                     si.SaleId = sale.Id;
                 }
 
-                _context.SaleItems.AddRange(saleItems);
-                await _context.SaveChangesAsync();
+                context.SaleItems.AddRange(saleItems);
+                await context.SaveChangesAsync();
 
                 // ── Deduct inventory ─────────────────────────
                 foreach (var si in saleItems)
@@ -157,7 +158,7 @@ namespace SmartPOS.Web.Services.Shahzain
                     Items = saleItems.Select(si => new SaleItemDto
                     {
                         ProductId = si.ProductId,
-                        ProductName = _context.Products.Find(si.ProductId)?.Name ?? "Unknown",
+                        ProductName = context.Products.Find(si.ProductId)?.Name ?? "Unknown",
                         Quantity = si.Quantity,
                         UnitPrice = si.UnitPrice,
                         LineTotal = si.LineTotal
@@ -186,7 +187,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var sale = await _context.Sales
+                using var context = _factory.CreateDbContext();
+                var sale = await context.Sales
                     .Include(s => s.SaleItems)
                         .ThenInclude(si => si.Product)
                     .FirstOrDefaultAsync(s => s.Id == id);
@@ -216,7 +218,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var query = _context.Sales
+                using var context = _factory.CreateDbContext();
+                var query = context.Sales
                     .Include(s => s.SaleItems)
                         .ThenInclude(si => si.Product)
                     .AsQueryable();
@@ -265,7 +268,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var query = _context.Sales
+                using var context = _factory.CreateDbContext();
+                var query = context.Sales
                     .Where(s => s.Status == SaleStatus.Completed)
                     .AsQueryable();
 
@@ -324,7 +328,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var sale = await _context.Sales
+                using var context = _factory.CreateDbContext();
+                var sale = await context.Sales
                     .Include(s => s.SaleItems)
                     .FirstOrDefaultAsync(s => s.Id == saleId);
 
@@ -338,7 +343,7 @@ namespace SmartPOS.Web.Services.Shahzain
                     return ApiResponse.Fail("A reason is required to void a sale.");
 
                 sale.Status = SaleStatus.Voided;
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 // Restore inventory for each voided item
                 foreach (var item in sale.SaleItems)
@@ -368,7 +373,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var sale = await _context.Sales
+                using var context = _factory.CreateDbContext();
+                var sale = await context.Sales
                     .Include(s => s.SaleItems)
                     .FirstOrDefaultAsync(s => s.Id == saleId);
 
@@ -379,7 +385,7 @@ namespace SmartPOS.Web.Services.Shahzain
                     return ApiResponse.Fail($"Only completed sales can be refunded. Current status: {sale.Status}.");
 
                 sale.Status = SaleStatus.Refunded;
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 // Restore inventory for each refunded item
                 foreach (var item in sale.SaleItems)

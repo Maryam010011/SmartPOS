@@ -13,11 +13,11 @@ namespace SmartPOS.Web.Services.Shahzain
     /// </summary>
     public class ProductService : IProductService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
 
-        public ProductService(AppDbContext context)
+        public ProductService(IDbContextFactory<AppDbContext> factory)
         {
-            _context = context;
+            _factory = factory;
         }
 
         /// <summary>
@@ -29,7 +29,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var product = await _context.Products
+                using var context = _factory.CreateDbContext();
+                var product = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .FirstOrDefaultAsync(p => p.Id == id);
@@ -53,7 +54,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var products = await _context.Products
+                using var context = _factory.CreateDbContext();
+                var products = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .ToListAsync();
@@ -75,7 +77,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var products = await _context.Products
+                using var context = _factory.CreateDbContext();
+                var products = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .Where(p => p.CategoryId == categoryId)
@@ -98,7 +101,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var products = await _context.Products
+                using var context = _factory.CreateDbContext();
+                var products = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .Where(p => p.SupplierId == supplierId)
@@ -121,8 +125,9 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
+                using var context = _factory.CreateDbContext();
                 // Basic validation
-                if (await _context.Products.AnyAsync(p => p.SKU == dto.SKU))
+                if (await context.Products.AnyAsync(p => p.SKU == dto.SKU))
                     return ApiResponse<ProductDto>.Fail("A product with this SKU already exists.");
 
                 var product = new Product
@@ -139,8 +144,8 @@ namespace SmartPOS.Web.Services.Shahzain
                     CreatedAt = DateTime.UtcNow
                 };
 
-                _context.Products.Add(product);
-                await _context.SaveChangesAsync();
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
 
                 // Fetch again to get related entities for mapping
                 return await GetById(product.Id);
@@ -160,12 +165,13 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var product = await _context.Products.FindAsync(dto.Id);
+                using var context = _factory.CreateDbContext();
+                var product = await context.Products.FindAsync(dto.Id);
                 if (product == null)
                     return ApiResponse<ProductDto>.Fail("Product not found.");
 
                 // Check SKU uniqueness if changed
-                if (product.SKU != dto.SKU && await _context.Products.AnyAsync(p => p.SKU == dto.SKU))
+                if (product.SKU != dto.SKU && await context.Products.AnyAsync(p => p.SKU == dto.SKU))
                     return ApiResponse<ProductDto>.Fail("Another product with this SKU already exists.");
 
                 product.Name = dto.Name;
@@ -178,7 +184,7 @@ namespace SmartPOS.Web.Services.Shahzain
                 product.SupplierId = dto.SupplierId;
                 product.IsActive = dto.IsActive;
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 return await GetById(product.Id);
             }
@@ -197,12 +203,13 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var product = await _context.Products.FindAsync(id);
+                using var context = _factory.CreateDbContext();
+                var product = await context.Products.FindAsync(id);
                 if (product == null)
                     return ApiResponse.Fail("Product not found.");
 
-                _context.Products.Remove(product);
-                await _context.SaveChangesAsync();
+                context.Products.Remove(product);
+                await context.SaveChangesAsync();
 
                 return ApiResponse.Ok("Product deleted successfully.");
             }
@@ -221,12 +228,13 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var product = await _context.Products.FindAsync(id);
+                using var context = _factory.CreateDbContext();
+                var product = await context.Products.FindAsync(id);
                 if (product == null)
                     return ApiResponse.Fail("Product not found.");
 
                 product.IsActive = !product.IsActive;
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 return ApiResponse.Ok($"Product is now {(product.IsActive ? "Active" : "Inactive")}.");
             }
@@ -248,7 +256,8 @@ namespace SmartPOS.Web.Services.Shahzain
                 if (string.IsNullOrWhiteSpace(keyword))
                     return await GetAll();
 
-                var products = await _context.Products
+                using var context = _factory.CreateDbContext();
+                var products = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
                     .Where(p => p.Name.Contains(keyword) || p.SKU.Contains(keyword))

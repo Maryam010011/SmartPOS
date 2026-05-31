@@ -15,17 +15,17 @@ namespace SmartPOS.Web.Services.Shahzain
     /// </summary>
     public class ReviewService : IReviewService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
         private readonly IBERTService _bertService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReviewService"/> class.
         /// </summary>
-        /// <param name="context">The application database context.</param>
+        /// <param name="factory">The application database context factory.</param>
         /// <param name="bertService">The BERT sentiment analysis service.</param>
-        public ReviewService(AppDbContext context, IBERTService bertService)
+        public ReviewService(IDbContextFactory<AppDbContext> factory, IBERTService bertService)
         {
-            _context = context;
+            _factory = factory;
             _bertService = bertService;
         }
 
@@ -40,12 +40,13 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
+                using var context = _factory.CreateDbContext();
                 // Validate rating range
                 if (dto.Rating < 1 || dto.Rating > 5)
                     return ApiResponse<ReviewDto>.Fail("Rating must be between 1 and 5.");
 
                 // Validate product exists
-                var product = await _context.Products.FindAsync(dto.ProductId);
+                var product = await context.Products.FindAsync(dto.ProductId);
                 if (product == null)
                     return ApiResponse<ReviewDto>.Fail("Product not found.");
 
@@ -81,11 +82,11 @@ namespace SmartPOS.Web.Services.Shahzain
                     review.SentimentScore = MapSentimentToScore(review.Sentiment);
                 }
 
-                _context.Reviews.Add(review);
-                await _context.SaveChangesAsync();
+                context.Reviews.Add(review);
+                await context.SaveChangesAsync();
 
                 // Reload with navigation properties for mapping
-                var savedReview = await _context.Reviews
+                var savedReview = await context.Reviews
                     .Include(r => r.Product)
                     .FirstOrDefaultAsync(r => r.Id == review.Id);
 
@@ -106,11 +107,12 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var product = await _context.Products.FindAsync(productId);
+                using var context = _factory.CreateDbContext();
+                var product = await context.Products.FindAsync(productId);
                 if (product == null)
                     return ApiResponse<List<ReviewDto>>.Fail("Product not found.");
 
-                var reviews = await _context.Reviews
+                var reviews = await context.Reviews
                     .Include(r => r.Product)
                     .Where(r => r.ProductId == productId)
                     .OrderByDescending(r => r.CreatedAt)
@@ -132,7 +134,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var reviews = await _context.Reviews
+                using var context = _factory.CreateDbContext();
+                var reviews = await context.Reviews
                     .Include(r => r.Product)
                     .OrderByDescending(r => r.CreatedAt)
                     .ToListAsync();
@@ -154,12 +157,13 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var review = await _context.Reviews.FindAsync(id);
+                using var context = _factory.CreateDbContext();
+                var review = await context.Reviews.FindAsync(id);
                 if (review == null)
                     return ApiResponse.Fail("Review not found.");
 
-                _context.Reviews.Remove(review);
-                await _context.SaveChangesAsync();
+                context.Reviews.Remove(review);
+                await context.SaveChangesAsync();
 
                 return ApiResponse.Ok("Review deleted successfully.");
             }

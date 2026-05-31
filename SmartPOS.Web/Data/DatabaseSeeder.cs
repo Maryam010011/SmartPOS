@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SmartPOS.Web.Data;
 using SmartPOS.Web.Models;
 using SmartPOS.Shared.Enums;
@@ -11,7 +11,7 @@ public static class DatabaseSeeder
      public static async Task SeedAsync(IServiceProvider serviceProvider)
      {
           using var scope = serviceProvider.CreateScope();
-          var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+          using var db = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
 
           // Seed Roles
           if (!await db.Roles.AnyAsync())

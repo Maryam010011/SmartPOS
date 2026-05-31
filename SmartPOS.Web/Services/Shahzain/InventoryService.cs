@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Inventory;
 using SmartPOS.Shared.Interfaces;
@@ -9,25 +9,26 @@ namespace SmartPOS.Web.Services.Shahzain;
 
 public class InventoryService : IInventoryService
 {
-     private readonly AppDbContext _db;
+     private readonly IDbContextFactory<AppDbContext> _factory;
 
-     public InventoryService(AppDbContext db)
+     public InventoryService(IDbContextFactory<AppDbContext> factory)
      {
-          _db = db;
+          _factory = factory;
      }
 
      public async Task<ApiResponse> DeductStock(int productId, int quantity)
      {
           try
           {
-               var inventory = await _db.Inventories.FirstOrDefaultAsync(i => i.ProductId == productId);
+               using var db = _factory.CreateDbContext();
+               var inventory = await db.Inventories.FirstOrDefaultAsync(i => i.ProductId == productId);
                if (inventory == null)
                     return ApiResponse.Fail($"No inventory record found for product ID {productId}");
                if (inventory.Quantity < quantity)
                     return ApiResponse.Fail($"Insufficient stock. Available: {inventory.Quantity}, Requested: {quantity}");
                inventory.Quantity -= quantity;
                inventory.LastUpdated = DateTime.UtcNow;
-               await _db.SaveChangesAsync();
+               await db.SaveChangesAsync();
                return ApiResponse.Ok("Stock deducted successfully");
           }
           catch (Exception ex)
@@ -40,12 +41,13 @@ public class InventoryService : IInventoryService
      {
           try
           {
-               var inventory = await _db.Inventories.FirstOrDefaultAsync(i => i.ProductId == productId);
+               using var db = _factory.CreateDbContext();
+               var inventory = await db.Inventories.FirstOrDefaultAsync(i => i.ProductId == productId);
                if (inventory == null)
                     return ApiResponse.Fail($"No inventory record found for product ID {productId}");
                inventory.Quantity += quantity;
                inventory.LastUpdated = DateTime.UtcNow;
-               await _db.SaveChangesAsync();
+               await db.SaveChangesAsync();
                return ApiResponse.Ok("Stock added successfully");
           }
           catch (Exception ex)
@@ -58,12 +60,13 @@ public class InventoryService : IInventoryService
      {
           try
           {
-               var inventory = await _db.Inventories.FirstOrDefaultAsync(i => i.ProductId == dto.ProductId);
+               using var db = _factory.CreateDbContext();
+               var inventory = await db.Inventories.FirstOrDefaultAsync(i => i.ProductId == dto.ProductId);
                if (inventory == null)
                     return ApiResponse.Fail($"No inventory record found for product ID {dto.ProductId}");
                inventory.Quantity = dto.Quantity;
                inventory.LastUpdated = DateTime.UtcNow;
-               await _db.SaveChangesAsync();
+               await db.SaveChangesAsync();
                return ApiResponse.Ok("Stock adjusted successfully");
           }
           catch (Exception ex)
@@ -76,7 +79,8 @@ public class InventoryService : IInventoryService
      {
           try
           {
-               var inventory = await _db.Inventories
+               using var db = _factory.CreateDbContext();
+               var inventory = await db.Inventories
                    .FirstOrDefaultAsync(i => i.ProductId == productId);
                if (inventory == null)
                     return ApiResponse<InventoryDto>.Fail($"No inventory record found for product ID {productId}");
@@ -100,7 +104,8 @@ public class InventoryService : IInventoryService
      {
           try
           {
-               var inventories = await _db.Inventories
+               using var db = _factory.CreateDbContext();
+               var inventories = await db.Inventories
                    .Include(i => i.Product)
                    .ToListAsync();
                var dtos = inventories.Select(i => new InventoryDto
@@ -124,7 +129,8 @@ public class InventoryService : IInventoryService
      {
           try
           {
-               var inventories = await _db.Inventories
+               using var db = _factory.CreateDbContext();
+               var inventories = await db.Inventories
                    .Include(i => i.Product)
                    .Where(i => i.Quantity <= i.ReorderLevel)
                    .ToListAsync();

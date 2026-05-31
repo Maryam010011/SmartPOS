@@ -14,15 +14,15 @@ namespace SmartPOS.Web.Services.Shahzain;
 /// </summary>
 public class PurchaseOrderService : IPurchaseOrderService
 {
-    private readonly AppDbContext _context;
+    private readonly IDbContextFactory<AppDbContext> _factory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PurchaseOrderService"/> class.
     /// </summary>
-    /// <param name="context">The application database context.</param>
-    public PurchaseOrderService(AppDbContext context)
+    /// <param name="factory">The application database context factory.</param>
+    public PurchaseOrderService(IDbContextFactory<AppDbContext> factory)
     {
-        _context = context;
+        _factory = factory;
     }
 
     /// <summary>
@@ -34,7 +34,8 @@ public class PurchaseOrderService : IPurchaseOrderService
     {
         try
         {
-            var purchaseOrder = await _context.PurchaseOrders
+            using var context = _factory.CreateDbContext();
+            var purchaseOrder = await context.PurchaseOrders
                 .Include(po => po.Supplier)
                 .Include(po => po.LineItems)
                 .ThenInclude(li => li.Product)
@@ -59,7 +60,8 @@ public class PurchaseOrderService : IPurchaseOrderService
     {
         try
         {
-            var purchaseOrders = await _context.PurchaseOrders
+            using var context = _factory.CreateDbContext();
+            var purchaseOrders = await context.PurchaseOrders
                 .Include(po => po.Supplier)
                 .Include(po => po.LineItems)
                 .ThenInclude(li => li.Product)
@@ -82,6 +84,7 @@ public class PurchaseOrderService : IPurchaseOrderService
     {
         try
         {
+            using var context = _factory.CreateDbContext();
             // Validate required fields
             if (dto.SupplierId <= 0)
                 return ApiResponse<PurchaseOrderDto>.Fail("Supplier ID is required.");
@@ -90,13 +93,13 @@ public class PurchaseOrderService : IPurchaseOrderService
                 return ApiResponse<PurchaseOrderDto>.Fail("At least one line item is required.");
 
             // Verify supplier exists
-            var supplier = await _context.Suppliers.FindAsync(dto.SupplierId);
+            var supplier = await context.Suppliers.FindAsync(dto.SupplierId);
             if (supplier == null)
                 return ApiResponse<PurchaseOrderDto>.Fail("Supplier not found.");
 
             // Verify all products exist
             var productIds = dto.LineItems.Select(li => li.ProductId).ToList();
-            var products = await _context.Products.Where(p => productIds.Contains(p.Id)).ToListAsync();
+            var products = await context.Products.Where(p => productIds.Contains(p.Id)).ToListAsync();
             if (products.Count != productIds.Distinct().Count())
                 return ApiResponse<PurchaseOrderDto>.Fail("One or more products not found.");
 
@@ -111,8 +114,8 @@ public class PurchaseOrderService : IPurchaseOrderService
                 TotalCost = 0 // Will be calculated from line items
             };
 
-            _context.PurchaseOrders.Add(purchaseOrder);
-            await _context.SaveChangesAsync();
+            context.PurchaseOrders.Add(purchaseOrder);
+            await context.SaveChangesAsync();
 
             // Add line items
             decimal totalCost = 0;
@@ -125,12 +128,12 @@ public class PurchaseOrderService : IPurchaseOrderService
                     OrderedQty = lineItem.OrderedQty,
                     UnitPrice = lineItem.UnitPrice
                 };
-                _context.POLineItems.Add(item);
+                context.POLineItems.Add(item);
                 totalCost += lineItem.LineTotal;
             }
 
             purchaseOrder.TotalCost = totalCost;
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             // Fetch and return the created order with related data
             return await GetById(purchaseOrder.Id);
@@ -151,7 +154,8 @@ public class PurchaseOrderService : IPurchaseOrderService
     {
         try
         {
-            var purchaseOrder = await _context.PurchaseOrders.FindAsync(poId);
+            using var context = _factory.CreateDbContext();
+            var purchaseOrder = await context.PurchaseOrders.FindAsync(poId);
             if (purchaseOrder == null)
                 return ApiResponse.Fail("Purchase order not found.");
 
@@ -164,7 +168,7 @@ public class PurchaseOrderService : IPurchaseOrderService
             purchaseOrder.Status = POStatus.Received;
             purchaseOrder.ReceivedAt = DateTime.UtcNow;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return ApiResponse.Ok("Purchase order marked as received successfully.");
         }
@@ -183,7 +187,8 @@ public class PurchaseOrderService : IPurchaseOrderService
     {
         try
         {
-            var purchaseOrder = await _context.PurchaseOrders.FindAsync(poId);
+            using var context = _factory.CreateDbContext();
+            var purchaseOrder = await context.PurchaseOrders.FindAsync(poId);
             if (purchaseOrder == null)
                 return ApiResponse.Fail("Purchase order not found.");
 
@@ -195,7 +200,7 @@ public class PurchaseOrderService : IPurchaseOrderService
 
             purchaseOrder.Status = POStatus.Cancelled;
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
 
             return ApiResponse.Ok("Purchase order cancelled successfully.");
         }

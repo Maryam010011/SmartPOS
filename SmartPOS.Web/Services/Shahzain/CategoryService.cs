@@ -13,11 +13,11 @@ namespace SmartPOS.Web.Services.Shahzain
     /// </summary>
     public class CategoryService : ICategoryService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
 
-        public CategoryService(AppDbContext context)
+        public CategoryService(IDbContextFactory<AppDbContext> factory)
         {
-            _context = context;
+            _factory = factory;
         }
 
         /// <summary>
@@ -30,7 +30,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var category = await _context.Categories
+                using var context = _factory.CreateDbContext();
+                var category = await context.Categories
                     .Include(c => c.ParentCategory)
                     .Include(c => c.SubCategories)
                     .FirstOrDefaultAsync(c => c.Id == id);
@@ -55,7 +56,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var categories = await _context.Categories
+                using var context = _factory.CreateDbContext();
+                var categories = await context.Categories
                     .Include(c => c.ParentCategory)
                     .Include(c => c.SubCategories)
                     .ToListAsync();
@@ -79,8 +81,9 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
+                using var context = _factory.CreateDbContext();
                 // Load every category with its parent in a single query
-                var allCategories = await _context.Categories
+                var allCategories = await context.Categories
                     .Include(c => c.ParentCategory)
                     .ToListAsync();
 
@@ -114,10 +117,11 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
+                using var context = _factory.CreateDbContext();
                 // Validate parent exists when specified
                 if (dto.ParentCategoryId.HasValue)
                 {
-                    var parentExists = await _context.Categories
+                    var parentExists = await context.Categories
                         .AnyAsync(c => c.Id == dto.ParentCategoryId.Value);
 
                     if (!parentExists)
@@ -132,8 +136,8 @@ namespace SmartPOS.Web.Services.Shahzain
                     ParentCategoryId = dto.ParentCategoryId
                 };
 
-                _context.Categories.Add(category);
-                await _context.SaveChangesAsync();
+                context.Categories.Add(category);
+                await context.SaveChangesAsync();
 
                 // Re-fetch with includes for a complete DTO
                 return await GetById(category.Id);
@@ -154,7 +158,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var category = await _context.Categories.FindAsync(dto.Id);
+                using var context = _factory.CreateDbContext();
+                var category = await context.Categories.FindAsync(dto.Id);
                 if (category == null)
                     return ApiResponse<CategoryDto>.Fail("Category not found.");
 
@@ -165,7 +170,7 @@ namespace SmartPOS.Web.Services.Shahzain
                 // Validate parent exists when specified
                 if (dto.ParentCategoryId.HasValue)
                 {
-                    var parentExists = await _context.Categories
+                    var parentExists = await context.Categories
                         .AnyAsync(c => c.Id == dto.ParentCategoryId.Value);
 
                     if (!parentExists)
@@ -177,7 +182,7 @@ namespace SmartPOS.Web.Services.Shahzain
                 category.ImageURL = dto.ImageURL;
                 category.ParentCategoryId = dto.ParentCategoryId;
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 return await GetById(category.Id);
             }
@@ -198,7 +203,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var category = await _context.Categories
+                using var context = _factory.CreateDbContext();
+                var category = await context.Categories
                     .Include(c => c.SubCategories)
                     .Include(c => c.Products)
                     .FirstOrDefaultAsync(c => c.Id == id);
@@ -212,8 +218,8 @@ namespace SmartPOS.Web.Services.Shahzain
                 if (category.SubCategories.Any())
                     return ApiResponse.Fail("Cannot delete a category that has sub-categories. Remove or reassign sub-categories first.");
 
-                _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
+                context.Categories.Remove(category);
+                await context.SaveChangesAsync();
 
                 return ApiResponse.Ok("Category deleted successfully.");
             }
