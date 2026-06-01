@@ -1,35 +1,49 @@
 @inherits LayoutComponentBase
+@inject SmartPOS.Services.MaryamJ.AuthStateService AuthState
+@inject NavigationManager Navigation
 
 <NavBar />
-<AuthorizeView Roles="Customer,Cashier,Manager,Admin">
-    <Authorized>
-        <div class="customer-top-nav">
-            <NavLink class="customer-nav-link" href="/customer/shop" Match="NavLinkMatch.Prefix">
-                🏠 Home
-            </NavLink>
-            <NavLink class="customer-nav-link" href="/customer/shop" Match="NavLinkMatch.Prefix">
-                🛍 Shop
-            </NavLink>
-            <NavLink class="customer-nav-link" href="/customer/cart" Match="NavLinkMatch.Prefix">
-                🛒 Cart
-            </NavLink>
-            <NavLink class="customer-nav-link" href="/customer/orders" Match="NavLinkMatch.Prefix">
-                📦 Orders
-            </NavLink>
-            <NavLink class="customer-nav-link" href="/customer/profile" Match="NavLinkMatch.Prefix">
-                👤 Profile
-            </NavLink>
-        </div>
-        <main class="main-content" style="margin-left: 0; padding: 1.5rem; background: var(--color-page-bg); min-height: calc(100vh - 56px - 40px - 48px);">
-            @Body
-        </main>
-        <Footer />
-    </Authorized>
-    <NotAuthorized>
-        <div class="container py-5 text-center">
-            <h2 class="text-danger">Access Denied</h2>
-            <p>Please sign in to access the customer portal.</p>
-            <a href="/login" class="btn btn-burnt-orange">Sign In</a>
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
+
+@if (AuthState.IsAuthenticated && (AuthState.UserRole == "Customer" || AuthState.UserRole == "Cashier" || AuthState.UserRole == "Manager" || AuthState.UserRole == "Admin"))
+{
+    <div class="customer-top-nav">
+        <NavLink class="customer-nav-link" href="/customer/shop" Match="NavLinkMatch.Prefix">
+            🏠 Home
+        </NavLink>
+        <NavLink class="customer-nav-link" href="/customer/shop" Match="NavLinkMatch.Prefix">
+            🛍 Shop
+        </NavLink>
+        <NavLink class="customer-nav-link" href="/customer/cart" Match="NavLinkMatch.Prefix">
+            🛒 Cart
+        </NavLink>
+        <NavLink class="customer-nav-link" href="/customer/orders" Match="NavLinkMatch.Prefix">
+            📦 Orders
+        </NavLink>
+        <NavLink class="customer-nav-link" href="/customer/profile" Match="NavLinkMatch.Prefix">
+            👤 Profile
+        </NavLink>
+    </div>
+    <main class="main-content" style="margin-left: 0; padding: 1.5rem; background: var(--color-page-bg); min-height: calc(100vh - 56px - 40px - 48px);">
+        @Body
+    </main>
+    <Footer />
+}
+else
+{
+    <div class="container py-5 text-center">
+        <h2 class="text-danger">Access Denied</h2>
+        <p>Please sign in to access the customer portal.</p>
+        <a href="/login" class="btn btn-burnt-orange">Sign In</a>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (!AuthState.IsAuthenticated || 
+            (AuthState.UserRole != "Customer" && AuthState.UserRole != "Cashier" && AuthState.UserRole != "Manager" && AuthState.UserRole != "Admin"))
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+}

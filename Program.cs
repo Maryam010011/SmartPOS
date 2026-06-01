@@ -1,9 +1,11 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SmartPOS.Components;
+using SmartPOS.Services.MaryamJ;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Auth;
 using SmartPOS.Shared.Interfaces;
@@ -24,61 +26,39 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// ── JWT + Cookie Authentication ──
-var jwtKey = Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]!);
-
+// ── JWT Authentication ──
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = "SmartPOSAuth";
-    options.DefaultChallengeScheme = "SmartPOSAuth";
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddJwtBearer("Bearer", options =>
+.AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(jwtKey),
         ValidateIssuer = true,
-        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
         ValidateAudience = true,
-        ValidAudience = builder.Configuration["JwtSettings:Audience"],
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero
-    };
-})
-.AddCookie("Cookies", options =>
-{
-    options.LoginPath = "/login";
-    options.LogoutPath = "/logout";
-    options.AccessDeniedPath = "/access-denied";
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.Lax;
-    options.ExpireTimeSpan = TimeSpan.FromHours(2);
-    options.SlidingExpiration = true;
-})
-.AddPolicyScheme("SmartPOSAuth", "SmartPOS Auth", options =>
-{
-    options.ForwardDefaultSelector = context =>
-    {
-        var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-        if (authHeader?.StartsWith("Bearer ") == true)
-            return "Bearer";
-        return "Cookies";
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("ManagerOnly", policy => policy.RequireRole("Manager"));
-    options.AddPolicy("ManagerOrAdmin", policy => policy.RequireRole("Manager", "Admin"));
-    options.AddPolicy("CashierOrAbove", policy => policy.RequireRole("Cashier", "Manager", "Admin"));
-    options.AddPolicy("CustomerOnly", policy => policy.RequireRole("Customer"));
+    options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    options.AddPolicy("ManagerOrAbove", p => p.RequireRole("Admin", "Manager"));
+    options.AddPolicy("CashierOrAbove", p => p.RequireRole("Admin", "Manager", "Cashier"));
 });
 
 builder.Services.AddCascadingAuthenticationState();
 
-// Register Auth Service
+// Register Auth State & Services
+builder.Services.AddScoped<SmartPOS.Services.MaryamJ.AuthStateService>();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
 builder.Services.AddScoped<IAuthService, SmartPOS.Services.MaryamJ.AuthService>();
 
 // Register User Management Service
@@ -135,54 +115,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
-
-// ── Login API Endpoint ──
-app.MapPost("/api/auth/login", async (HttpContext httpContext, LoginRequestDto request, IAuthService authService) =>
-{
-    var result = await authService.Login(request);
-    if (!result.Success || result.Data == null)
-        return Results.Json(new { success = false, message = result.Message }, statusCode: 401);
-
-    var user = result.Data.User;
-
-    var claims = new List<System.Security.Claims.Claim>
-    {
-        new(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id.ToString()),
-        new(System.Security.Claims.ClaimTypes.Name, user.Name),
-        new(System.Security.Claims.ClaimTypes.Email, user.Email),
-        new(System.Security.Claims.ClaimTypes.Role, user.RoleName)
-    };
-
-    var identity = new System.Security.Claims.ClaimsIdentity(claims, "Cookies");
-    var principal = new System.Security.Claims.ClaimsPrincipal(identity);
-
-    await httpContext.SignInAsync("Cookies", principal, new Microsoft.AspNetCore.Authentication.AuthenticationProperties
-    {
-        IsPersistent = true,
-        ExpiresUtc = DateTime.UtcNow.AddHours(2)
-    });
-
-    return Results.Json(new
-    {
-        success = true,
-        message = "Login successful.",
-        token = result.Data.Token,
-        user = new
-        {
-            id = user.Id,
-            name = user.Name,
-            email = user.Email,
-            role = user.RoleName
-        }
-    });
-});
-
-// ── Logout API Endpoint ──
-app.MapPost("/api/auth/logout", async (HttpContext httpContext) =>
-{
-    await httpContext.SignOutAsync("Cookies");
-    return Results.Json(new { success = true, message = "Logged out." });
-});
 
 app.MapStaticAssets();
 app.MapControllers();

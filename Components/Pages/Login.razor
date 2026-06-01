@@ -1,16 +1,19 @@
 @page "/login"
 @attribute [AllowAnonymous]
-@layout MainLayout
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject SmartPOS.Services.MaryamJ.AuthStateService AuthState
 @using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.DTOs.Auth
+@using SmartPOS.Services.MaryamJ
 
 <div class="login-page">
     <div class="login-card">
         <div class="login-header">
-            <div class="login-logo">SP+</div>
+            <div class="login-logo">🎂</div>
             <h2>SmartPOS+</h2>
-            <p class="text-muted">Sign in to your account</p>
+            <p class="text-muted">Sign in to your sweet management account</p>
         </div>
 
         @if (!string.IsNullOrEmpty(Error))
@@ -20,13 +23,24 @@
 
         <EditForm Model="@Model" OnValidSubmit="HandleLogin" FormName="loginForm">
             <div class="mb-3">
-                <label class="form-label fw-semibold small">Email</label>
-                <InputText @bind-Value="Model.Email" class="form-control" placeholder="you@example.com" />
+                <label class="form-label fw-semibold small">Email Address</label>
+                <InputText @bind-Value="Model.Email" class="form-control" placeholder="you@smartpos.pk" required />
             </div>
             <div class="mb-3">
                 <label class="form-label fw-semibold small">Password</label>
-                <InputText @bind-Value="Model.Password" type="password" class="form-control" placeholder="••••••••" />
+                <div class="input-group">
+                    <InputText @bind-Value="Model.Password" type="@(ShowPassword ? "text" : "password")" class="form-control" placeholder="••••••••" required />
+                    <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
+                        @(ShowPassword ? "🙈" : "👁")
+                    </button>
+                </div>
             </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="/forgot-password" class="text-burnt-orange small fw-semibold text-decoration-none">Forgot Password?</a>
+                <a href="/register" class="text-burnt-orange small fw-semibold text-decoration-none">Create Account</a>
+            </div>
+
             <button type="submit" class="btn btn-burnt-orange w-100 py-2 fw-semibold" disabled="@IsLoading">
                 @if (IsLoading)
                 {
@@ -37,37 +51,39 @@
         </EditForm>
 
         <div class="login-hint mt-3">
-            <small class="text-muted">Demo accounts:</small><br />
-            <small class="text-muted">admin@smartpos.com / manager@pos.com / cashier@pos.com</small><br />
-            <small class="text-muted">Password: <strong>password123</strong> (admin/manager/cashier)</small>
+            <small class="text-muted fw-bold">Test Accounts (Password: Password123):</small><br />
+            <small class="text-muted" style="font-size: 0.75rem;">
+                admin@smartpos.pk (Admin)<br />
+                manager@smartpos.pk (Manager)<br />
+                cashier@smartpos.pk (Cashier)<br />
+                customer@smartpos.pk (Customer)
+            </small>
         </div>
     </div>
 </div>
 
 <style>
-    .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f0e8 0%, #e8dcc8 100%); padding: 1rem; }
-    .login-card { background: white; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.1); padding: 2.5rem; width: 100%; max-width: 400px; }
-    .login-header { text-align: center; margin-bottom: 1.5rem; }
-    .login-logo { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 16px; background: var(--color-button-primary); color: white; font-weight: 800; font-size: 1.5rem; margin-bottom: 1rem; }
-    .login-header h2 { font-weight: 700; color: #333; margin: 0; }
-    .login-hint { background: #f8f6f3; border-radius: 8px; padding: 0.75rem; text-align: center; line-height: 1.6; }
+    .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f0e8 0%, #e8dcc8 100%); padding: 1rem; font-family: 'Inter', sans-serif; }
+    .login-card { background: white; border-radius: 20px; box-shadow: 0 10px 45px rgba(0,0,0,0.08); padding: 2.5rem; width: 100%; max-width: 420px; border: 1px solid rgba(204, 85, 0, 0.1); }
+    .login-header { text-align: center; margin-bottom: 2rem; }
+    .login-logo { display: inline-flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 50%; background: #FFE8D6; font-size: 2.5rem; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(204, 85, 0, 0.15); }
+    .login-header h2 { font-weight: 800; color: #4A2C2A; margin: 0; font-size: 1.8rem; }
+    .login-header p { font-size: 0.9rem; margin-top: 0.5rem; }
+    .form-control:focus { border-color: #CC5500; box-shadow: 0 0 0 0.25rem rgba(204, 85, 0, 0.25); }
+    .btn-burnt-orange { background-color: #CC5500; color: white; border: none; transition: background-color 0.2s; }
+    .btn-burnt-orange:hover { background-color: #A34400; color: white; }
+    .text-burnt-orange { color: #CC5500; }
+    .text-burnt-orange:hover { color: #A34400; }
+    .login-hint { background: #fdfaf6; border-radius: 12px; padding: 1rem; border: 1px dashed rgba(204, 85, 0, 0.2); }
 </style>
 
 @code {
-    private LoginModel Model = new();
+    private LoginRequestDto Model = new();
     private bool IsLoading;
+    private bool ShowPassword;
     private string? Error;
 
-    private class LoginModel
-    {
-        public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
-    }
-
-    protected override void OnInitialized()
-    {
-        Error = null;
-    }
+    private void TogglePasswordVisibility() => ShowPassword = !ShowPassword;
 
     private async Task HandleLogin()
     {
@@ -77,53 +93,43 @@
 
         try
         {
-            using var http = new HttpClient { BaseAddress = new Uri(Navigation.BaseUri) };
-            var payload = new { email = Model.Email, password = Model.Password };
-            var response = await http.PostAsJsonAsync("/api/auth/login", payload);
-            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-
-            if (result != null && result.success && result.user != null)
+            var response = await AuthService.Login(Model);
+            if (response.Success && response.Data != null)
             {
-                var role = result.user.role?.ToLower() ?? "";
+                if (AuthStateProvider is CustomAuthStateProvider customProvider)
+                {
+                    await customProvider.NotifyLoginAsync(response.Data);
+                }
+                else
+                {
+                    AuthState.SetUser(response.Data);
+                }
+
+                var role = response.Data.User.RoleName.ToLower();
                 var redirect = role switch
                 {
                     "admin" => "/admin/users",
-                    "manager" => "/manager/promotions",
+                    "manager" => "/manager/inventory",
                     "cashier" => "/cashier/pos",
                     "customer" => "/customer/shop",
                     _ => "/"
                 };
-                Navigation.NavigateTo(redirect, forceLoad: true);
+
+                Navigation.NavigateTo(redirect);
             }
             else
             {
-                Error = result?.message ?? "Invalid email or password.";
+                Error = response.Message ?? "Invalid email or password.";
             }
         }
         catch (Exception ex)
         {
-            Error = $"Connection error: {ex.Message}";
+            Error = $"An error occurred during sign in: {ex.Message}";
         }
         finally
         {
             IsLoading = false;
             StateHasChanged();
         }
-    }
-
-    private class LoginResponse
-    {
-        public bool success { get; set; }
-        public string? message { get; set; }
-        public string? token { get; set; }
-        public UserInfo? user { get; set; }
-    }
-
-    private class UserInfo
-    {
-        public int id { get; set; }
-        public string? name { get; set; }
-        public string? email { get; set; }
-        public string? role { get; set; }
     }
 }

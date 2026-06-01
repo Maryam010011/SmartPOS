@@ -1,56 +1,67 @@
 @inherits LayoutComponentBase
+@inject SmartPOS.Services.MaryamJ.AuthStateService AuthState
+@inject NavigationManager Navigation
 @inject IInventoryService InventoryService
 @using SmartPOS.Shared.Interfaces
 @using SmartPOS.Shared.Common
 
 <NavBar />
-<AuthorizeView Roles="Manager,Admin">
-    <Authorized>
-        <div class="layout-wrapper">
-            <aside class="sidebar">
-                <nav class="sidebar-nav">
-                    <NavLink class="nav-item" href="/manager/inventory" Match="NavLinkMatch.Prefix">
-                        📦 <span>Inventory</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/manager/inventory/low-stock" Match="NavLinkMatch.Prefix">
-                        ⚠ <span>Low Stock Alerts</span>
-                        @if (LowStockBadgeCount > 0)
-                        {
-                            <span class="badge bg-danger ms-auto">@LowStockBadgeCount</span>
-                        }
-                    </NavLink>
-                    <NavLink class="nav-item" href="/manager/purchase-orders" Match="NavLinkMatch.Prefix">
-                        🛒 <span>Purchase Orders</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/manager/analytics" Match="NavLinkMatch.Prefix">
-                        📈 <span>Analytics</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/manager/promotions" Match="NavLinkMatch.Prefix">
-                        🏷 <span>Promotions</span>
-                    </NavLink>
-                </nav>
-            </aside>
-            <main class="main-content">
-                @Body
-            </main>
-        </div>
-        <Footer />
-    </Authorized>
-    <NotAuthorized>
-        <div class="container py-5 text-center">
-            <h2 class="text-danger">Access Denied</h2>
-            <p>You need Manager or Admin privileges to view this page.</p>
-            <a href="/login" class="btn btn-burnt-orange">Sign In</a>
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
+
+@if (AuthState.IsAuthenticated && (AuthState.UserRole == "Manager" || AuthState.UserRole == "Admin"))
+{
+    <div class="layout-wrapper">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <NavLink class="nav-item" href="/manager/inventory" Match="NavLinkMatch.Prefix">
+                    📦 <span>Inventory</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/manager/inventory/low-stock" Match="NavLinkMatch.Prefix">
+                    ⚠ <span>Low Stock Alerts</span>
+                    @if (LowStockBadgeCount > 0)
+                    {
+                        <span class="badge bg-danger ms-auto">@LowStockBadgeCount</span>
+                    }
+                </NavLink>
+                <NavLink class="nav-item" href="/manager/purchase-orders" Match="NavLinkMatch.Prefix">
+                    🛒 <span>Purchase Orders</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/manager/analytics" Match="NavLinkMatch.Prefix">
+                    📈 <span>Analytics</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/manager/promotions" Match="NavLinkMatch.Prefix">
+                    🏷 <span>Promotions</span>
+                </NavLink>
+            </nav>
+        </aside>
+        <main class="main-content">
+            @Body
+        </main>
+    </div>
+    <Footer />
+}
+else
+{
+    <div class="container py-5 text-center">
+        <h2 class="text-danger">Access Denied</h2>
+        <p>You need Manager or Admin privileges to view this page.</p>
+        <a href="/login" class="btn btn-burnt-orange">Sign In</a>
+    </div>
+}
 
 @code {
     private int LowStockBadgeCount;
 
+    protected override void OnInitialized()
+    {
+        if (!AuthState.IsAuthenticated || (AuthState.UserRole != "Manager" && AuthState.UserRole != "Admin"))
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && AuthState.IsAuthenticated && (AuthState.UserRole == "Manager" || AuthState.UserRole == "Admin"))
         {
             await LoadLowStockCount();
         }

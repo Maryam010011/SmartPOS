@@ -8,6 +8,7 @@ using SmartPOS.Shared.DTOs.Auth;
 using SmartPOS.Shared.DTOs.Users;
 using SmartPOS.Shared.Interfaces;
 using SmartPOS.Web.Data;
+using SmartPOS.Web.Models;
 
 namespace SmartPOS.Services.MaryamJ;
 
@@ -15,6 +16,9 @@ public class AuthService : IAuthService
 {
     private readonly AppDbContext _context;
     private readonly IConfiguration _configuration;
+    
+    // In-memory dictionary to store 6-digit reset codes keyed by email
+    private static readonly Dictionary<string, string> ResetCodes = new();
 
     public AuthService(AppDbContext context, IConfiguration configuration)
     {
@@ -27,28 +31,29 @@ public class AuthService : IAuthService
         try
         {
             if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-                return ApiResponse<LoginResponseDto>.Fail("Email and password are required.");
+                return ApiResponse<LoginResponseDto>.Fail("Invalid email or password");
 
             var user = await _context.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == request.Email.Trim().ToLower());
 
             if (user == null)
-                return ApiResponse<LoginResponseDto>.Fail("Invalid email or password.");
+                return ApiResponse<LoginResponseDto>.Fail("Invalid email or password");
 
             if (!user.IsActive)
-                return ApiResponse<LoginResponseDto>.Fail("Account is deactivated. Contact admin.");
+                return ApiResponse<LoginResponseDto>.Fail("Account is deactivated");
 
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-                return ApiResponse<LoginResponseDto>.Fail("Invalid email or password.");
+                return ApiResponse<LoginResponseDto>.Fail("Invalid email or password");
 
             var roleName = user.Role?.RoleName ?? "Customer";
             var token = GenerateJwtToken(user.Id, user.Name, user.Email, roleName);
 
+            var expiryHours = GetExpiryHours();
             return ApiResponse<LoginResponseDto>.Ok(new LoginResponseDto
             {
                 Token = token,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(GetExpiryMinutes()),
+                ExpiresAt = DateTime.UtcNow.AddHours(expiryHours),
                 User = new UserDto
                 {
                     Id = user.Id,
@@ -59,11 +64,129 @@ public class AuthService : IAuthService
                     IsActive = user.IsActive,
                     CreatedAt = user.CreatedAt
                 }
-            }, "Login successful.");
+            }, "Login successful");
         }
         catch (Exception ex)
         {
             return ApiResponse<LoginResponseDto>.Fail($"Login failed: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse<LoginResponseDto>> Register(RegisterDto dto)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Password))
+                return ApiResponse<LoginResponseDto>.Fail("Email and password are required.");
+
+            if (dto.Password != dto.ConfirmPassword)
+                return ApiResponse<LoginResponseDto>.Fail("Passwords do not match.");
+
+            if (dto.Password.Length < 6)
+                return ApiResponse<LoginResponseDto>.Fail("Password must be at least 6 characters.");
+
+            var emailNormalized = dto.Email.Trim().ToLower();
+            var exists = await _context.Users.AnyAsync(u => u.Email.ToLower() == emailNormalized);
+            if (exists)
+                return ApiResponse<LoginResponseDto>.Fail("Email is already registered.");
+
+            var hash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            var newUser = new User
+            {
+                Name = dto.Name,
+                Email = dto.Email.Trim(),
+                PasswordHash = hash,
+                RoleId = 4, // Customer Role
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(newUser);
+            await _context.SaveChangesAsync();
+
+            // Fetch the user again to ensure role information is populated
+            var userInDb = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == newUser.Id);
+
+            var roleName = userInDb?.Role?.RoleName ?? "Customer";
+            var token = GenerateJwtToken(newUser.Id, newUser.Name, newUser.Email, roleName);
+
+            var expiryHours = GetExpiryHours();
+            return ApiResponse<LoginResponseDto>.Ok(new LoginResponseDto
+            {
+                Token = token,
+                ExpiresAt = DateTime.UtcNow.AddHours(expiryHours),
+                User = new UserDto
+                {
+                    Id = newUser.Id,
+                    Name = newUser.Name,
+                    Email = newUser.Email,
+                    RoleId = newUser.RoleId,
+                    RoleName = roleName,
+                    IsActive = newUser.IsActive,
+                    CreatedAt = newUser.CreatedAt
+                }
+            }, "Registration successful.");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse<LoginResponseDto>.Fail($"Registration failed: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse> ForgotPassword(string email)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return ApiResponse.Fail("Email is required.");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == email.Trim().ToLower());
+            if (user == null)
+                return ApiResponse.Fail("Email not found");
+
+            // Generate a random 6-digit code
+            var code = Random.Shared.Next(100000, 999999).ToString();
+            
+            // Store code in memory
+            ResetCodes[email.Trim().ToLower()] = code;
+
+            return ApiResponse.Ok(code);
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.Fail($"Failed: {ex.Message}");
+        }
+    }
+
+    public async Task<ApiResponse> ResetPassword(string email, string code, string newPassword)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(newPassword))
+                return ApiResponse.Fail("Email, code, and new password are required.");
+
+            var emailKey = email.Trim().ToLower();
+            if (!ResetCodes.TryGetValue(emailKey, out var storedCode) || storedCode != code.Trim())
+                return ApiResponse.Fail("Invalid or expired reset code");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == emailKey);
+            if (user == null)
+                return ApiResponse.Fail("User not found.");
+
+            // Hash new password and save
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+
+            // Clear reset code
+            ResetCodes.Remove(emailKey);
+
+            return ApiResponse.Ok("Password reset successful");
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.Fail($"Failed to reset password: {ex.Message}");
         }
     }
 
@@ -79,48 +202,22 @@ public class AuthService : IAuthService
         return ApiResponse<LoginResponseDto>.Fail("Token refresh not implemented.");
     }
 
-    public ClaimsPrincipal? ValidateToken(string token)
-    {
-        try
-        {
-            var key = GetSecretKey();
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var principal = tokenHandler.ValidateToken(token, new TokenValidationParameters
-            {
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = true,
-                ValidIssuer = _configuration["JwtSettings:Issuer"],
-                ValidateAudience = true,
-                ValidAudience = _configuration["JwtSettings:Audience"],
-                ValidateLifetime = true,
-                ClockSkew = TimeSpan.Zero
-            }, out _);
-            return principal;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private string GenerateJwtToken(int userId, string name, string email, string roleName)
     {
-        var key = GetSecretKey();
+        var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "SmartPOSSecretKey2026AirUniversityCS284L");
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, userId.ToString()),
             new(ClaimTypes.Name, name),
             new(ClaimTypes.Email, email),
-            new(ClaimTypes.Role, roleName),
-            new("role", roleName)
+            new(ClaimTypes.Role, roleName)
         };
 
         var token = new JwtSecurityToken(
-            issuer: _configuration["JwtSettings:Issuer"],
-            audience: _configuration["JwtSettings:Audience"],
+            issuer: _configuration["Jwt:Issuer"] ?? "SmartPOS",
+            audience: _configuration["Jwt:Audience"] ?? "SmartPOSUsers",
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(GetExpiryMinutes()),
+            expires: DateTime.UtcNow.AddHours(GetExpiryHours()),
             signingCredentials: new SigningCredentials(
                 new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
         );
@@ -128,9 +225,8 @@ public class AuthService : IAuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    private byte[] GetSecretKey() =>
-        Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]!);
-
-    private int GetExpiryMinutes() =>
-        int.TryParse(_configuration["JwtSettings:ExpiryMinutes"], out var min) ? min : 120;
+    private double GetExpiryHours()
+    {
+        return double.TryParse(_configuration["Jwt:ExpiryHours"], out var hours) ? hours : 8;
+    }
 }

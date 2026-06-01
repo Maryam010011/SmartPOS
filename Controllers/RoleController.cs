@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Roles;
@@ -6,6 +7,7 @@ using SmartPOS.Shared.Interfaces;
 namespace SmartPOS.Controllers
 {
     [ApiController]
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     public class RoleController : ControllerBase
     {

@@ -72,29 +72,38 @@ namespace SmartPOS.Web.Data
                 await context.SaveChangesAsync();
             }
 
-            // ── Seed Users (only if none exist) ──
-            if (!await context.Users.AnyAsync())
+            // ── Seed Users ──
+            var adminRole  = await context.Roles.FirstAsync(r => r.RoleName == "Admin");
+            var managerRole = await context.Roles.FirstAsync(r => r.RoleName == "Manager");
+            var cashierRole = await context.Roles.FirstAsync(r => r.RoleName == "Cashier");
+            var customerRole = await context.Roles.FirstAsync(r => r.RoleName == "Customer");
+
+            var hash = BCrypt.Net.BCrypt.HashPassword("Password123");
+
+            var testAccounts = new List<User>
             {
-                var adminRole  = await context.Roles.FirstAsync(r => r.RoleName == "Admin");
-                var managerRole = await context.Roles.FirstAsync(r => r.RoleName == "Manager");
-                var cashierRole = await context.Roles.FirstAsync(r => r.RoleName == "Cashier");
-                var customerRole = await context.Roles.FirstAsync(r => r.RoleName == "Customer");
+                new() { Name = "Admin User",    Email = "admin@smartpos.pk",   PasswordHash = hash, RoleId = adminRole.Id,  IsActive = true,  CreatedAt = DateTime.UtcNow },
+                new() { Name = "Manager User",  Email = "manager@smartpos.pk", PasswordHash = hash, RoleId = managerRole.Id, IsActive = true,  CreatedAt = DateTime.UtcNow },
+                new() { Name = "Cashier User",  Email = "cashier@smartpos.pk", PasswordHash = hash, RoleId = cashierRole.Id, IsActive = true,  CreatedAt = DateTime.UtcNow },
+                new() { Name = "Customer User", Email = "customer@smartpos.pk",PasswordHash = hash, RoleId = customerRole.Id, IsActive = true,  CreatedAt = DateTime.UtcNow },
+            };
 
-                var hash = BCrypt.Net.BCrypt.HashPassword("password123");
-
-                var users = new List<User>
+            foreach (var testAcc in testAccounts)
+            {
+                var existing = await context.Users.FirstOrDefaultAsync(u => u.Email == testAcc.Email);
+                if (existing == null)
                 {
-                    new() { Name = "Admin User",    Email = "admin@smartpos.com",   PasswordHash = hash, RoleId = adminRole.Id,  IsActive = true,  CreatedAt = DateTime.UtcNow.AddDays(-30) },
-                    new() { Name = "Sara Khan",     Email = "sara@smartpos.com",    PasswordHash = hash, RoleId = managerRole.Id, IsActive = true,  CreatedAt = DateTime.UtcNow.AddDays(-20) },
-                    new() { Name = "Ali Raza",      Email = "ali@smartpos.com",     PasswordHash = hash, RoleId = cashierRole.Id, IsActive = true,  CreatedAt = DateTime.UtcNow.AddDays(-15) },
-                    new() { Name = "Fatima Ahmed",  Email = "fatima@smartpos.com",  PasswordHash = hash, RoleId = cashierRole.Id, IsActive = true,  CreatedAt = DateTime.UtcNow.AddDays(-10) },
-                    new() { Name = "Omar Hassan",   Email = "omar@smartpos.com",    PasswordHash = hash, RoleId = cashierRole.Id, IsActive = false, CreatedAt = DateTime.UtcNow.AddDays(-5) },
-                    new() { Name = "Zainab Malik",  Email = "zainab@smartpos.com",  PasswordHash = hash, RoleId = customerRole.Id, IsActive = true, CreatedAt = DateTime.UtcNow.AddDays(-3) },
-                };
-
-                context.Users.AddRange(users);
-                await context.SaveChangesAsync();
+                    context.Users.Add(testAcc);
+                }
+                else
+                {
+                    existing.PasswordHash = hash;
+                    existing.RoleId = testAcc.RoleId;
+                    existing.IsActive = true;
+                }
             }
+
+            await context.SaveChangesAsync();
 
             // ── Seed Customers (only if none exist) ──
             if (!await context.Customers.AnyAsync())

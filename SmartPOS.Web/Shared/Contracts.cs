@@ -111,6 +111,15 @@ namespace SmartPOS.Shared.DTOs.Auth
         public string Password { get; set; } = string.Empty;
     }
 
+    // Register request
+    public class RegisterDto
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+
     // Login response — JWT token returned
     public class LoginResponseDto
     {
@@ -342,6 +351,9 @@ namespace SmartPOS.Shared.Interfaces
         Task<ApiResponse<LoginResponseDto>> Login(LoginRequestDto request);
         Task<ApiResponse> Logout(string token);
         Task<ApiResponse<LoginResponseDto>> RefreshToken(string refreshToken);
+        Task<ApiResponse<LoginResponseDto>> Register(RegisterDto dto);
+        Task<ApiResponse> ForgotPassword(string email);
+        Task<ApiResponse> ResetPassword(string email, string code, string newPassword);
     }
 
     public interface IUserService

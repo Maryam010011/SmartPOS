@@ -1,61 +1,73 @@
 @inherits LayoutComponentBase
-@using System.Security.Claims
+@inject SmartPOS.Services.MaryamJ.AuthStateService AuthState
+@inject NavigationManager Navigation
 
 <NavBar />
-<AuthorizeView Roles="Admin">
-    <Authorized>
-        <div class="layout-wrapper">
-            <aside class="sidebar">
-                <nav class="sidebar-nav">
-                    <NavLink class="nav-item" href="/admin/dashboard" Match="NavLinkMatch.Prefix">
-                        📊 <span>Dashboard</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/admin/products" Match="NavLinkMatch.Prefix">
-                        📦 <span>Products</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/admin/categories" Match="NavLinkMatch.Prefix">
-                        🗂 <span>Categories</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/admin/suppliers" Match="NavLinkMatch.Prefix">
-                        🚚 <span>Suppliers</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/admin/analytics" Match="NavLinkMatch.Prefix">
-                        📈 <span>Analytics</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/admin/users" Match="NavLinkMatch.Prefix">
-                        👥 <span>Users</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/admin/roles" Match="NavLinkMatch.Prefix">
-                        🛡 <span>Roles</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/admin/customers" Match="NavLinkMatch.Prefix">
-                        👤 <span>Customers</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/manager/promotions" Match="NavLinkMatch.Prefix">
-                        🏷 <span>Promotions</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/admin/audit-logs" Match="NavLinkMatch.Prefix">
-                        📋 <span>Audit Logs</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/admin/ai-insights" Match="NavLinkMatch.Prefix">
-                        🤖 <span>AI Insights</span>
-                    </NavLink>
-                    <NavLink class="nav-item" href="/admin/sentiment" Match="NavLinkMatch.Prefix">
-                        💬 <span>Sentiment Charts</span>
-                    </NavLink>
-                </nav>
-            </aside>
-            <main class="main-content">
-                @Body
-            </main>
-        </div>
-        <Footer />
-    </Authorized>
-    <NotAuthorized>
-        <div class="container py-5 text-center">
-            <h2 class="text-danger">Access Denied</h2>
-            <p>You need Admin privileges to view this page.</p>
-            <a href="/login" class="btn btn-burnt-orange">Sign In</a>
-        </div>
-    </NotAuthorized>
-</AuthorizeView>
+
+@if (AuthState.IsAuthenticated && AuthState.UserRole == "Admin")
+{
+    <div class="layout-wrapper">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <NavLink class="nav-item" href="/admin/dashboard" Match="NavLinkMatch.Prefix">
+                    📊 <span>Dashboard</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/products" Match="NavLinkMatch.Prefix">
+                    📦 <span>Products</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/categories" Match="NavLinkMatch.Prefix">
+                    🗂 <span>Categories</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/suppliers" Match="NavLinkMatch.Prefix">
+                    🚚 <span>Suppliers</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/analytics" Match="NavLinkMatch.Prefix">
+                    📈 <span>Analytics</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/users" Match="NavLinkMatch.Prefix">
+                    👥 <span>Users</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/roles" Match="NavLinkMatch.Prefix">
+                    🛡 <span>Roles</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/customers" Match="NavLinkMatch.Prefix">
+                    👤 <span>Customers</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/manager/promotions" Match="NavLinkMatch.Prefix">
+                    🏷 <span>Promotions</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/audit-logs" Match="NavLinkMatch.Prefix">
+                    📋 <span>Audit Logs</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/ai-insights" Match="NavLinkMatch.Prefix">
+                    🤖 <span>AI Insights</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/sentiment" Match="NavLinkMatch.Prefix">
+                    💬 <span>Sentiment Charts</span>
+                </NavLink>
+            </nav>
+        </aside>
+        <main class="main-content">
+            @Body
+        </main>
+    </div>
+    <Footer />
+}
+else
+{
+    <div class="container py-5 text-center">
+        <h2 class="text-danger">Access Denied</h2>
+        <p>You need Admin privileges to view this page.</p>
+        <a href="/login" class="btn btn-burnt-orange">Sign In</a>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (!AuthState.IsAuthenticated || AuthState.UserRole != "Admin")
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+}
