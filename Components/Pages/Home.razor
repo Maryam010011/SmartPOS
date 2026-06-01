@@ -1,5 +1,6 @@
 @page "/"
 @attribute [AllowAnonymous]
+@rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthStateProvider
 @using System.Security.Claims
@@ -32,10 +33,10 @@
             var role = user.FindFirst(ClaimTypes.Role)?.Value ?? "";
             var redirect = role switch
             {
-                "Admin" => "/admin/users",
-                "Manager" => "/manager/inventory",
-                "Cashier" => "/cashier/pos",
-                _ => "/customer/shop"
+                "Admin" => "/admin/dashboard",
+                "Manager" => "/manager/dashboard",
+                "Cashier" => "/cashier/dashboard",
+                _ => "/customer/dashboard"
             };
             Navigation.NavigateTo(redirect);
         }

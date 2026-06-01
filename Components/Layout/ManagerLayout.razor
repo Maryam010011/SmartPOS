@@ -50,23 +50,20 @@ else
 
 @code {
     private bool IsAuthorized;
+    private bool _authChecked;
     private int LowStockBadgeCount;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await CheckAuthAsync();
-    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !IsAuthorized)
+        if (firstRender && !_authChecked)
         {
+            _authChecked = true;
             await CheckAuthAsync();
+            if (IsAuthorized)
+            {
+                await LoadLowStockCount();
+            }
             StateHasChanged();
-        }
-        if (firstRender && IsAuthorized)
-        {
-            await LoadLowStockCount();
         }
     }
 
@@ -99,6 +96,5 @@ else
         {
             LowStockBadgeCount = 0;
         }
-        StateHasChanged();
     }
 }

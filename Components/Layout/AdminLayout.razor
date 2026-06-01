@@ -64,16 +64,13 @@ else
 
 @code {
     private bool IsAuthorized;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await CheckAuthAsync();
-    }
+    private bool _authChecked;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !IsAuthorized)
+        if (firstRender && !_authChecked)
         {
+            _authChecked = true;
             await CheckAuthAsync();
             StateHasChanged();
         }

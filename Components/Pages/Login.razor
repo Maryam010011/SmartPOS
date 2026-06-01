@@ -26,19 +26,19 @@
                 <p class="text-center text-muted small mb-3">Select your role to continue</p>
                 <div class="role-grid">
                     <button class="role-btn role-admin" @onclick="SelectAdmin">
-                        <span class="role-icon">👑</span>
+                      
                         <span class="role-label">Admin</span>
                     </button>
                     <button class="role-btn role-manager" @onclick="SelectManager">
-                        <span class="role-icon">📊</span>
+                        
                         <span class="role-label">Manager</span>
                     </button>
                     <button class="role-btn role-cashier" @onclick="SelectCashier">
-                        <span class="role-icon">💰</span>
+                       
                         <span class="role-label">Cashier</span>
                     </button>
                     <button class="role-btn role-customer" @onclick="SelectCustomer">
-                        <span class="role-icon">🛍</span>
+        
                         <span class="role-label">Customer</span>
                     </button>
                 </div>
@@ -157,7 +157,8 @@
     {
         IsLoading = true;
         Error = null;
-        StateHasChanged();
+
+        string? redirect = null;
 
         try
         {
@@ -182,7 +183,7 @@
                 provider.MarkUserAsAuthenticated(result.Token);
             }
 
-            var redirect = actualRole.ToLower() switch
+            redirect = actualRole.ToLower() switch
             {
                 "admin" => "/admin/dashboard",
                 "manager" => "/manager/dashboard",
@@ -190,8 +191,6 @@
                 "customer" => "/customer/dashboard",
                 _ => "/"
             };
-
-            NavigationManager.NavigateTo(redirect);
         }
         catch (Exception ex)
         {
@@ -200,7 +199,11 @@
         finally
         {
             IsLoading = false;
-            StateHasChanged();
+        }
+
+        if (redirect != null)
+        {
+            NavigationManager.NavigateTo(redirect);
         }
     }
 }
