@@ -31,6 +31,7 @@ builder.Services.AddScoped<IBERTService,        BERTService>();
 builder.Services.AddScoped<IInventoryService,   InventoryServiceStub>();
 builder.Services.AddScoped<IWeatherService,     WeatherService>();
 
+<<<<<<< HEAD
 // ─── API Controllers ───────────────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -52,6 +53,8 @@ builder.Services.AddScoped<IBERTService,        BERTService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IWeatherService,     WeatherService>();
 
+=======
+>>>>>>> shahzain/model-fixes
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
