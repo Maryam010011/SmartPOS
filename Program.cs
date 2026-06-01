@@ -28,6 +28,26 @@ builder.Services.AddScoped<IReviewService,      ReviewService>();
 builder.Services.AddScoped<IAIChatbotService,   AIChatbotService>();
 builder.Services.AddScoped<IFBRService,         FBRService>();
 builder.Services.AddScoped<IBERTService,        BERTService>();
+builder.Services.AddScoped<IInventoryService,   InventoryServiceStub>();
+builder.Services.AddScoped<IWeatherService,     WeatherService>();
+
+// ─── API Controllers ───────────────────────────────────────────
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// ─── HttpClient (required by FBRService and AIChatbotService) ──
+builder.Services.AddHttpClient();
+
+// ─── Shahzain's Service Registrations ─────────────────────────
+builder.Services.AddScoped<IProductService,     ProductService>();
+builder.Services.AddScoped<ICategoryService,    CategoryService>();
+builder.Services.AddScoped<ISupplierService,    SupplierService>();
+builder.Services.AddScoped<ISaleService,        SaleService>();
+builder.Services.AddScoped<IReviewService,      ReviewService>();
+builder.Services.AddScoped<IAIChatbotService,   AIChatbotService>();
+builder.Services.AddScoped<IFBRService,         FBRService>();
+builder.Services.AddScoped<IBERTService,        BERTService>();
 //builder.Services.AddScoped<IInventoryService,   InventoryServiceStub>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IWeatherService,     WeatherService>();
