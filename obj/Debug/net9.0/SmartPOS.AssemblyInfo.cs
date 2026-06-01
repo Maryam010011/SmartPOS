@@ -14,10 +14,14 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 <<<<<<< HEAD
+<<<<<<< HEAD
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7f8eddf7faa580822e7cd67e9a297b0d9e90fca8")]
 =======
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ca899866f7406b29b8398fd2e512589d3087689a")]
 >>>>>>> shahzain/fbr-bert
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b5d8899f4342bb91f41d30541734500ea76cea21")]
+>>>>>>> shahzain/ai-chatbot
 [assembly: System.Reflection.AssemblyProductAttribute("SmartPOS")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SmartPOS")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
