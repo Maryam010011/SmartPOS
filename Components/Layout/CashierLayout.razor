@@ -1,10 +1,11 @@
 @inherits LayoutComponentBase
-@inject SmartPOS.Services.MaryamJ.AuthStateService AuthState
-@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
+
 
 <NavBar />
 
-@if (AuthState.IsAuthenticated && (AuthState.UserRole == "Cashier" || AuthState.UserRole == "Manager" || AuthState.UserRole == "Admin"))
+@if (IsAuthorized)
 {
     <div class="layout-wrapper">
         <aside class="sidebar">
@@ -36,12 +37,36 @@ else
 }
 
 @code {
-    protected override void OnInitialized()
+    private bool IsAuthorized;
+
+    protected override async Task OnInitializedAsync()
     {
-        if (!AuthState.IsAuthenticated || 
-            (AuthState.UserRole != "Cashier" && AuthState.UserRole != "Manager" && AuthState.UserRole != "Admin"))
+        await CheckAuthAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !IsAuthorized)
         {
-            Navigation.NavigateTo("/login");
+            await CheckAuthAsync();
+            StateHasChanged();
         }
+    }
+
+    private async Task CheckAuthAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        if (!user.IsInRole("Cashier") && !user.IsInRole("Manager") && !user.IsInRole("Admin"))
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        IsAuthorized = true;
     }
 }

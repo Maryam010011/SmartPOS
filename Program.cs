@@ -1,6 +1,8 @@
 using System.Text;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -55,11 +57,22 @@ builder.Services.AddAuthorization(options =>
 });
 
 builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddAuthorizationCore();
+
+// Blazored LocalStorage
+builder.Services.AddBlazoredLocalStorage();
 
 // Register Auth State & Services
-builder.Services.AddScoped<SmartPOS.Services.MaryamJ.AuthStateService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
-builder.Services.AddScoped<IAuthService, SmartPOS.Services.MaryamJ.AuthService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<IAuthService, ServerAuthService>();
+
+// HttpClient for client-side services
+builder.Services.AddScoped(sp =>
+{
+    var nav = sp.GetRequiredService<NavigationManager>();
+    return new HttpClient { BaseAddress = new Uri(nav.BaseUri) };
+});
 
 // Register User Management Service
 builder.Services.AddScoped<IUserService, SmartPOS.Services.MaryamJ.UserService>();

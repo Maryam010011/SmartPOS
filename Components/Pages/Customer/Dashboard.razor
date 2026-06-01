@@ -1,0 +1,196 @@
+@page "/customer/dashboard"
+@layout CustomerLayout
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.DTOs.Customers
+@using SmartPOS.Shared.Enums
+@using System.Security.Claims
+@inject ICustomerService CustomerService
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+<div class="container py-4">
+    @if (IsLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" style="color: var(--color-button-primary);" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mt-2">Loading your dashboard...</p>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1" style="color: var(--color-button-primary);">Welcome, @CustomerName!</h2>
+                <p class="text-muted m-0">Your personal dashboard — track orders, points, and more.</p>
+            </div>
+        </div>
+
+        @if (Customer != null)
+        {
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card card-pos border-0 h-100">
+                        <div class="card-body d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(204, 85, 0, 0.1); flex-shrink: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#CC5500" viewBox="0 0 16 16"><path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4z"/></svg>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold">Total Orders</div>
+                                <div class="fw-bold" style="font-size: 1.75rem; color: var(--color-button-primary);">@Customer.TotalOrders</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-pos border-0 h-100">
+                        <div class="card-body d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(204, 85, 0, 0.1); flex-shrink: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#CC5500" viewBox="0 0 16 16"><path d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2.5 4a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 0-.5-.5H3a.5.5 0 0 0-.5.5z"/></svg>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold">Total Spent</div>
+                                <div class="fw-bold" style="font-size: 1.75rem; color: var(--color-button-primary);">$@Customer.TotalSpent.ToString("N2")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-pos border-0 h-100" style="border-left: 4px solid #CC5500 !important;">
+                        <div class="card-body d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(204, 85, 0, 0.1); flex-shrink: 0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#CC5500" viewBox="0 0 16 16"><path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314"/></svg>
+                            </div>
+                            <div>
+                                <div class="text-muted small fw-semibold">Loyalty Points</div>
+                                <div class="fw-bold" style="font-size: 1.75rem; color: #CC5500;">@Customer.LoyaltyPoints ⭐</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (RecentOrders != null && RecentOrders.Any())
+        {
+            <div class="card card-pos mb-4">
+                <div class="card-header bg-transparent border-bottom-0 d-flex justify-content-between align-items-center pt-3 px-4">
+                    <h6 class="fw-bold m-0" style="color: var(--color-button-primary);">Recent Orders</h6>
+                    <a href="/customer/orders" class="btn btn-sm btn-outline-secondary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-pos align-middle m-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="padding-left: 20px;">Order #</th>
+                                    <th>Date</th>
+                                    <th>Items</th>
+                                    <th>Total</th>
+                                    <th class="text-end" style="padding-right: 20px;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in RecentOrders)
+                                {
+                                    <tr>
+                                        <td style="padding-left: 20px;"><span class="fw-bold text-dark">#@order.Id</span></td>
+                                        <td class="text-muted small">@order.SaleDate.ToString("dd MMM yyyy")</td>
+                                        <td>@order.ItemCount</td>
+                                        <td class="fw-semibold">$@order.TotalAmount.ToString("N2")</td>
+                                        <td class="text-end" style="padding-right: 20px;">
+                                            <span class="badge @(order.Status == SaleStatus.Completed ? "bg-success" : order.Status == SaleStatus.Voided ? "bg-danger" : "bg-warning text-dark") px-2 py-1.5 rounded-pill">@order.Status</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="/customer/shop" class="text-decoration-none">
+                    <div class="card card-pos border-0 h-100 text-center p-4">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🛍</div>
+                        <h6 class="fw-bold">Browse Products</h6>
+                        <p class="text-muted small m-0">Explore our bakery selection</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="/customer/cart" class="text-decoration-none">
+                    <div class="card card-pos border-0 h-100 text-center p-4">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🛒</div>
+                        <h6 class="fw-bold">Shopping Cart</h6>
+                        <p class="text-muted small m-0">View and checkout your cart</p>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="/customer/profile" class="text-decoration-none">
+                    <div class="card card-pos border-0 h-100 text-center p-4">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👤</div>
+                        <h6 class="fw-bold">My Profile</h6>
+                        <p class="text-muted small m-0">Manage account settings</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool IsLoading = true;
+    private string CustomerName = "";
+    private CustomerDetailDto? Customer;
+    private List<SaleSummaryDto>? RecentOrders;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboard();
+    }
+
+    private async Task LoadDashboard()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var email = user.FindFirst(ClaimTypes.Email)?.Value ?? "";
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                var result = await CustomerService.GetByEmail(email);
+                if (result.Success && result.Data != null)
+                {
+                    CustomerName = result.Data.Name;
+
+                    var detailResult = await CustomerService.GetCustomerById(result.Data.Id);
+                    if (detailResult.Success && detailResult.Data != null)
+                    {
+                        Customer = detailResult.Data;
+                        RecentOrders = detailResult.Data.RecentOrders?.OrderByDescending(o => o.SaleDate).Take(5).ToList();
+                    }
+                }
+            }
+
+            CustomerName = user.FindFirst(ClaimTypes.Name)?.Value ?? "Customer";
+        }
+        catch
+        {
+            CustomerName = "Customer";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+}

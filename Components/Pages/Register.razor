@@ -1,12 +1,11 @@
 @page "/register"
 @attribute [AllowAnonymous]
-@inject NavigationManager Navigation
-@inject IAuthService AuthService
-@inject AuthenticationStateProvider AuthStateProvider
-@inject SmartPOS.Services.MaryamJ.AuthStateService AuthState
-@using SmartPOS.Shared.Interfaces
-@using SmartPOS.Shared.DTOs.Auth
-@using SmartPOS.Services.MaryamJ
+@rendermode InteractiveServer
+@inject AppDbContext DbContext
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+@using SmartPOS.Web.Data
+@using SmartPOS.Web.Models
 
 <div class="register-page">
     <div class="register-card">
@@ -21,12 +20,17 @@
             <div class="alert alert-danger py-2 small">@Error</div>
         }
 
+        @if (SuccessMessage)
+        {
+            <div class="alert alert-success py-2 small">Account created successfully! Redirecting to login...</div>
+        }
+
         <EditForm Model="@Model" OnValidSubmit="HandleRegister" FormName="registerForm">
             <div class="mb-3">
                 <label class="form-label fw-semibold small">Full Name</label>
                 <InputText @bind-Value="Model.Name" class="form-control" placeholder="John Doe" required />
             </div>
-            
+
             <div class="mb-3">
                 <label class="form-label fw-semibold small">Email Address</label>
                 <InputText @bind-Value="Model.Email" class="form-control" placeholder="john@example.com" required />
@@ -45,6 +49,17 @@
             <div class="mb-3">
                 <label class="form-label fw-semibold small">Confirm Password</label>
                 <InputText @bind-Value="Model.ConfirmPassword" type="password" class="form-control" placeholder="••••••••" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Role</label>
+                <select @bind="Model.RoleId" class="form-select" required>
+                    <option value="">-- Select Role --</option>
+                    @foreach (var role in Roles)
+                    {
+                        <option value="@role.Id">@role.RoleName</option>
+                    }
+                </select>
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -78,15 +93,35 @@
 </style>
 
 @code {
-    private RegisterDto Model = new();
+    private RegisterModel Model = new();
+    private List<Role> Roles = new();
     private bool IsLoading;
     private bool ShowPassword;
+    private bool SuccessMessage;
     private string? Error;
+
+    private class RegisterModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+        public int RoleId { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Roles = await DbContext.Roles
+            .Where(r => r.RoleName != "Admin")
+            .ToListAsync();
+    }
 
     private void TogglePasswordVisibility() => ShowPassword = !ShowPassword;
 
     private async Task HandleRegister()
     {
+        Error = null;
+
         if (Model.Password != Model.ConfirmPassword)
         {
             Error = "Passwords do not match.";
@@ -99,29 +134,62 @@
             return;
         }
 
+        if (Model.RoleId == 0)
+        {
+            Error = "Please select a role.";
+            return;
+        }
+
         IsLoading = true;
-        Error = null;
         StateHasChanged();
 
         try
         {
-            var response = await AuthService.Register(Model);
-            if (response.Success && response.Data != null)
+            var emailNormalized = Model.Email.Trim().ToLower();
+            var exists = await DbContext.Users.AnyAsync(u => u.Email.ToLower() == emailNormalized);
+            if (exists)
             {
-                if (AuthStateProvider is CustomAuthStateProvider customProvider)
-                {
-                    await customProvider.NotifyLoginAsync(response.Data);
-                }
-                else
-                {
-                    AuthState.SetUser(response.Data);
-                }
-                Navigation.NavigateTo("/customer/shop");
+                Error = "Email is already registered.";
+                return;
             }
-            else
+
+            var hash = BCrypt.Net.BCrypt.HashPassword(Model.Password);
+            var user = new User
             {
-                Error = response.Message ?? "Failed to create account.";
+                Name = Model.Name.Trim(),
+                Email = Model.Email.Trim(),
+                PasswordHash = hash,
+                RoleId = Model.RoleId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            DbContext.Users.Add(user);
+            await DbContext.SaveChangesAsync();
+
+            var roleName = Model.RoleId switch
+            {
+                4 => "Customer",
+                _ => ""
+            };
+
+            if (roleName == "Customer")
+            {
+                var customerProfile = new SmartPOS.Web.Models.Customer
+                {
+                    Name = user.Name,
+                    Email = user.Email,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+                DbContext.Customers.Add(customerProfile);
+                await DbContext.SaveChangesAsync();
             }
+
+            SuccessMessage = true;
+            StateHasChanged();
+            await Task.Delay(2000);
+            NavigationManager.NavigateTo("/login");
         }
         catch (Exception ex)
         {

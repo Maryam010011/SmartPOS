@@ -72,35 +72,57 @@ namespace SmartPOS.Web.Data
                 await context.SaveChangesAsync();
             }
 
-            // ── Seed Users ──
-            var adminRole  = await context.Roles.FirstAsync(r => r.RoleName == "Admin");
-            var managerRole = await context.Roles.FirstAsync(r => r.RoleName == "Manager");
-            var cashierRole = await context.Roles.FirstAsync(r => r.RoleName == "Cashier");
-            var customerRole = await context.Roles.FirstAsync(r => r.RoleName == "Customer");
-
-            var hash = BCrypt.Net.BCrypt.HashPassword("Password123");
-
-            var testAccounts = new List<User>
+            // ── Seed Users (individually — only if email doesn't exist) ──
+            if (!await context.Users.AnyAsync(u => u.Email == "admin@smartpos.pk"))
             {
-                new() { Name = "Admin User",    Email = "admin@smartpos.pk",   PasswordHash = hash, RoleId = adminRole.Id,  IsActive = true,  CreatedAt = DateTime.UtcNow },
-                new() { Name = "Manager User",  Email = "manager@smartpos.pk", PasswordHash = hash, RoleId = managerRole.Id, IsActive = true,  CreatedAt = DateTime.UtcNow },
-                new() { Name = "Cashier User",  Email = "cashier@smartpos.pk", PasswordHash = hash, RoleId = cashierRole.Id, IsActive = true,  CreatedAt = DateTime.UtcNow },
-                new() { Name = "Customer User", Email = "customer@smartpos.pk",PasswordHash = hash, RoleId = customerRole.Id, IsActive = true,  CreatedAt = DateTime.UtcNow },
-            };
+                context.Users.Add(new User
+                {
+                    Name = "Admin User",
+                    Email = "admin@smartpos.pk",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123"),
+                    RoleId = 1,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
 
-            foreach (var testAcc in testAccounts)
+            if (!await context.Users.AnyAsync(u => u.Email == "manager@smartpos.pk"))
             {
-                var existing = await context.Users.FirstOrDefaultAsync(u => u.Email == testAcc.Email);
-                if (existing == null)
+                context.Users.Add(new User
                 {
-                    context.Users.Add(testAcc);
-                }
-                else
+                    Name = "Store Manager",
+                    Email = "manager@smartpos.pk",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123"),
+                    RoleId = 2,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            if (!await context.Users.AnyAsync(u => u.Email == "cashier@smartpos.pk"))
+            {
+                context.Users.Add(new User
                 {
-                    existing.PasswordHash = hash;
-                    existing.RoleId = testAcc.RoleId;
-                    existing.IsActive = true;
-                }
+                    Name = "Cashier User",
+                    Email = "cashier@smartpos.pk",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123"),
+                    RoleId = 3,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            if (!await context.Users.AnyAsync(u => u.Email == "customer@smartpos.pk"))
+            {
+                context.Users.Add(new User
+                {
+                    Name = "Test Customer",
+                    Email = "customer@smartpos.pk",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password123"),
+                    RoleId = 4,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                });
             }
 
             await context.SaveChangesAsync();

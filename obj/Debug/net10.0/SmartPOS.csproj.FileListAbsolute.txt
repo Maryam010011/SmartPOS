@@ -163,3 +163,4 @@ E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\wrx5r1mxb7-{0}-pbgj6pzijo-pbgj6pzijo.gz
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\yibno2f1mp-{0}-3qkge9vvbg-3qkge9vvbg.gz
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\bin\Debug\net10.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+E:\4th semester\VP theory\VP Project\pro1\SmartPOS\bin\Debug\net10.0\Blazored.LocalStorage.dll

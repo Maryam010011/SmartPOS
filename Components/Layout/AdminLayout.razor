@@ -1,16 +1,31 @@
 @inherits LayoutComponentBase
-@inject SmartPOS.Services.MaryamJ.AuthStateService AuthState
-@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
 
 <NavBar />
 
-@if (AuthState.IsAuthenticated && AuthState.UserRole == "Admin")
+@if (IsAuthorized)
 {
     <div class="layout-wrapper">
         <aside class="sidebar">
             <nav class="sidebar-nav">
                 <NavLink class="nav-item" href="/admin/dashboard" Match="NavLinkMatch.Prefix">
                     📊 <span>Dashboard</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/users" Match="NavLinkMatch.Prefix">
+                    👥 <span>Users</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/roles" Match="NavLinkMatch.Prefix">
+                    🛡 <span>Roles</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/customers" Match="NavLinkMatch.Prefix">
+                    👤 <span>Customers</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/promotions" Match="NavLinkMatch.Prefix">
+                    🏷 <span>Promotions</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/admin/audit-logs" Match="NavLinkMatch.Prefix">
+                    📋 <span>Audit Logs</span>
                 </NavLink>
                 <NavLink class="nav-item" href="/admin/products" Match="NavLinkMatch.Prefix">
                     📦 <span>Products</span>
@@ -23,21 +38,6 @@
                 </NavLink>
                 <NavLink class="nav-item" href="/admin/analytics" Match="NavLinkMatch.Prefix">
                     📈 <span>Analytics</span>
-                </NavLink>
-                <NavLink class="nav-item" href="/admin/users" Match="NavLinkMatch.Prefix">
-                    👥 <span>Users</span>
-                </NavLink>
-                <NavLink class="nav-item" href="/admin/roles" Match="NavLinkMatch.Prefix">
-                    🛡 <span>Roles</span>
-                </NavLink>
-                <NavLink class="nav-item" href="/admin/customers" Match="NavLinkMatch.Prefix">
-                    👤 <span>Customers</span>
-                </NavLink>
-                <NavLink class="nav-item" href="/manager/promotions" Match="NavLinkMatch.Prefix">
-                    🏷 <span>Promotions</span>
-                </NavLink>
-                <NavLink class="nav-item" href="/admin/audit-logs" Match="NavLinkMatch.Prefix">
-                    📋 <span>Audit Logs</span>
                 </NavLink>
                 <NavLink class="nav-item" href="/admin/ai-insights" Match="NavLinkMatch.Prefix">
                     🤖 <span>AI Insights</span>
@@ -63,11 +63,36 @@ else
 }
 
 @code {
-    protected override void OnInitialized()
+    private bool IsAuthorized;
+
+    protected override async Task OnInitializedAsync()
     {
-        if (!AuthState.IsAuthenticated || AuthState.UserRole != "Admin")
+        await CheckAuthAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !IsAuthorized)
         {
-            Navigation.NavigateTo("/login");
+            await CheckAuthAsync();
+            StateHasChanged();
         }
+    }
+
+    private async Task CheckAuthAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        if (!user.IsInRole("Admin"))
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        IsAuthorized = true;
     }
 }

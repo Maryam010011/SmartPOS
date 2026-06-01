@@ -1,94 +1,81 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using SmartPOS.Shared.DTOs.Auth;
 
 namespace SmartPOS.Services.MaryamJ;
 
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
-    private readonly ProtectedLocalStorage _storage;
-    private readonly AuthStateService _authState;
+    private readonly ILocalStorageService _localStorage;
+    private ClaimsPrincipal _cachedPrincipal = new(new ClaimsIdentity());
     private static readonly ClaimsPrincipal Anonymous = new(new ClaimsIdentity());
 
-    public CustomAuthStateProvider(ProtectedLocalStorage storage, AuthStateService authState)
+    public CustomAuthStateProvider(ILocalStorageService localStorage)
     {
-        _storage = storage;
-        _authState = authState;
+        _localStorage = localStorage;
     }
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        if (_cachedPrincipal.Identity?.IsAuthenticated == true)
+        {
+            return new AuthenticationState(_cachedPrincipal);
+        }
+
         try
         {
-            var result = await _storage.GetAsync<StoredAuthData>("authData");
-            if (result.Success && result.Value is { Token: not null } data && !string.IsNullOrEmpty(data.Token))
+            var token = await _localStorage.GetItemAsync<string>("authToken");
+            if (!string.IsNullOrEmpty(token))
             {
-                _authState.Token = data.Token;
-                _authState.UserId = data.UserId;
-                _authState.UserName = data.UserName;
-                _authState.UserRole = data.UserRole;
-                _authState.Email = data.Email;
-                _authState.NotifyStateChanged();
-
-                var identity = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, data.UserId.ToString()),
-                    new Claim(ClaimTypes.Name, data.UserName),
-                    new Claim(ClaimTypes.Email, data.Email),
-                    new Claim(ClaimTypes.Role, data.UserRole)
-                }, "jwt");
-
-                return new AuthenticationState(new ClaimsPrincipal(identity));
+                var identity = CreateIdentity(token);
+                _cachedPrincipal = new ClaimsPrincipal(identity);
+                return new AuthenticationState(_cachedPrincipal);
             }
         }
         catch
         {
-            // Storage not available during prerendering
         }
 
         return new AuthenticationState(Anonymous);
     }
 
-    public async Task NotifyLoginAsync(LoginResponseDto response)
+    public void MarkUserAsAuthenticated(string token)
     {
-        var data = new StoredAuthData
-        {
-            Token = response.Token,
-            UserId = response.User.Id,
-            UserName = response.User.Name,
-            Email = response.User.Email,
-            UserRole = response.User.RoleName
-        };
-
-        await _storage.SetAsync("authData", data);
-
-        _authState.SetUser(response);
-
-        var identity = new ClaimsIdentity(new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, data.UserId.ToString()),
-            new Claim(ClaimTypes.Name, data.UserName),
-            new Claim(ClaimTypes.Email, data.Email),
-            new Claim(ClaimTypes.Role, data.UserRole)
-        }, "jwt");
-
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(identity))));
+        var identity = CreateIdentity(token);
+        _cachedPrincipal = new ClaimsPrincipal(identity);
+        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_cachedPrincipal)));
     }
 
-    public async Task NotifyLogoutAsync()
+    public void MarkUserAsLoggedOut()
     {
-        try { await _storage.DeleteAsync("authData"); } catch { }
-        _authState.Logout();
+        _cachedPrincipal = Anonymous;
         NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(Anonymous)));
     }
 
-    private class StoredAuthData
+    private static ClaimsIdentity CreateIdentity(string token)
     {
-        public string Token { get; set; } = string.Empty;
-        public int UserId { get; set; }
-        public string UserName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string UserRole { get; set; } = string.Empty;
+        var handler = new JwtSecurityTokenHandler();
+        var jwt = handler.ReadJwtToken(token);
+        var claims = new List<Claim>();
+
+        foreach (var claim in jwt.Claims)
+        {
+            var claimType = claim.Type switch
+            {
+                "sub" or ClaimTypes.NameIdentifier => ClaimTypes.NameIdentifier,
+                "name" or ClaimTypes.Name => ClaimTypes.Name,
+                "email" or ClaimTypes.Email => ClaimTypes.Email,
+                "role" or ClaimTypes.Role => ClaimTypes.Role,
+                _ => claim.Type
+            };
+
+            if (!claims.Any(c => c.Type == claimType))
+            {
+                claims.Add(new Claim(claimType, claim.Value));
+            }
+        }
+
+        return new ClaimsIdentity(claims, "jwt");
     }
 }

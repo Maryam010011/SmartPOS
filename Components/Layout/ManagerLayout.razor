@@ -1,13 +1,13 @@
 @inherits LayoutComponentBase
-@inject SmartPOS.Services.MaryamJ.AuthStateService AuthState
-@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
 @inject IInventoryService InventoryService
 @using SmartPOS.Shared.Interfaces
-@using SmartPOS.Shared.Common
+
 
 <NavBar />
 
-@if (AuthState.IsAuthenticated && (AuthState.UserRole == "Manager" || AuthState.UserRole == "Admin"))
+@if (IsAuthorized)
 {
     <div class="layout-wrapper">
         <aside class="sidebar">
@@ -16,7 +16,7 @@
                     📦 <span>Inventory</span>
                 </NavLink>
                 <NavLink class="nav-item" href="/manager/inventory/low-stock" Match="NavLinkMatch.Prefix">
-                    ⚠ <span>Low Stock Alerts</span>
+                    ⚠ <span>Low Stock</span>
                     @if (LowStockBadgeCount > 0)
                     {
                         <span class="badge bg-danger ms-auto">@LowStockBadgeCount</span>
@@ -25,11 +25,11 @@
                 <NavLink class="nav-item" href="/manager/purchase-orders" Match="NavLinkMatch.Prefix">
                     🛒 <span>Purchase Orders</span>
                 </NavLink>
-                <NavLink class="nav-item" href="/manager/analytics" Match="NavLinkMatch.Prefix">
-                    📈 <span>Analytics</span>
-                </NavLink>
                 <NavLink class="nav-item" href="/manager/promotions" Match="NavLinkMatch.Prefix">
                     🏷 <span>Promotions</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/manager/analytics" Match="NavLinkMatch.Prefix">
+                    📈 <span>Analytics</span>
                 </NavLink>
             </nav>
         </aside>
@@ -49,22 +49,42 @@ else
 }
 
 @code {
+    private bool IsAuthorized;
     private int LowStockBadgeCount;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        if (!AuthState.IsAuthenticated || (AuthState.UserRole != "Manager" && AuthState.UserRole != "Admin"))
-        {
-            Navigation.NavigateTo("/login");
-        }
+        await CheckAuthAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && AuthState.IsAuthenticated && (AuthState.UserRole == "Manager" || AuthState.UserRole == "Admin"))
+        if (firstRender && !IsAuthorized)
+        {
+            await CheckAuthAsync();
+            StateHasChanged();
+        }
+        if (firstRender && IsAuthorized)
         {
             await LoadLowStockCount();
         }
+    }
+
+    private async Task CheckAuthAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        if (!user.IsInRole("Manager") && !user.IsInRole("Admin"))
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        IsAuthorized = true;
     }
 
     private async Task LoadLowStockCount()

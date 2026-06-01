@@ -1,18 +1,18 @@
 @using SmartPOS.Services.MaryamJ
-@inject SmartPOS.Services.MaryamJ.AuthStateService AuthState
-@inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthStateProvider
-@implements IDisposable
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+@using System.Security.Claims
 
 <nav class="navbar-pos">
     <div class="navbar-left">
         <span class="navbar-brand">🎂 SmartPOS+</span>
     </div>
     <div class="navbar-right">
-        @if (AuthState.IsAuthenticated)
+        @if (AuthState != null && AuthState.User.Identity?.IsAuthenticated == true)
         {
-            <span class="navbar-user">@AuthState.UserName</span>
-            <span class="navbar-role-badge">@AuthState.UserRole</span>
+            <span class="navbar-user">@UserName</span>
+            <span class="navbar-role-badge role-@RoleName.ToLower()">@RoleName</span>
             <button @onclick="HandleLogout" class="navbar-logout-btn" style="background: none; border: none; cursor: pointer;">Logout</button>
         }
         else
@@ -22,27 +22,47 @@
     </div>
 </nav>
 
+<style>
+    .role-admin    { background: #712B13 !important; }
+    .role-manager  { background: #CC5500 !important; }
+    .role-cashier  { background: #0C447C !important; }
+    .role-customer { background: #27500A !important; }
+</style>
+
 @code {
-    protected override void OnInitialized()
+    private AuthenticationState? AuthState;
+    private string UserName = "";
+    private string RoleName = "";
+
+    protected override async Task OnInitializedAsync()
     {
-        AuthState.OnChange += StateHasChanged;
+        await RefreshAuthState();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && (AuthState == null || !(AuthState.User.Identity?.IsAuthenticated ?? false)))
+        {
+            await RefreshAuthState();
+            StateHasChanged();
+        }
+    }
+
+    private async Task RefreshAuthState()
+    {
+        AuthState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = AuthState.User;
+        UserName = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value ?? "User";
+        RoleName = user.FindFirst(c => c.Type == ClaimTypes.Role)?.Value ?? "";
     }
 
     private async Task HandleLogout()
     {
-        if (AuthStateProvider is CustomAuthStateProvider customProvider)
+        await LocalStorage.RemoveItemAsync("authToken");
+        if (AuthStateProvider is CustomAuthStateProvider provider)
         {
-            await customProvider.NotifyLogoutAsync();
+            provider.MarkUserAsLoggedOut();
         }
-        else
-        {
-            AuthState.Logout();
-        }
-        Navigation.NavigateTo("/login");
-    }
-
-    public void Dispose()
-    {
-        AuthState.OnChange -= StateHasChanged;
+        NavigationManager.NavigateTo("/login");
     }
 }

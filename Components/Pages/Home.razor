@@ -1,5 +1,8 @@
 @page "/"
 @attribute [AllowAnonymous]
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Security.Claims
 
 <div class="home-container">
     <div class="decorative deco1"></div>
@@ -12,37 +15,29 @@
         <p class="subtitle mb-4 text-muted">Unified POS &amp; E‑Commerce System — Bakery Edition</p>
         <hr class="divider mx-auto mb-4" />
 
-        <AuthorizeView>
-            <Authorized>
-                <div class="buttons d-flex justify-content-center gap-3 flex-wrap">
-                    @if (context.User.IsInRole("Admin"))
-                    {
-                        <NavLink class="btn btn-burnt-orange btn-lg" href="/admin/users">User Management</NavLink>
-                        <NavLink class="btn btn-burnt-orange btn-lg" href="/admin/roles">Role Management</NavLink>
-                        <NavLink class="btn btn-outline-burnt-orange btn-lg" href="/admin/customers">Customers</NavLink>
-                    }
-                    @if (context.User.IsInRole("Admin") || context.User.IsInRole("Manager"))
-                    {
-                        <NavLink class="btn btn-burnt-orange btn-lg" href="/manager/promotions">Promotions</NavLink>
-                        <NavLink class="btn btn-outline-burnt-orange btn-lg" href="/manager/inventory">Inventory</NavLink>
-                        <NavLink class="btn btn-outline-burnt-orange btn-lg" href="/manager/purchase-orders">Purchase Orders</NavLink>
-                    }
-                    @if (context.User.IsInRole("Cashier") || context.User.IsInRole("Manager") || context.User.IsInRole("Admin"))
-                    {
-                        <NavLink class="btn btn-outline-burnt-orange btn-lg" href="/cashier/pos">POS Terminal</NavLink>
-                    }
-                    @if (context.User.IsInRole("Customer") || context.User.IsInRole("Cashier") || context.User.IsInRole("Manager") || context.User.IsInRole("Admin"))
-                    {
-                        <NavLink class="btn btn-outline-burnt-orange btn-lg" href="/customer/shop">Customer Store</NavLink>
-                    }
-                </div>
-            </Authorized>
-            <NotAuthorized>
-                <div class="buttons d-flex justify-content-center gap-3 flex-wrap">
-                    <a class="btn btn-burnt-orange btn-lg" href="/login">Sign In</a>
-                </div>
-            </NotAuthorized>
-        </AuthorizeView>
+        <div class="buttons d-flex justify-content-center gap-3 flex-wrap">
+            <a class="btn btn-burnt-orange btn-lg" href="/login">Sign In</a>
+        </div>
     </div>
     <footer class="footer mt-auto"></footer>
 </div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            var role = user.FindFirst(ClaimTypes.Role)?.Value ?? "";
+            var redirect = role switch
+            {
+                "Admin" => "/admin/users",
+                "Manager" => "/manager/inventory",
+                "Cashier" => "/cashier/pos",
+                _ => "/customer/shop"
+            };
+            Navigation.NavigateTo(redirect);
+        }
+    }
+}
