@@ -83,6 +83,9 @@ builder.Services.AddScoped<IRoleService, SmartPOS.Services.MaryamJ.RoleService>(
 // Register Customer Management Service
 builder.Services.AddScoped<ICustomerService, SmartPOS.Services.MaryamJ.CustomerService>();
 
+// Register Audit Log Service
+builder.Services.AddScoped<IAuditLogService, SmartPOS.Services.MaryamJ.AuditLogService>();
+
 // Register Promotion Management Service
 builder.Services.AddScoped<IPromotionService, SmartPOS.Services.MaryamJ.PromotionService>();
 

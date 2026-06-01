@@ -105,6 +105,12 @@ namespace SmartPOS.Shared.DTOs.Auth
 {
     using SmartPOS.Shared.DTOs.Users;
     // Login request
+    public class LoginDto
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
     public class LoginRequestDto
     {
         public string Email { get; set; } = string.Empty;
@@ -888,5 +894,111 @@ namespace SmartPOS.Shared.Interfaces
         Task<ApiResponse> DeleteRole(int id);
         Task<ApiResponse<PermissionsDto>> GetRolePermissions(int id);
         Task<ApiResponse> UpdateRolePermissions(int id, PermissionsDto permissions);
+    }
+}
+
+
+// ============================================================
+//  AUDIT LOG — MARYAM JAHANGIR
+//  DTOs and Interface for Activity Logging
+// ============================================================
+
+namespace SmartPOS.Shared.DTOs.AuditLogs
+{
+    public class AuditFilterDto : AuditLogFilterDto
+    {
+    }
+
+    public class AuditLogDto
+    {
+        public int Id { get; set; }
+        public int UserId { get; set; }
+        public string UserName { get; set; } = string.Empty;
+        public string UserEmail { get; set; } = string.Empty;
+        public string Action { get; set; } = string.Empty;
+        public string Module { get; set; } = string.Empty;
+        public int? EntityId { get; set; }
+        public string? OldValues { get; set; }
+        public string? NewValues { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string? IPAddress { get; set; }
+    }
+
+    public class CreateAuditLogDto
+    {
+        public int UserId { get; set; }
+        public string Action { get; set; } = string.Empty;
+        public string Module { get; set; } = string.Empty;
+        public int? EntityId { get; set; }
+        public string? OldValues { get; set; }
+        public string? NewValues { get; set; }
+        public string? IPAddress { get; set; }
+    }
+
+    public class AuditLogFilterDto
+    {
+        public DateTime? DateFrom { get; set; }
+        public DateTime? DateTo { get; set; }
+        public string? Module { get; set; }
+        public int? UserId { get; set; }
+        public string? Action { get; set; }
+        public string? SearchTerm { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+    }
+}
+
+namespace SmartPOS.Shared.Interfaces
+{
+    using SmartPOS.Shared.Common;
+    using SmartPOS.Shared.DTOs.AuditLogs;
+
+    public interface IAuditLogService
+    {
+        Task LogAction(CreateAuditLogDto dto);
+        Task<ApiResponse<List<AuditLogDto>>> GetAuditLogs(AuditLogFilterDto filter);
+        Task<ApiResponse<List<AuditLogDto>>> GetLogsForUser(int userId);
+        Task<ApiResponse<List<AuditLogDto>>> GetLogsForEntity(string module, int entityId);
+        Task<ApiResponse<AuditLogDto>> GetLogById(int id);
+    }
+}
+
+
+// ============================================================
+//  STRIPE PAYMENT — MARYAM JAHANGIR
+//  DTOs and Interface for Stripe Payment Processing
+// ============================================================
+
+namespace SmartPOS.Shared.DTOs.Stripe
+{
+    public class StripePaymentIntentDto
+    {
+        public decimal Amount { get; set; }
+        public string Currency { get; set; } = "usd";
+        public string Description { get; set; } = string.Empty;
+        public int? SaleId { get; set; }
+        public string? CustomerId { get; set; }
+        public string? PaymentMethodId { get; set; }
+    }
+
+    public class StripeRefundDto
+    {
+        public string PaymentIntentId { get; set; } = string.Empty;
+        public decimal? Amount { get; set; }
+        public string Reason { get; set; } = string.Empty;
+    }
+}
+
+namespace SmartPOS.Shared.Interfaces
+{
+    using SmartPOS.Shared.Common;
+    using SmartPOS.Shared.DTOs.Stripe;
+
+    public interface IStripeService
+    {
+        Task<ApiResponse<string>> CreatePaymentIntent(StripePaymentIntentDto dto);
+        Task<ApiResponse<string>> ConfirmPayment(string paymentIntentId, string paymentMethodId);
+        Task<ApiResponse> RefundPayment(StripeRefundDto dto);
+        Task<ApiResponse<string>> GetPaymentStatus(string paymentIntentId);
     }
 }

@@ -54,6 +54,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFuYWdlckxheW91dC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/AuditLogs/AuditLogPage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxBdWRpdExvZ3NcQXVkaXRMb2dQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
 [E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Customers/CustomerFormModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxDdXN0b21lcnNcQ3VzdG9tZXJGb3JtTW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 

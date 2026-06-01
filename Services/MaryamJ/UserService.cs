@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
+using SmartPOS.Shared.DTOs.AuditLogs;
 using SmartPOS.Shared.DTOs.Users;
 using SmartPOS.Shared.Enums;
 using SmartPOS.Shared.Interfaces;
@@ -16,6 +18,7 @@ namespace SmartPOS.Services.MaryamJ
     public class UserService : IUserService
     {
         private readonly AppDbContext _context;
+        private readonly IAuditLogService _auditLog;
 
         // Static in-memory mock repository to act as a resilient fallback
         private static readonly List<User> MockUsers = new()
@@ -27,9 +30,10 @@ namespace SmartPOS.Services.MaryamJ
         };
         private static int _nextMockId = 5;
 
-        public UserService(AppDbContext context)
+        public UserService(AppDbContext context, IAuditLogService auditLog)
         {
             _context = context;
+            _auditLog = auditLog;
         }
 
         // Helper to check if database can be queried
@@ -211,6 +215,15 @@ namespace SmartPOS.Services.MaryamJ
                     _context.Users.Add(user);
                     await _context.SaveChangesAsync();
 
+                    await _auditLog.LogAction(new CreateAuditLogDto
+                    {
+                        UserId = 0,
+                        Action = "Created",
+                        Module = "UserManagement",
+                        EntityId = user.Id,
+                        NewValues = JsonSerializer.Serialize(new { user.Name, user.Email, user.RoleId, user.IsActive })
+                    });
+
                     return ApiResponse<UserDto>.Ok(MapToDto(user), "User created successfully in database.");
                 }
             }
@@ -259,6 +272,8 @@ namespace SmartPOS.Services.MaryamJ
                         if (emailExists) return ApiResponse<UserDto>.Fail("Email address already in use.");
                     }
 
+                    var oldValues = JsonSerializer.Serialize(new { user.Name, user.Email, user.RoleId, user.IsActive });
+
                     user.Name = dto.Name.Trim();
                     user.Email = dto.Email.Trim();
                     user.RoleId = dto.RoleId;
@@ -266,6 +281,16 @@ namespace SmartPOS.Services.MaryamJ
 
                     _context.Users.Update(user);
                     await _context.SaveChangesAsync();
+
+                    await _auditLog.LogAction(new CreateAuditLogDto
+                    {
+                        UserId = 0,
+                        Action = "Updated",
+                        Module = "UserManagement",
+                        EntityId = user.Id,
+                        OldValues = oldValues,
+                        NewValues = JsonSerializer.Serialize(new { user.Name, user.Email, user.RoleId, user.IsActive })
+                    });
 
                     return ApiResponse<UserDto>.Ok(MapToDto(user), "User updated in database.");
                 }
@@ -302,6 +327,15 @@ namespace SmartPOS.Services.MaryamJ
                     _context.Users.Update(user);
                     await _context.SaveChangesAsync();
 
+                    await _auditLog.LogAction(new CreateAuditLogDto
+                    {
+                        UserId = 0,
+                        Action = "Deleted",
+                        Module = "UserManagement",
+                        EntityId = user.Id,
+                        NewValues = JsonSerializer.Serialize(new { IsActive = false })
+                    });
+
                     return ApiResponse.Ok("User soft-deleted from database successfully.");
                 }
             }
@@ -327,6 +361,15 @@ namespace SmartPOS.Services.MaryamJ
                     _context.Users.Update(user);
                     await _context.SaveChangesAsync();
 
+                    await _auditLog.LogAction(new CreateAuditLogDto
+                    {
+                        UserId = 0,
+                        Action = "Updated",
+                        Module = "UserManagement",
+                        EntityId = user.Id,
+                        NewValues = JsonSerializer.Serialize(new { IsActive = true })
+                    });
+
                     return ApiResponse.Ok("User activated in database.");
                 }
             }
@@ -351,6 +394,15 @@ namespace SmartPOS.Services.MaryamJ
                     user.IsActive = false;
                     _context.Users.Update(user);
                     await _context.SaveChangesAsync();
+
+                    await _auditLog.LogAction(new CreateAuditLogDto
+                    {
+                        UserId = 0,
+                        Action = "Updated",
+                        Module = "UserManagement",
+                        EntityId = user.Id,
+                        NewValues = JsonSerializer.Serialize(new { IsActive = false })
+                    });
 
                     return ApiResponse.Ok("User deactivated in database.");
                 }
@@ -378,6 +430,18 @@ namespace SmartPOS.Services.MaryamJ
                     _context.Users.UpdateRange(users);
                     await _context.SaveChangesAsync();
 
+                    foreach (var u in users)
+                    {
+                        await _auditLog.LogAction(new CreateAuditLogDto
+                        {
+                            UserId = 0,
+                            Action = "Updated",
+                            Module = "UserManagement",
+                            EntityId = u.Id,
+                            NewValues = JsonSerializer.Serialize(new { IsActive = true })
+                        });
+                    }
+
                     return ApiResponse.Ok($"Successfully activated {users.Count} users in database.");
                 }
             }
@@ -402,6 +466,18 @@ namespace SmartPOS.Services.MaryamJ
 
                     _context.Users.UpdateRange(users);
                     await _context.SaveChangesAsync();
+
+                    foreach (var u in users)
+                    {
+                        await _auditLog.LogAction(new CreateAuditLogDto
+                        {
+                            UserId = 0,
+                            Action = "Updated",
+                            Module = "UserManagement",
+                            EntityId = u.Id,
+                            NewValues = JsonSerializer.Serialize(new { IsActive = false })
+                        });
+                    }
 
                     return ApiResponse.Ok($"Successfully deactivated {users.Count} users in database.");
                 }

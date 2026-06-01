@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
+using SmartPOS.Shared.DTOs.AuditLogs;
 using SmartPOS.Shared.DTOs.Roles;
 using SmartPOS.Shared.Interfaces;
 using SmartPOS.Web.Data;
@@ -14,10 +15,12 @@ namespace SmartPOS.Services.MaryamJ
     public class RoleService : IRoleService
     {
         private readonly AppDbContext _dbContext;
+        private readonly IAuditLogService _auditLog;
 
-        public RoleService(AppDbContext dbContext)
+        public RoleService(AppDbContext dbContext, IAuditLogService auditLog)
         {
             _dbContext = dbContext;
+            _auditLog = auditLog;
         }
 
         public async Task<ApiResponse<List<RoleDto>>> GetAllRoles()
@@ -79,6 +82,15 @@ namespace SmartPOS.Services.MaryamJ
             _dbContext.Roles.Add(role);
             await _dbContext.SaveChangesAsync();
 
+            await _auditLog.LogAction(new CreateAuditLogDto
+            {
+                UserId = 0,
+                Action = "Created",
+                Module = "RoleManagement",
+                EntityId = role.Id,
+                NewValues = JsonSerializer.Serialize(new { role.RoleName, Permissions = role.Permissions })
+            });
+
             var result = new RoleDto { Id = role.Id, RoleName = role.RoleName, UserCount = 0 };
             return ApiResponse<RoleDto>.Ok(result, "Role created successfully.");
         }
@@ -101,9 +113,22 @@ namespace SmartPOS.Services.MaryamJ
                     return ApiResponse<RoleDto>.Fail($"Role name '{dto.RoleName}' already exists.");
             }
 
+            var oldRoleName = role.RoleName;
+            var oldPermissions = role.Permissions;
+
             role.RoleName = dto.RoleName;
             role.Permissions = JsonSerializer.Serialize(dto.Permissions);
             await _dbContext.SaveChangesAsync();
+
+            await _auditLog.LogAction(new CreateAuditLogDto
+            {
+                UserId = 0,
+                Action = "Updated",
+                Module = "RoleManagement",
+                EntityId = role.Id,
+                OldValues = JsonSerializer.Serialize(new { RoleName = oldRoleName, Permissions = oldPermissions }),
+                NewValues = JsonSerializer.Serialize(new { role.RoleName, Permissions = role.Permissions })
+            });
 
             var result = new RoleDto
             {
@@ -131,6 +156,16 @@ namespace SmartPOS.Services.MaryamJ
 
             _dbContext.Roles.Remove(role);
             await _dbContext.SaveChangesAsync();
+
+            await _auditLog.LogAction(new CreateAuditLogDto
+            {
+                UserId = 0,
+                Action = "Deleted",
+                Module = "RoleManagement",
+                EntityId = role.Id,
+                OldValues = JsonSerializer.Serialize(new { role.RoleName, Permissions = role.Permissions })
+            });
+
             return ApiResponse.Ok("Role deleted successfully.");
         }
 
@@ -150,8 +185,21 @@ namespace SmartPOS.Services.MaryamJ
             if (role == null)
                 return ApiResponse.Fail($"Role with Id {id} not found.");
 
+            var oldPermissions = role.Permissions;
+
             role.Permissions = JsonSerializer.Serialize(permissions);
             await _dbContext.SaveChangesAsync();
+
+            await _auditLog.LogAction(new CreateAuditLogDto
+            {
+                UserId = 0,
+                Action = "Updated",
+                Module = "RoleManagement",
+                EntityId = role.Id,
+                OldValues = JsonSerializer.Serialize(new { Permissions = oldPermissions }),
+                NewValues = JsonSerializer.Serialize(new { Permissions = role.Permissions })
+            });
+
             return ApiResponse.Ok("Permissions updated successfully.");
         }
 

@@ -38,6 +38,7 @@ namespace SmartPOS.Web.Data
         public DbSet<Customer> Customers { get; set; } = null!;
         public DbSet<LoyaltyTransaction> LoyaltyTransactions { get; set; } = null!;
         public DbSet<Promotion> Promotions { get; set; } = null!;
+        public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -122,6 +123,22 @@ namespace SmartPOS.Web.Data
                       .HasForeignKey(u => u.RoleId)
                       .IsRequired()
                       .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ─────────────────────────────────────────────────
+            // AuditLog — FK → User (restrict delete)
+            // ─────────────────────────────────────────────────
+            modelBuilder.Entity<AuditLog>(entity =>
+            {
+                entity.HasOne(al => al.User)
+                      .WithMany()
+                      .HasForeignKey(al => al.UserId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(al => al.Timestamp);
+                entity.HasIndex(al => al.Module);
+                entity.HasIndex(al => al.UserId);
             });
 
             // ─────────────────────────────────────────────────
