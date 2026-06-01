@@ -1,0 +1,147 @@
+@namespace SmartPOS.Components.Layout
+
+<footer class="smartpos-footer">
+    <div class="footer-inner">
+
+        <!-- Brand -->
+        <div class="footer-brand">
+            <span class="footer-logo">🥐</span>
+            <span class="footer-name">SmartPOS<span class="footer-plus">+</span></span>
+        </div>
+
+        <!-- Center info -->
+        <div class="footer-center">
+            <span class="footer-copy">&copy; @DateTime.Now.Year SmartPOS+ Bakery Management System</span>
+            <span class="footer-sep">·</span>
+            <span class="footer-version">v1.0</span>
+        </div>
+
+        <!-- Compliance badges -->
+        <div class="footer-badges">
+            <span class="footer-badge fbr-badge" title="FBR Compliant POS">
+                <span class="badge-dot"></span>
+                FBR Integrated
+            </span>
+            <span class="footer-badge live-badge" title="System Online">
+                <span class="badge-dot live"></span>
+                System Online
+            </span>
+        </div>
+
+    </div>
+</footer>
+
+<style>
+    .smartpos-footer {
+        height: var(--footer-height, 56px);
+        background: var(--footer-bg, #2a1201);
+        border-top: 1px solid var(--footer-border, rgba(196,132,138,0.18));
+        display: flex;
+        align-items: center;
+        width: 100%;
+        flex-shrink: 0;
+    }
+
+    .footer-inner {
+        width: 100%;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    /* Brand */
+    .footer-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        flex-shrink: 0;
+    }
+
+    .footer-logo {
+        font-size: 1.05rem;
+        line-height: 1;
+    }
+
+    .footer-name {
+        font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--footer-text-strong, rgba(255,248,220,0.85));
+        letter-spacing: 0.02em;
+    }
+
+    .footer-plus {
+        color: var(--color-rose, #C4848A);
+    }
+
+    /* Center */
+    .footer-center {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+        font-size: 0.72rem;
+        color: var(--footer-text, rgba(255,248,220,0.55));
+    }
+
+    .footer-sep {
+        opacity: 0.4;
+    }
+
+    .footer-version {
+        background: rgba(196, 132, 138, 0.18);
+        color: var(--color-rose, #C4848A);
+        padding: 0.15rem 0.45rem;
+        border-radius: 9999px;
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+
+    /* Badges */
+    .footer-badges {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        flex-shrink: 0;
+    }
+
+    .footer-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--footer-text, rgba(255,248,220,0.55));
+        text-transform: uppercase;
+    }
+
+    .badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(196, 132, 138, 0.5);
+        flex-shrink: 0;
+    }
+
+    .badge-dot.live {
+        background: #3d8f6f;
+        box-shadow: 0 0 0 2px rgba(61, 143, 111, 0.22);
+        animation: pulse-dot 2.5s ease-in-out infinite;
+    }
+
+    @@keyframes pulse-dot {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(61, 143, 111, 0.22); }
+        50%       { box-shadow: 0 0 0 4px rgba(61, 143, 111, 0.12); }
+    }
+
+    @@media (max-width: 640px) {
+        .footer-center { display: none; }
+        .footer-badges { display: none; }
+    }
+</style>

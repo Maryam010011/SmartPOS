@@ -1,0 +1,55 @@
+@namespace SmartPOS.Components.Layout
+@inherits LayoutComponentBase
+
+<div class="manager-layout-shell">
+
+    <ManagerNavbar OnAvatarClick="OpenDrawer" />
+
+    <ProfileDrawer IsOpen="@_drawerOpen"
+                   OnClose="CloseDrawer"
+                   DisplayName="Manager"
+                   RoleName="Store Manager"
+                   RoleColor="var(--role-manager-accent, #8A9FC4)"
+                   DashboardRoute="/manager/inventory"
+                   SettingsRoute="" />
+
+    <main class="manager-main" id="manager-content">
+        <div class="manager-content-wrap">
+            @Body
+        </div>
+    </main>
+
+    <Footer />
+
+</div>
+
+@code {
+    private bool _drawerOpen = false;
+
+    private void OpenDrawer()  => _drawerOpen = true;
+    private void CloseDrawer() => _drawerOpen = false;
+}
+
+<style>
+    .manager-layout-shell {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background: var(--surface-0, #FFF8DC);
+        font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+    }
+
+    .manager-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .manager-content-wrap {
+        flex: 1;
+        width: 100%;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0;
+    }
+</style>

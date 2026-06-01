@@ -1,0 +1,314 @@
+@namespace SmartPOS.Components.Layout
+@inject NavigationManager Nav
+
+<header class="smartpos-navbar manager-navbar" id="manager-navbar">
+    <div class="navbar-inner">
+
+        <!-- Brand -->
+        <a class="navbar-brand" href="/manager/inventory">
+            <span class="brand-icon">🥐</span>
+            <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
+            <span class="brand-role-tag manager-tag">Manager</span>
+        </a>
+
+        <!-- Desktop Nav Links -->
+        <nav class="navbar-links" aria-label="Manager navigation">
+            <a class="nav-link @(IsActive("/manager/inventory"))"      href="/manager/inventory">
+                <span class="nav-icon">📦</span><span>Inventory</span>
+            </a>
+            <a class="nav-link @(IsActive("/manager/low-stock"))"      href="/manager/low-stock">
+                <span class="nav-icon">⚠️</span><span>Low Stock</span>
+            </a>
+            <a class="nav-link @(IsActive("/manager/purchase-orders"))" href="/manager/purchase-orders">
+                <span class="nav-icon">🛒</span><span>Purchase Orders</span>
+            </a>
+        </nav>
+
+        <!-- Right Controls -->
+        <div class="navbar-right">
+            <span class="navbar-time">@_currentTime</span>
+            <button class="nav-avatar-btn" @onclick="ToggleDrawer"
+                    aria-label="Open profile drawer" id="manager-profile-btn">
+                <span class="avatar-ring manager-avatar">
+                    <span class="avatar-initials">MG</span>
+                </span>
+            </button>
+            <button class="hamburger-btn @(_mobileOpen ? "ham-open" : "")"
+                    @onclick="ToggleMobile" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+
+    @if (_mobileOpen)
+    {
+        <nav class="mobile-menu" aria-label="Manager mobile navigation">
+            <a class="mobile-link @(IsActive("/manager/inventory"))"       href="/manager/inventory"       @onclick="CloseMobile">📦 Inventory</a>
+            <a class="mobile-link @(IsActive("/manager/low-stock"))"       href="/manager/low-stock"       @onclick="CloseMobile">⚠️ Low Stock</a>
+            <a class="mobile-link @(IsActive("/manager/purchase-orders"))" href="/manager/purchase-orders" @onclick="CloseMobile">🛒 Purchase Orders</a>
+        </nav>
+    }
+</header>
+
+@code {
+    [Parameter] public EventCallback OnAvatarClick { get; set; }
+
+    private bool   _mobileOpen  = false;
+    private string _currentTime = "";
+    private System.Threading.Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        UpdateTime();
+        _timer = new System.Threading.Timer(_ =>
+        {
+            UpdateTime();
+            InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(30));
+    }
+
+    private void UpdateTime() => _currentTime = DateTime.Now.ToString("hh:mm tt");
+    private async Task ToggleDrawer() => await OnAvatarClick.InvokeAsync();
+    private void ToggleMobile() => _mobileOpen = !_mobileOpen;
+    private void CloseMobile()  => _mobileOpen = false;
+
+    private string IsActive(string path) =>
+        Nav.Uri.Contains(path, StringComparison.OrdinalIgnoreCase) ? "nav-link-active" : "";
+
+    public void Dispose() => _timer?.Dispose();
+}
+
+<style>
+    .manager-navbar {
+        background: linear-gradient(135deg,
+            rgba(40,55,90,0.97) 0%,
+            rgba(35,48,80,0.97) 100%) !important;
+        border-bottom-color: rgba(138, 159, 196, 0.28) !important;
+    }
+
+    .manager-tag {
+        background: rgba(138,159,196,0.20) !important;
+        color: var(--role-manager-accent, #8A9FC4) !important;
+        border-color: rgba(138,159,196,0.38) !important;
+    }
+
+    .manager-avatar {
+        border-color: rgba(138,159,196,0.45) !important;
+    }
+
+    .manager-navbar .nav-link-active {
+        background: rgba(138,159,196,0.20) !important;
+    }
+
+    .manager-navbar .nav-link-active::after {
+        background: var(--role-manager-accent, #8A9FC4) !important;
+    }
+
+    .manager-navbar .nav-link:hover {
+        background: rgba(138,159,196,0.14) !important;
+    }
+
+    /* ── Shared Navbar base (copied from Admin for isolation) ── */
+    .smartpos-navbar {
+        position: sticky;
+        top: 0;
+        z-index: 900;
+        height: var(--nav-height, 64px);
+        background: var(--nav-bg-glass, rgba(61,28,2,0.96));
+        border-bottom: 1px solid var(--nav-border, rgba(196,132,138,0.25));
+        box-shadow: var(--nav-shadow, 0 2px 16px rgba(61,28,2,0.22));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+    }
+
+    .navbar-inner {
+        display: flex;
+        align-items: center;
+        height: var(--nav-height, 64px);
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+        gap: 0.5rem;
+    }
+
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        text-decoration: none;
+        flex-shrink: 0;
+        margin-right: 1rem;
+    }
+
+    .brand-icon { font-size: 1.25rem; line-height: 1; }
+
+    .brand-text {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--nav-text, #FFF8DC);
+        letter-spacing: -0.02em;
+    }
+
+    .brand-plus { color: var(--color-rose, #C4848A); }
+
+    .brand-role-tag {
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: rgba(196,132,138,0.22);
+        color: var(--color-rose, #C4848A);
+        border: 1px solid rgba(196,132,138,0.35);
+        padding: 0.15rem 0.5rem;
+        border-radius: 9999px;
+        line-height: 1.6;
+    }
+
+    .navbar-links {
+        display: flex;
+        align-items: center;
+        gap: 0.15rem;
+        flex: 1;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.75rem;
+        border-radius: var(--radius-md, 0.625rem);
+        font-size: 0.84rem;
+        font-weight: 500;
+        color: rgba(255,248,220,0.60);
+        text-decoration: none;
+        transition: background 0.15s ease, color 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .nav-link:hover {
+        background: rgba(196,132,138,0.14);
+        color: #FFF8DC;
+    }
+
+    .nav-link-active {
+        background: rgba(196,132,138,0.22);
+        color: #FFF8DC !important;
+        font-weight: 600;
+        position: relative;
+    }
+
+    .nav-link-active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 28px;
+        height: 2px;
+        background: var(--nav-active-indicator, #C4848A);
+        border-radius: 2px 2px 0 0;
+    }
+
+    .nav-icon { font-size: 0.9rem; line-height: 1; }
+
+    .navbar-right {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    .navbar-time {
+        font-size: 0.75rem;
+        color: rgba(255,248,220,0.60);
+        font-weight: 500;
+    }
+
+    .nav-avatar-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .avatar-ring {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(196,132,138,0.20);
+        border: 2px solid rgba(196,132,138,0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .nav-avatar-btn:hover .avatar-ring {
+        border-color: var(--color-rose, #C4848A);
+        transform: scale(1.06);
+    }
+
+    .avatar-initials {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #FFF8DC;
+    }
+
+    .hamburger-btn {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 0.4rem;
+    }
+
+    .hamburger-btn span {
+        display: block;
+        width: 20px;
+        height: 2px;
+        background: #FFF8DC;
+        border-radius: 2px;
+        transition: all 0.25s ease;
+    }
+
+    .mobile-menu {
+        background: rgba(30,42,70,0.98);
+        border-top: 1px solid rgba(138,159,196,0.25);
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem 1rem 1rem;
+        gap: 0.25rem;
+    }
+
+    .mobile-link {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.7rem 0.75rem;
+        border-radius: var(--radius-md, 0.625rem);
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: rgba(255,248,220,0.60);
+        text-decoration: none;
+        transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .mobile-link:hover,
+    .mobile-link.nav-link-active {
+        background: rgba(138,159,196,0.14);
+        color: #FFF8DC;
+    }
+
+    @@media (max-width: 900px) {
+        .navbar-links  { display: none; }
+        .navbar-time   { display: none; }
+        .hamburger-btn { display: flex; }
+    }
+</style>
