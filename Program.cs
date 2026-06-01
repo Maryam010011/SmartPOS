@@ -1,12 +1,36 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using SmartPOS.Components;
 using SmartPOS.Web.Data;
+using SmartPOS.Shared.Interfaces;
+using SmartPOS.Web.Services.Shahzain;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ─── API Controllers ───────────────────────────────────────────
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// ─── HttpClient (required by FBRService and AIChatbotService) ──
+builder.Services.AddHttpClient();
+
+// ─── Shahzain's Service Registrations ─────────────────────────
+builder.Services.AddScoped<IProductService,     ProductService>();
+builder.Services.AddScoped<ICategoryService,    CategoryService>();
+builder.Services.AddScoped<ISupplierService,    SupplierService>();
+builder.Services.AddScoped<ISaleService,        SaleService>();
+builder.Services.AddScoped<IReviewService,      ReviewService>();
+builder.Services.AddScoped<IAIChatbotService,   AIChatbotService>();
+builder.Services.AddScoped<IFBRService,         FBRService>();
+builder.Services.AddScoped<IBERTService,        BERTService>();
+//builder.Services.AddScoped<IInventoryService,   InventoryServiceStub>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IWeatherService,     WeatherService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -26,7 +50,21 @@ app.UseHttpsRedirection();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "SmartPOS.Web", "wwwroot")),
+    RequestPath = ""
+});
+app.UseSwagger();
+app.UseSwaggerUI();
+app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.Run();
+//await DatabaseSeeder.SeedAsync(app.Services);
+using (var scope = app.Services.CreateScope())
+{
+     await DatabaseSeeder.SeedAsync(scope.ServiceProvider);
+}
+await app.RunAsync();

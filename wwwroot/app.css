@@ -1,25 +1,25 @@
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
+     box-sizing: border-box;
 }
 
 html,
 body {
-    margin: 0;
-    min-height: 100%;
-    background: #000;
-    color: #000;
+     margin: 0;
+     min-height: 100%;
 }
 
 body {
-    min-height: 100vh;
+     min-height: 100vh;
+     background-color: var(--color-page-bg);
+     color: var(--color-primary-text);
 }
-
+     
 .error-meta {
-    margin: 0;
-    padding: 1rem;
-    font-family: ui-monospace, monospace;
-    font-size: 0.75rem;
-    color: #333;
+     margin: 0;
+     padding: 1rem;
+     font-family: ui-monospace, monospace;
+     font-size: 0.75rem;
+     color: #333;
 }

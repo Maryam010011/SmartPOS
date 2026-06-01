@@ -32,5 +32,7 @@ namespace SmartPOS.Web.Models
         // ── Navigation Properties ──
 
         public virtual ICollection<Product> Products { get; set; } = new List<Product>();
-    }
+
+          public virtual ICollection<PurchaseOrder> PurchaseOrders { get; set; } = new List<PurchaseOrder>();
+     }
 }
