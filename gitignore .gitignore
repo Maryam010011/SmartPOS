@@ -4,7 +4,7 @@
 # User-specific files
 *.rsuser
 *.suo
-*.user
+*.userdotnet build
 *.userosscache
 *.sln.docstates
 

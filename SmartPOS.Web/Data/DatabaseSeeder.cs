@@ -1,10 +1,9 @@
-﻿using BCrypt.Net;
+using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SmartPOS.Web.Data;
 using SmartPOS.Web.Models;
 using SmartPOS.Shared.Enums;
-using BCrypt.Net;
 
 namespace SmartPOS.Web.Data;
 
@@ -41,7 +40,6 @@ public static class DatabaseSeeder
                     CreatedAt = DateTime.UtcNow
                });
                await db.SaveChangesAsync();
-          }
           }
 
           // Seed Category
