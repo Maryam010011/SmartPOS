@@ -1,7 +1,10 @@
 ﻿using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SmartPOS.Web.Data;
 using SmartPOS.Web.Models;
+using SmartPOS.Shared.Enums;
+using BCrypt.Net;
 
 namespace SmartPOS.Web.Data;
 
@@ -9,120 +12,89 @@ public static class DatabaseSeeder
 {
      public static async Task SeedAsync(IServiceProvider serviceProvider)
      {
-          var context = serviceProvider.GetRequiredService<AppDbContext>();
+          using var scope = serviceProvider.CreateScope();
+          var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-          // 1. Seed Roles
-          if (!await context.Roles.AnyAsync())
+          // Seed Roles
+          if (!await db.Roles.AnyAsync())
           {
-               var roles = new List<Role>
-               {
-                    new() { Name = "Admin" },
-                    new() { Name = "Manager" },
-                    new() { Name = "Cashier" },
-                    new() { Name = "Customer" }
-               };
-
-               context.Roles.AddRange(roles);
-               await context.SaveChangesAsync();
+               db.Roles.AddRange(
+                   new Role { Name = "Admin" },
+                   new Role { Name = "Manager" },
+                   new Role { Name = "Cashier" },
+                   new Role { Name = "Customer" }
+               );
+               await db.SaveChangesAsync();
           }
 
-          // 2. Seed Default Admin User
-          if (!await context.Users.AnyAsync())
+          // Seed Admin User
+          if (!await db.Users.AnyAsync())
           {
-               var adminRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Admin");
-
-               if (adminRole != null)
+               var adminRole = await db.Roles.FirstAsync(r => r.Name == "Admin");
+               db.Users.Add(new User
                {
-                    var adminUser = new User
-                    {
-                         Name = "admin",
-                         Email = "admin@smartpos.com",
-                         PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
-                         RoleId = adminRole.Id,
-                         IsActive = true,
-                         CreatedAt = DateTime.UtcNow
-                    };
-
-                    context.Users.Add(adminUser);
-                    await context.SaveChangesAsync();
-               }
+                    Name = "Admin",
+                    Email = "admin@smartpos.com",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                    RoleId = adminRole.Id,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+               });
+               await db.SaveChangesAsync();
+          }
           }
 
-          // 3. Seed Default Category
-          if (!await context.Categories.AnyAsync())
+          // Seed Category
+          if (!await db.Categories.AnyAsync())
           {
-               var category = new Category
+               db.Categories.Add(new Category
                {
-                    Name = "General",
-                    Description = "Default category"
-               };
-
-               context.Categories.Add(category);
-               await context.SaveChangesAsync();
+                    Name = "Bakery Items",
+                    Description = "All bakery products"
+               });
+               await db.SaveChangesAsync();
           }
 
-          // 4. Seed Default Supplier
-          if (!await context.Suppliers.AnyAsync())
+          // Seed Supplier
+          if (!await db.Suppliers.AnyAsync())
           {
-               var supplier = new Supplier
+               db.Suppliers.Add(new Supplier
                {
                     Name = "Default Supplier",
                     Email = "supplier@smartpos.com",
                     IsActive = true
+               });
+               await db.SaveChangesAsync();
+          }
+
+          // Seed Product
+          if (!await db.Products.AnyAsync())
+          {
+               var category = await db.Categories.FirstAsync();
+               var supplier = await db.Suppliers.FirstAsync();
+               var product = new Product
+               {
+                    Name = "Sample Croissant",
+                    SKU = "BKRY-001",
+                    Price = 150.00m,
+                    CostPrice = 80.00m,
+                    IsActive = true,
+                    CategoryId = category.Id,
+                    SupplierId = supplier.Id,
+                    CreatedAt = DateTime.UtcNow
                };
+               db.Products.Add(product);
+               await db.SaveChangesAsync();
 
-               context.Suppliers.Add(supplier);
-               await context.SaveChangesAsync();
-          }
-
-          // 5. Seed Default Product
-          if (!await context.Products.AnyAsync())
-          {
-               var category = await context.Categories
-                    .FirstOrDefaultAsync(c => c.Name == "General");
-
-               var supplier = await context.Suppliers
-                    .FirstOrDefaultAsync(s => s.Name == "Default Supplier");
-
-               if (category != null && supplier != null)
+               // Seed Inventory for the product
+               db.Inventories.Add(new Inventory
                {
-                    var product = new Product
-                    {
-                         Name = "Sample Product",
-                         SKU = "SKU-DEFAULT",
-                         Description = "Default product",
-                         Price = 100m,
-                         CostPrice = 0m,
-                         IsActive = true,
-                         CategoryId = category.Id,
-                         SupplierId = supplier.Id,
-                         CreatedAt = DateTime.UtcNow
-                    };
-
-                    context.Products.Add(product);
-                    await context.SaveChangesAsync();
-               }
-          }
-
-          // 6. Seed Default Inventory Record
-          if (!await context.Inventories.AnyAsync())
-          {
-               var product = await context.Products
-                    .FirstOrDefaultAsync(p => p.Name == "Sample Product");
-
-               if (product != null)
-               {
-                    var inventory = new Inventory
-                    {
-                         ProductId = product.Id,
-                         Quantity = 100,
-                         ReorderLevel = 10,
-                         LastUpdated = DateTime.UtcNow
-                    };
-
-                    context.Inventories.Add(inventory);
-                    await context.SaveChangesAsync();
-               }
+                    ProductId = product.Id,
+                    Quantity = 100,
+                    ReorderLevel = 20,
+                    LastUpdated = DateTime.UtcNow
+               });
+               await db.SaveChangesAsync();
           }
      }
 }

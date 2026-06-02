@@ -56,3 +56,4 @@ appsettings.Development.json
 [Tt]humbs.db
 ehthumbs.db
 Desktop.ini
+/SmartPOS.Web/Pages/_Imports.razor
