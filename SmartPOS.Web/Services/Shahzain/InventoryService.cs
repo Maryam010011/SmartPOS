@@ -12,10 +12,11 @@ namespace SmartPOS.Web.Services.Shahzain
     /// </summary>
 public class InventoryService : IInventoryService
 {
-        private readonly AppDbContext _context;
+     private readonly IDbContextFactory<AppDbContext> _factory;
 
+     public InventoryService(IDbContextFactory<AppDbContext> factory)
      {
-            _context = context;
+          _factory = factory;
      }
 
         /// <summary>
@@ -31,22 +32,20 @@ public class InventoryService : IInventoryService
                 var inventory = await _context.Inventories
                     .FirstOrDefaultAsync(i => i.ProductId == productId);
 
+               using var db = _factory.CreateDbContext();
+               var inventory = await db.Inventories.FirstOrDefaultAsync(i => i.ProductId == productId);
                if (inventory == null)
-                    return ApiResponse.Fail("Inventory record not found for this product.");
-
+                    return ApiResponse.Fail($"No inventory record found for product ID {productId}");
                if (inventory.Quantity < quantity)
-                    return ApiResponse.Fail("Insufficient stock to complete the sale.");
-
+                    return ApiResponse.Fail($"Insufficient stock. Available: {inventory.Quantity}, Requested: {quantity}");
                inventory.Quantity -= quantity;
                inventory.LastUpdated = DateTime.UtcNow;
-
-                await _context.SaveChangesAsync();
-
-                return ApiResponse.Ok("Stock deducted successfully.");
+               await db.SaveChangesAsync();
+               return ApiResponse.Ok("Stock deducted successfully");
           }
           catch (Exception ex)
           {
-                return ApiResponse.Fail($"Error deducting stock: {ex.Message}");
+               return ApiResponse.Fail($"Failed to deduct stock: {ex.Message}");
           }
      }
 
@@ -63,26 +62,13 @@ public class InventoryService : IInventoryService
                 var inventory = await _context.Inventories
                     .FirstOrDefaultAsync(i => i.ProductId == productId);
 
+               using var db = _factory.CreateDbContext();
+               var inventory = await db.Inventories.FirstOrDefaultAsync(i => i.ProductId == productId);
                if (inventory == null)
-                {
-                    if (!await _context.Products.AnyAsync(p => p.Id == productId))
-                        return ApiResponse.Fail("Product not found.");
-
-                    inventory = new Inventory
-                    {
-                        ProductId = productId,
-                        Quantity = quantity,
-                        ReorderLevel = 0,
-                        LastUpdated = DateTime.UtcNow
-                    };
-
-                    _context.Inventories.Add(inventory);
-                }
-                else
-                {
+                    return ApiResponse.Fail($"No inventory record found for product ID {productId}");
                inventory.Quantity += quantity;
                inventory.LastUpdated = DateTime.UtcNow;
-               await _db.SaveChangesAsync();
+               await db.SaveChangesAsync();
                return ApiResponse.Ok("Stock added successfully");
           }
 
@@ -92,7 +78,7 @@ public class InventoryService : IInventoryService
             }
           catch (Exception ex)
           {
-                return ApiResponse.Fail($"Error adding stock: {ex.Message}");
+               return ApiResponse.Fail($"Failed to add stock: {ex.Message}");
           }
      }
 
@@ -112,34 +98,18 @@ public class InventoryService : IInventoryService
                 var inventory = await _context.Inventories
                     .FirstOrDefaultAsync(i => i.ProductId == dto.ProductId);
 
+               using var db = _factory.CreateDbContext();
+               var inventory = await db.Inventories.FirstOrDefaultAsync(i => i.ProductId == dto.ProductId);
                if (inventory == null)
-                {
-                    if (!await _context.Products.AnyAsync(p => p.Id == dto.ProductId))
-                        return ApiResponse.Fail("Product not found.");
-
-                    inventory = new Inventory
-                    {
-                        ProductId = dto.ProductId,
-                        Quantity = dto.Quantity,
-                        ReorderLevel = 0,
-                        LastUpdated = DateTime.UtcNow
-                    };
-
-                    _context.Inventories.Add(inventory);
-                }
-                else
-                {
+                    return ApiResponse.Fail($"No inventory record found for product ID {dto.ProductId}");
                inventory.Quantity = dto.Quantity;
                inventory.LastUpdated = DateTime.UtcNow;
-                }
-
-                await _context.SaveChangesAsync();
-
-                return ApiResponse.Ok("Stock adjusted successfully.");
+               await db.SaveChangesAsync();
+               return ApiResponse.Ok("Stock adjusted successfully");
           }
           catch (Exception ex)
           {
-                return ApiResponse.Fail($"Error adjusting stock: {ex.Message}");
+               return ApiResponse.Fail($"Failed to adjust stock: {ex.Message}");
           }
      }
 
@@ -150,18 +120,25 @@ public class InventoryService : IInventoryService
      {
           try
           {
-                var inventory = await _context.Inventories
-                    .Include(i => i.Product)
+               using var db = _factory.CreateDbContext();
+               var inventory = await db.Inventories
                    .FirstOrDefaultAsync(i => i.ProductId == productId);
 
                if (inventory == null)
-                    return ApiResponse<InventoryDto>.Fail("Inventory record not found for this product.");
-
-                return ApiResponse<InventoryDto>.Ok(MapToDto(inventory));
+                    return ApiResponse<InventoryDto>.Fail($"No inventory record found for product ID {productId}");
+               var dto = new InventoryDto
+               {
+                    Id = inventory.Id,
+                    ProductId = inventory.ProductId,
+                    Quantity = inventory.Quantity,
+                    ReorderLevel = inventory.ReorderLevel,
+                    LastUpdated = inventory.LastUpdated
+               };
+               return ApiResponse<InventoryDto>.Ok(dto, "Inventory retrieved successfully");
           }
           catch (Exception ex)
           {
-                return ApiResponse<InventoryDto>.Fail($"Error retrieving inventory: {ex.Message}");
+               return ApiResponse<InventoryDto>.Fail($"Failed to retrieve inventory: {ex.Message}");
           }
      }
 
@@ -172,15 +149,24 @@ public class InventoryService : IInventoryService
      {
           try
           {
-                var inventories = await _context.Inventories
+               using var db = _factory.CreateDbContext();
+               var inventories = await db.Inventories
                    .Include(i => i.Product)
                    .ToListAsync();
-
-                return ApiResponse<List<InventoryDto>>.Ok(inventories.Select(MapToDto).ToList());
+               var dtos = inventories.Select(i => new InventoryDto
+               {
+                    Id = i.Id,
+                    ProductId = i.ProductId,
+                    ProductName = i.Product.Name,
+                    Quantity = i.Quantity,
+                    ReorderLevel = i.ReorderLevel,
+                    LastUpdated = i.LastUpdated
+               }).ToList();
+               return ApiResponse<List<InventoryDto>>.Ok(dtos, "All inventory retrieved successfully");
           }
           catch (Exception ex)
           {
-                return ApiResponse<List<InventoryDto>>.Fail($"Error retrieving inventory: {ex.Message}");
+               return ApiResponse<List<InventoryDto>>.Fail($"Failed to retrieve inventory: {ex.Message}");
           }
      }
 
@@ -191,26 +177,25 @@ public class InventoryService : IInventoryService
      {
           try
           {
-                var inventories = await _context.Inventories
+               using var db = _factory.CreateDbContext();
+               var inventories = await db.Inventories
                    .Include(i => i.Product)
                    .Where(i => i.Quantity <= i.ReorderLevel)
                    .ToListAsync();
-
-                return ApiResponse<List<InventoryDto>>.Ok(inventories.Select(MapToDto).ToList());
-            }
-            catch (Exception ex)
+               var dtos = inventories.Select(i => new InventoryDto
                {
-                return ApiResponse<List<InventoryDto>>.Fail($"Error retrieving low stock items: {ex.Message}");
-            }
+                    Id = i.Id,
+                    ProductId = i.ProductId,
+                    ProductName = i.Product.Name,
+                    Quantity = i.Quantity,
+                    ReorderLevel = i.ReorderLevel,
+                    LastUpdated = i.LastUpdated
+               }).ToList();
+               return ApiResponse<List<InventoryDto>>.Ok(dtos, "Low stock items retrieved successfully");
           }
-
-        /// <summary>
-        /// Maps an Inventory entity to InventoryDto.
-        /// </summary>
-        private static InventoryDto MapToDto(Inventory inventory)
-        {
-            return new InventoryDto
+          catch (Exception ex)
           {
+               return ApiResponse<List<InventoryDto>>.Fail($"Failed to retrieve low stock: {ex.Message}");
                 Id = inventory.Id,
                 ProductId = inventory.ProductId,
                 ProductName = inventory.Product?.Name ?? "N/A",

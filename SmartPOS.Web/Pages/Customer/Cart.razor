@@ -1,0 +1,2026 @@
+@page "/customer/cart"
+@rendermode InteractiveServer
+@layout CustomerLayout
+
+@* ── Services injected per Blazor DI (all registered in Program.cs) ── *@
+@inject CartStateService CartState
+@inject ISaleService      SaleService
+@inject NavigationManager Navigation
+
+@* IDisposable so we can unsubscribe from CartState.OnCartChanged *@
+@implements IDisposable
+
+<PageTitle>Your Cart — SmartPOS+ Bakery</PageTitle>
+
+<div class="cp-root">
+
+    @* ═══════════════════════════════════════════════════════════
+       PAGE HEADER
+       ═══════════════════════════════════════════════════════════ *@
+    <header class="cp-header">
+        <div class="cp-header-inner">
+            <button id="cp-back-to-shop-btn" class="cp-back-btn" @onclick="GoToShop">
+                <span class="cp-back-arrow">←</span>
+                <span>Continue Shopping</span>
+            </button>
+
+            <div class="cp-header-brand">
+                <span class="cp-header-icon">🛒</span>
+                <h1 class="cp-header-title">Shopping Cart</h1>
+            </div>
+
+            @if (CartState.Count > 0)
+            {
+                <span class="cp-header-badge">
+                    @CartState.Count item@(CartState.Count != 1 ? "s" : "")
+                </span>
+            }
+            else
+            {
+                <span class="cp-header-badge cp-header-badge--empty">Empty</span>
+            }
+        </div>
+    </header>
+
+
+    @* ═══════════════════════════════════════════════════════════
+       EMPTY CART STATE
+       ═══════════════════════════════════════════════════════════ *@
+    @if (CartState.Count == 0 && !_orderPlaced)
+    {
+        <div class="cp-empty">
+            <div class="cp-empty-icon">🛒</div>
+            <h2 class="cp-empty-title">Your cart is empty</h2>
+            <p class="cp-empty-sub">
+                Looks like you haven't added anything yet.<br />
+                Browse our fresh-baked selection and add your favourites!
+            </p>
+            <button id="cp-browse-products-btn" class="cp-btn-primary" @onclick="GoToShop">
+                Browse Products
+            </button>
+        </div>
+    }
+
+    @* ═══════════════════════════════════════════════════════════
+       TWO-COLUMN CART LAYOUT  (items left / summary right)
+       ═══════════════════════════════════════════════════════════ *@
+    @if (CartState.Count > 0 && !_orderPlaced)
+    {
+        <div class="cp-body">
+
+            @* ── LEFT COLUMN: CART ITEMS ─────────────────────────────── *@
+            <section class="cp-items-col" aria-label="Cart items">
+
+                @* Column headings (desktop only) *@
+                <div class="cp-items-thead">
+                    <span class="cp-th">Product</span>
+                    <span class="cp-th cp-th--center">Quantity</span>
+                    <span class="cp-th cp-th--right">Line Total</span>
+                    <span class="cp-th cp-th--center">Remove</span>
+                </div>
+
+                @* Item Rows *@
+                <div class="cp-items-list">
+                    @foreach (var item in CartState.Items)
+                    {
+                        <div class="cp-item" id="cp-item-@item.Product.Id">
+
+                            @* Product Thumbnail *@
+                            <div class="cp-item-thumb">
+                                @if (!string.IsNullOrEmpty(item.Product.ImageURL))
+                                {
+                                    <img src="@item.Product.ImageURL"
+                                         class="cp-item-img"
+                                         alt="@item.Product.Name"
+                                         loading="lazy"
+                                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                    <div class="cp-item-img-ph" style="display:none;">🥖</div>
+                                }
+                                else
+                                {
+                                    <div class="cp-item-img-ph">🥖</div>
+                                }
+                            </div>
+
+                            @* Product Info *@
+                            <div class="cp-item-info">
+                                <span class="cp-item-cat">@item.Product.CategoryName</span>
+                                <h3 class="cp-item-name">@item.Product.Name</h3>
+                                <span class="cp-item-sku">SKU: @item.Product.SKU</span>
+                                <span class="cp-item-unit-price">
+                                    Rs.&nbsp;@item.Product.Price.ToString("N0") / unit
+                                </span>
+                            </div>
+
+                            @* Quantity Stepper *@
+                            <div class="cp-item-qty-col">
+                                <div class="cp-stepper">
+                                    <button class="cp-stepper-btn"
+                                            id="cp-qty-minus-@item.Product.Id"
+                                            @onclick="@(() => Decrement(item.Product.Id))"
+                                            aria-label="Decrease quantity of @item.Product.Name">
+                                        −
+                                    </button>
+                                    <span class="cp-stepper-val" aria-live="polite">@item.Quantity</span>
+                                    <button class="cp-stepper-btn"
+                                            id="cp-qty-plus-@item.Product.Id"
+                                            @onclick="@(() => Increment(item.Product.Id))"
+                                            aria-label="Increase quantity of @item.Product.Name">
+                                        +
+                                    </button>
+                                </div>
+                            </div>
+
+                            @* Line Total *@
+                            <div class="cp-item-line-col">
+                                <span class="cp-item-line">
+                                    Rs.&nbsp;@((item.Product.Price * item.Quantity).ToString("N0"))
+                                </span>
+                            </div>
+
+                            @* Remove Button *@
+                            <div class="cp-item-del-col">
+                                <button class="cp-remove-btn"
+                                        id="cp-remove-@item.Product.Id"
+                                        @onclick="@(() => Remove(item.Product.Id))"
+                                        title="Remove @item.Product.Name from cart"
+                                        aria-label="Remove @item.Product.Name">
+                                    🗑
+                                </button>
+                            </div>
+
+                        </div>  @* /cp-item *@
+                    }
+                </div>  @* /cp-items-list *@
+
+                @* Clear All footer *@
+                <div class="cp-items-footer">
+                    <button id="cp-clear-all-btn" class="cp-clear-btn" @onclick="ClearAll">
+                        🗑 Clear All Items
+                    </button>
+                </div>
+
+            </section>  @* /cp-items-col *@
+
+
+            @* ── RIGHT COLUMN: ORDER SUMMARY (STICKY) ───────────────── *@
+            <aside class="cp-summary-col" aria-label="Order summary">
+                <div class="cp-summary-card">
+
+                    <h2 class="cp-summary-title">Order Summary</h2>
+
+                    @* Subtotal row *@
+                    <div class="cp-sum-row">
+                        <span class="cp-sum-label">
+                            Subtotal&nbsp;(@CartState.Count item@(CartState.Count != 1 ? "s" : ""))
+                        </span>
+                        <span class="cp-sum-val">Rs.&nbsp;@CartState.SubTotal.ToString("N0")</span>
+                    </div>
+
+                    @* ── PROMO CODE SECTION ─────────────────────────────────
+                       UI Shell complete. Actual service call to
+                       IPromotionService.ValidateAndApply will be wired once
+                       MaryamJ's promo-service branch is merged.
+                       See: ApplyPromoCode() method in @code for the TODO stub.
+                       ──────────────────────────────────────────────────── *@
+                    <div class="cp-promo-section">
+                        <label class="cp-promo-label" for="cp-promo-input">
+                            🏷 Have a Promo Code?
+                        </label>
+                        <div class="cp-promo-row">
+                            <input id="cp-promo-input"
+                                   class="cp-promo-input
+                                          @(_promoError   is not null ? "cp-promo-input--error"   : "")
+                                          @(_appliedPromo is not null ? "cp-promo-input--success" : "")"
+                                   type="text"
+                                   placeholder="Enter code…"
+                                   @bind="_promoCode"
+                                   @bind:event="oninput"
+                                   disabled="@(_appliedPromo is not null || _isApplyingPromo)"
+                                   maxlength="30"
+                                   aria-label="Promo code input" />
+
+                            @if (_appliedPromo is null)
+                            {
+                                <button id="cp-apply-promo-btn"
+                                        class="cp-promo-apply-btn"
+                                        @onclick="ApplyPromoCode"
+                                        disabled="@(string.IsNullOrWhiteSpace(_promoCode) || _isApplyingPromo)">
+                                    @(_isApplyingPromo ? "Checking…" : "Apply")
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="cp-promo-remove-btn"
+                                        @onclick="RemovePromo"
+                                        title="Remove promo code"
+                                        aria-label="Remove applied promo code">
+                                    ✕
+                                </button>
+                            }
+                        </div>
+
+                        @if (_promoError is not null)
+                        {
+                            <p class="cp-promo-msg cp-promo-msg--error" role="alert">
+                                ⚠&nbsp;@_promoError
+                            </p>
+                        }
+                        @if (_appliedPromo is not null)
+                        {
+                            <p class="cp-promo-msg cp-promo-msg--success">
+                                🎉&nbsp;@_appliedPromo.Message
+                            </p>
+                        }
+                    </div>
+
+                    @* Discount row — only shown when a promo is applied *@
+                    @if (_appliedPromo is not null && _appliedPromo.DiscountAmount > 0)
+                    {
+                        <div class="cp-sum-row cp-sum-row--discount">
+                            <span class="cp-sum-label">Discount (@_promoCode.ToUpper())</span>
+                            <span class="cp-sum-val cp-sum-val--discount">
+                                − Rs.&nbsp;@_appliedPromo.DiscountAmount.ToString("N0")
+                            </span>
+                        </div>
+                    }
+
+                    @* Tax estimate *@
+                    <div class="cp-sum-row cp-sum-row--muted">
+                        <span class="cp-sum-label">
+                            Est.&nbsp;GST (5%)
+                            <span class="cp-sum-note">· final at checkout</span>
+                        </span>
+                        <span class="cp-sum-val">Rs.&nbsp;@EstimatedTax.ToString("N0")</span>
+                    </div>
+
+                    <div class="cp-sum-divider"></div>
+
+                    @* Grand total *@
+                    <div class="cp-sum-row cp-sum-row--total">
+                        <span class="cp-sum-label cp-sum-label--total">Grand Total</span>
+                        <strong class="cp-sum-val cp-sum-val--total">
+                            Rs.&nbsp;@GrandTotal.ToString("N0")
+                        </strong>
+                    </div>
+
+                    @* Primary CTA *@
+                    <button id="cp-proceed-checkout-btn"
+                            class="cp-btn-checkout"
+                            @onclick="OpenCheckoutModal"
+                            disabled="@(CartState.Count == 0)">
+                        Proceed to Checkout&nbsp;→
+                    </button>
+
+                    <button id="cp-continue-shopping-btn"
+                            class="cp-btn-continue"
+                            @onclick="GoToShop">
+                        ← Continue Shopping
+                    </button>
+
+                    @* Trust badges *@
+                    <div class="cp-trust-row">
+                        <span class="cp-trust-item">🔒&nbsp;Secure Checkout</span>
+                        <span class="cp-trust-item">🧾&nbsp;FBR Compliant</span>
+                        <span class="cp-trust-item">✅&nbsp;Quality Guaranteed</span>
+                    </div>
+
+                </div>  @* /cp-summary-card *@
+            </aside>  @* /cp-summary-col *@
+
+        </div>  @* /cp-body *@
+    }
+
+
+    @* ═══════════════════════════════════════════════════════════
+       POST-ORDER SUCCESS STATE (full-page receipt)
+       ═══════════════════════════════════════════════════════════ *@
+    @if (_orderPlaced && _saleResult is not null)
+    {
+        <div class="cp-success-page">
+            <div class="cp-success-anim">✅</div>
+            <h2 class="cp-success-title">Order Placed Successfully!</h2>
+            <p class="cp-success-sub">
+                Thank you! Your order has been received. Here's your receipt.
+            </p>
+
+            <div class="cp-receipt-card">
+                <div class="cp-receipt-top">
+                    <div>
+                        <div class="cp-receipt-brand">SmartPOS+ Bakery</div>
+                        <div class="cp-receipt-date">
+                            @_saleResult.SaleDate.ToString("dd MMM yyyy, hh:mm tt")
+                        </div>
+                    </div>
+                    <div class="cp-receipt-num-badge">
+                        #@_saleResult.ReceiptNumber
+                    </div>
+                </div>
+
+                <div class="cp-receipt-divider"></div>
+
+                @foreach (var line in _saleResult.Items)
+                {
+                    <div class="cp-receipt-row">
+                        <span>@line.ProductName × @line.Quantity</span>
+                        <span>Rs.&nbsp;@line.LineTotal.ToString("N0")</span>
+                    </div>
+                }
+
+                <div class="cp-receipt-divider"></div>
+
+                <div class="cp-receipt-row">
+                    <span>Subtotal</span>
+                    <span>Rs.&nbsp;@_saleResult.SubTotal.ToString("N0")</span>
+                </div>
+                @if (_saleResult.DiscountAmount > 0)
+                {
+                    <div class="cp-receipt-row cp-receipt-row--discount">
+                        <span>Discount</span>
+                        <span>− Rs.&nbsp;@_saleResult.DiscountAmount.ToString("N0")</span>
+                    </div>
+                }
+                <div class="cp-receipt-row">
+                    <span>Tax</span>
+                    <span>Rs.&nbsp;@_saleResult.TaxAmount.ToString("N0")</span>
+                </div>
+
+                <div class="cp-receipt-divider"></div>
+
+                <div class="cp-receipt-row cp-receipt-row--grand">
+                    <strong>Total Paid</strong>
+                    <strong>Rs.&nbsp;@_saleResult.TotalAmount.ToString("N0")</strong>
+                </div>
+            </div>
+
+            <button id="cp-back-to-shop-after-order" class="cp-btn-primary" @onclick="GoToShop">
+                ← Back to Shop
+            </button>
+        </div>
+    }
+
+</div>  @* /cp-root *@
+
+
+@* ═══════════════════════════════════════════════════════════════════════
+   CHECKOUT MODAL  — 3-Step: Review → Payment → Receipt
+   ═══════════════════════════════════════════════════════════════════════ *@
+@if (_showCheckoutModal)
+{
+    @* Backdrop — click to close (blocked on step 3 to prevent losing receipt) *@
+    <div class="cp-modal-overlay"
+         @onclick="@(() => { if (_checkoutStep < 3) CloseCheckoutModal(); })">
+    </div>
+
+    <div class="cp-modal"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="cp-modal-heading">
+
+        @* Close button (hidden on step 3 until they click Done) *@
+        @if (_checkoutStep < 3)
+        {
+            <button class="cp-modal-close"
+                    id="cp-modal-close-btn"
+                    @onclick="CloseCheckoutModal"
+                    aria-label="Close checkout dialog">
+                ✕
+            </button>
+        }
+
+        @* ── STEP PROGRESS BAR ─────────────────────────────────────────── *@
+        <div class="cp-step-bar" aria-label="Checkout progress">
+            <div class="cp-step-item @(_checkoutStep >= 1 ? "cp-step--active" : "")">
+                <div class="cp-step-dot">@(_checkoutStep > 1 ? "✓" : "1")</div>
+                <span class="cp-step-label">Review</span>
+            </div>
+            <div class="cp-step-line @(_checkoutStep >= 2 ? "cp-step-line--done" : "")"></div>
+            <div class="cp-step-item @(_checkoutStep >= 2 ? "cp-step--active" : "")">
+                <div class="cp-step-dot">@(_checkoutStep > 2 ? "✓" : "2")</div>
+                <span class="cp-step-label">Payment</span>
+            </div>
+            <div class="cp-step-line @(_checkoutStep >= 3 ? "cp-step-line--done" : "")"></div>
+            <div class="cp-step-item @(_checkoutStep >= 3 ? "cp-step--active" : "")">
+                <div class="cp-step-dot">3</div>
+                <span class="cp-step-label">Confirm</span>
+            </div>
+        </div>
+
+
+        @* ────────────────────────────────────────────────────────────────
+           STEP 1 — ORDER REVIEW
+           ──────────────────────────────────────────────────────────────── *@
+        @if (_checkoutStep == 1)
+        {
+            <div class="cp-modal-body">
+                <h2 id="cp-modal-heading" class="cp-modal-title">Review Your Order</h2>
+                <p class="cp-modal-subtitle">
+                    Confirm the items below before proceeding to payment.
+                </p>
+
+                @* Compact item list (scrollable if large order) *@
+                <div class="cp-modal-items" role="list">
+                    @foreach (var item in CartState.Items)
+                    {
+                        <div class="cp-modal-item" role="listitem">
+                            <div class="cp-modal-item-img-wrap">
+                                @if (!string.IsNullOrEmpty(item.Product.ImageURL))
+                                {
+                                    <img src="@item.Product.ImageURL"
+                                         class="cp-modal-item-img"
+                                         alt="@item.Product.Name"
+                                         onerror="this.style.display='none'" />
+                                }
+                                else
+                                {
+                                    <span class="cp-modal-item-ph">🥖</span>
+                                }
+                            </div>
+                            <span class="cp-modal-item-name">@item.Product.Name</span>
+                            <span class="cp-modal-item-qty">× @item.Quantity</span>
+                            <span class="cp-modal-item-price">
+                                Rs.&nbsp;@((item.Product.Price * item.Quantity).ToString("N0"))
+                            </span>
+                        </div>
+                    }
+                </div>
+
+                @* Totals mini-summary *@
+                <div class="cp-modal-sum">
+                    <div class="cp-modal-sum-row">
+                        <span>Subtotal</span>
+                        <span>Rs.&nbsp;@CartState.SubTotal.ToString("N0")</span>
+                    </div>
+                    @if (_appliedPromo is not null && _appliedPromo.DiscountAmount > 0)
+                    {
+                        <div class="cp-modal-sum-row cp-modal-sum-row--discount">
+                            <span>Discount (@_promoCode.ToUpper())</span>
+                            <span>− Rs.&nbsp;@_appliedPromo.DiscountAmount.ToString("N0")</span>
+                        </div>
+                    }
+                    <div class="cp-modal-sum-row cp-modal-sum-row--muted">
+                        <span>Est. GST (5%)</span>
+                        <span>Rs.&nbsp;@EstimatedTax.ToString("N0")</span>
+                    </div>
+                    <div class="cp-modal-sum-divider"></div>
+                    <div class="cp-modal-sum-row cp-modal-sum-row--total">
+                        <strong>Grand Total</strong>
+                        <strong>Rs.&nbsp;@GrandTotal.ToString("N0")</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cp-modal-footer">
+                <button class="cp-modal-btn-ghost"
+                        id="cp-modal-cancel-btn"
+                        @onclick="CloseCheckoutModal">
+                    Cancel
+                </button>
+                <button class="cp-modal-btn-primary"
+                        id="cp-modal-next-payment-btn"
+                        @onclick="@(() => _checkoutStep = 2)">
+                    Next: Payment &nbsp;→
+                </button>
+            </div>
+        }
+
+
+        @* ────────────────────────────────────────────────────────────────
+           STEP 2 — PAYMENT METHOD
+           ──────────────────────────────────────────────────────────────── *@
+        @if (_checkoutStep == 2)
+        {
+            <div class="cp-modal-body">
+                <h2 id="cp-modal-heading" class="cp-modal-title">Choose Payment Method</h2>
+                <p class="cp-modal-subtitle">How would you like to pay for your order?</p>
+
+                <div class="cp-payment-grid">
+                    <button class="cp-payment-card @(_selectedPayment == PaymentMethod.Cash   ? "cp-payment-card--active" : "")"
+                            id="cp-pay-cash"
+                            @onclick="@(() => _selectedPayment = PaymentMethod.Cash)">
+                        <span class="cp-payment-icon">💵</span>
+                        <span class="cp-payment-label">Cash</span>
+                        <span class="cp-payment-desc">Pay at pickup</span>
+                        @if (_selectedPayment == PaymentMethod.Cash)
+                        {
+                            <span class="cp-payment-check">✓</span>
+                        }
+                    </button>
+
+                    <button class="cp-payment-card @(_selectedPayment == PaymentMethod.Card   ? "cp-payment-card--active" : "")"
+                            id="cp-pay-card"
+                            @onclick="@(() => _selectedPayment = PaymentMethod.Card)">
+                        <span class="cp-payment-icon">💳</span>
+                        <span class="cp-payment-label">Card</span>
+                        <span class="cp-payment-desc">Debit or Credit</span>
+                        @if (_selectedPayment == PaymentMethod.Card)
+                        {
+                            <span class="cp-payment-check">✓</span>
+                        }
+                    </button>
+
+                    <button class="cp-payment-card @(_selectedPayment == PaymentMethod.Online ? "cp-payment-card--active" : "")"
+                            id="cp-pay-online"
+                            @onclick="@(() => _selectedPayment = PaymentMethod.Online)">
+                        <span class="cp-payment-icon">📱</span>
+                        <span class="cp-payment-label">Online</span>
+                        <span class="cp-payment-desc">JazzCash / EasyPaisa</span>
+                        @if (_selectedPayment == PaymentMethod.Online)
+                        {
+                            <span class="cp-payment-check">✓</span>
+                        }
+                    </button>
+                </div>
+
+                @* Amount reminder *@
+                <div class="cp-payment-amount-pill">
+                    <span>Total due:</span>
+                    <strong>Rs.&nbsp;@GrandTotal.ToString("N0")</strong>
+                </div>
+
+                @* Error feedback from ProcessSale *@
+                @if (_checkoutError is not null)
+                {
+                    <div class="cp-modal-error" role="alert">
+                        ⚠️&nbsp;@_checkoutError
+                    </div>
+                }
+            </div>
+
+            <div class="cp-modal-footer">
+                <button class="cp-modal-btn-ghost"
+                        id="cp-modal-back-btn"
+                        @onclick="@(() => { _checkoutStep = 1; _checkoutError = null; })">
+                    ← Back
+                </button>
+                <button class="cp-modal-btn-place"
+                        id="cp-place-order-btn"
+                        @onclick="PlaceOrder"
+                        disabled="@_isPlacingOrder">
+                    @if (_isPlacingOrder)
+                    {
+                        <span class="cp-spinner"></span>
+                        <span>Placing Order…</span>
+                    }
+                    else
+                    {
+                        <span>Place Order ✓</span>
+                    }
+                </button>
+            </div>
+        }
+
+
+        @* ────────────────────────────────────────────────────────────────
+           STEP 3 — RECEIPT / CONFIRMATION
+           ──────────────────────────────────────────────────────────────── *@
+        @if (_checkoutStep == 3 && _saleResult is not null)
+        {
+            <div class="cp-modal-body cp-modal-body--success">
+                <div class="cp-modal-success-icon">✅</div>
+                <h2 id="cp-modal-heading" class="cp-modal-title">Order Placed!</h2>
+                <p class="cp-modal-subtitle">
+                    Your order is confirmed. Keep this receipt for your records.
+                </p>
+
+                <div class="cp-modal-receipt">
+                    <div class="cp-modal-receipt-header">
+                        <span class="cp-modal-receipt-brand">SmartPOS+ Bakery</span>
+                        <span class="cp-modal-receipt-num">#@_saleResult.ReceiptNumber</span>
+                    </div>
+                    <div class="cp-modal-receipt-date">
+                        @_saleResult.SaleDate.ToString("dd MMM yyyy — hh:mm tt")
+                    </div>
+
+                    <div class="cp-modal-sum-divider"></div>
+
+                    <div class="cp-modal-sum-row">
+                        <span>Subtotal</span>
+                        <span>Rs.&nbsp;@_saleResult.SubTotal.ToString("N0")</span>
+                    </div>
+                    @if (_saleResult.DiscountAmount > 0)
+                    {
+                        <div class="cp-modal-sum-row cp-modal-sum-row--discount">
+                            <span>Discount</span>
+                            <span>− Rs.&nbsp;@_saleResult.DiscountAmount.ToString("N0")</span>
+                        </div>
+                    }
+                    <div class="cp-modal-sum-row">
+                        <span>Tax</span>
+                        <span>Rs.&nbsp;@_saleResult.TaxAmount.ToString("N0")</span>
+                    </div>
+
+                    <div class="cp-modal-sum-divider"></div>
+
+                    <div class="cp-modal-sum-row cp-modal-sum-row--total">
+                        <strong>Total Paid</strong>
+                        <strong>Rs.&nbsp;@_saleResult.TotalAmount.ToString("N0")</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cp-modal-footer cp-modal-footer--single">
+                <button class="cp-modal-btn-primary"
+                        id="cp-modal-done-btn"
+                        @onclick="FinishOrder">
+                    Done — Back to Shop
+                </button>
+            </div>
+        }
+
+    </div>  @* /cp-modal *@
+}
+
+
+@* ═══════════════════════════════════════════════════════════════════════
+   SCOPED STYLES  — all colors from colors.css custom properties
+   ═══════════════════════════════════════════════════════════════════════ *@
+<style>
+    /* ── Google Font ── */
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@@300;400;500;600;700;800;900&display=swap');
+
+    /* ── Box-sizing reset scoped to this page ── */
+    .cp-root *, .cp-modal *, .cp-modal-overlay {
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .cp-root {
+        min-height: 100vh;
+        background: var(--color-page-bg);
+        color: var(--color-primary-text);
+    }
+
+    /* ════════════════════════════════════════════
+       HEADER
+       ════════════════════════════════════════════ */
+    .cp-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--color-navbar-bg);
+        box-shadow: 0 2px 18px rgba(61,28,2,.32);
+    }
+
+    .cp-header-inner {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: .85rem 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .cp-back-btn {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        background: rgba(255,248,220,.12);
+        color: var(--color-page-bg);
+        border: 1.5px solid rgba(255,248,220,.22);
+        border-radius: 8px;
+        padding: .45rem .95rem;
+        font-size: .82rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .16s, border-color .16s;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .cp-back-btn:hover {
+        background: rgba(255,248,220,.24);
+        border-color: rgba(255,248,220,.4);
+    }
+
+    .cp-back-arrow { font-size: 1rem; line-height: 1; }
+
+    .cp-header-brand {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        flex: 1;
+    }
+
+    .cp-header-icon { font-size: 1.45rem; }
+
+    .cp-header-title {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--color-page-bg);
+        letter-spacing: -.2px;
+    }
+
+    .cp-header-badge {
+        background: var(--color-button-primary);
+        color: #fff;
+        font-size: .7rem;
+        font-weight: 700;
+        padding: .28rem .75rem;
+        border-radius: 50px;
+        letter-spacing: .4px;
+        white-space: nowrap;
+    }
+
+    .cp-header-badge--empty {
+        background: rgba(255,248,220,.18);
+        color: rgba(255,248,220,.6);
+    }
+
+    /* ════════════════════════════════════════════
+       EMPTY STATE
+       ════════════════════════════════════════════ */
+    .cp-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 72vh;
+        text-align: center;
+        gap: .9rem;
+        padding: 3rem 1.5rem;
+        animation: cpFadeUp .4s ease;
+    }
+
+    .cp-empty-icon {
+        font-size: 5.5rem;
+        opacity: .18;
+        margin-bottom: .25rem;
+    }
+
+    .cp-empty-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        margin: 0;
+    }
+
+    .cp-empty-sub {
+        font-size: .95rem;
+        color: var(--color-primary-text);
+        opacity: .5;
+        margin: 0;
+        max-width: 400px;
+        line-height: 1.7;
+    }
+
+    /* ════════════════════════════════════════════
+       TWO-COLUMN BODY
+       ════════════════════════════════════════════ */
+    .cp-body {
+        display: flex;
+        align-items: flex-start;
+        gap: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 2rem 4rem;
+        animation: cpFadeUp .35s ease;
+    }
+
+    @@keyframes cpFadeUp {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: none; }
+    }
+
+    /* ════════════════════════════════════════════
+       ITEMS COLUMN (left)
+       ════════════════════════════════════════════ */
+    .cp-items-col {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Column headings */
+    .cp-items-thead {
+        display: grid;
+        grid-template-columns: 72px 1fr 110px 110px 48px;
+        gap: 1rem;
+        padding: 0 1rem .6rem;
+        border-bottom: 2px solid rgba(61,28,2,.08);
+        margin-bottom: .6rem;
+    }
+
+    .cp-th {
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--color-primary-text);
+        opacity: .4;
+    }
+
+    .cp-th--center { text-align: center; }
+    .cp-th--right  { text-align: right; }
+
+    /* Items list */
+    .cp-items-list {
+        display: flex;
+        flex-direction: column;
+        gap: .85rem;
+    }
+
+    /* ── Single Item Row ── */
+    .cp-item {
+        display: grid;
+        grid-template-columns: 72px 1fr 110px 110px 48px;
+        align-items: center;
+        gap: 1rem;
+        background: var(--color-card-bg);
+        border: 1.5px solid rgba(61,28,2,.08);
+        border-radius: 18px;
+        padding: 1.1rem 1.2rem;
+        transition: border-color .22s, box-shadow .22s, transform .18s;
+    }
+
+    .cp-item:hover {
+        border-color: var(--color-border-accent);
+        box-shadow: 0 8px 28px rgba(61,28,2,.1);
+        transform: translateY(-2px);
+    }
+
+    /* Thumbnail */
+    .cp-item-thumb {
+        width: 72px;
+        height: 72px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: rgba(196,132,138,.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .cp-item-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform .3s;
+    }
+
+    .cp-item:hover .cp-item-img { transform: scale(1.06); }
+
+    .cp-item-img-ph {
+        font-size: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Product info */
+    .cp-item-info {
+        display: flex;
+        flex-direction: column;
+        gap: .18rem;
+        min-width: 0;
+    }
+
+    .cp-item-cat {
+        font-size: .63rem;
+        font-weight: 700;
+        letter-spacing: .9px;
+        text-transform: uppercase;
+        color: var(--color-button-primary);
+    }
+
+    .cp-item-name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+    }
+
+    .cp-item-sku {
+        font-size: .65rem;
+        color: var(--color-primary-text);
+        opacity: .32;
+        font-family: 'Courier New', monospace;
+    }
+
+    .cp-item-unit-price {
+        font-size: .78rem;
+        color: var(--color-primary-text);
+        opacity: .5;
+        font-weight: 500;
+        margin-top: .1rem;
+    }
+
+    /* Qty stepper */
+    .cp-item-qty-col {
+        display: flex;
+        justify-content: center;
+    }
+
+    .cp-stepper {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        background: rgba(61,28,2,.04);
+        border: 1.5px solid rgba(61,28,2,.1);
+        border-radius: 10px;
+        padding: .3rem .4rem;
+    }
+
+    .cp-stepper-btn {
+        width: 2.1rem;
+        height: 2.1rem;
+        border: none;
+        border-radius: 7px;
+        background: var(--color-button-primary);
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .14s, transform .1s;
+        flex-shrink: 0;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .cp-stepper-btn:hover  { background: var(--color-button-hover); transform: scale(1.1);  }
+    .cp-stepper-btn:active { transform: scale(.94); }
+
+    .cp-stepper-val {
+        font-size: .97rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        min-width: 1.8rem;
+        text-align: center;
+    }
+
+    /* Line total */
+    .cp-item-line-col { text-align: right; }
+
+    .cp-item-line {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+    }
+
+    /* Remove button */
+    .cp-item-del-col {
+        display: flex;
+        justify-content: center;
+    }
+
+    .cp-remove-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.05rem;
+        opacity: .28;
+        transition: opacity .15s, transform .12s;
+        padding: .3rem;
+        border-radius: 6px;
+        line-height: 1;
+    }
+
+    .cp-remove-btn:hover {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    /* Items footer */
+    .cp-items-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: .9rem 0 0;
+    }
+
+    .cp-clear-btn {
+        background: none;
+        border: 1.5px solid rgba(61,28,2,.15);
+        border-radius: 9px;
+        color: var(--color-primary-text);
+        font-size: .8rem;
+        font-weight: 600;
+        padding: .45rem 1rem;
+        cursor: pointer;
+        opacity: .5;
+        transition: opacity .15s, border-color .15s, color .15s;
+    }
+
+    .cp-clear-btn:hover {
+        opacity: 1;
+        border-color: #c62828;
+        color: #c62828;
+    }
+
+    /* ════════════════════════════════════════════
+       SUMMARY COLUMN (right, sticky)
+       ════════════════════════════════════════════ */
+    .cp-summary-col {
+        width: 380px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 78px;
+        align-self: flex-start;
+    }
+
+    .cp-summary-card {
+        background: var(--color-card-bg);
+        border: 1.5px solid rgba(61,28,2,.1);
+        border-radius: 22px;
+        padding: 1.6rem 1.7rem;
+        box-shadow: 0 10px 40px rgba(61,28,2,.08);
+        display: flex;
+        flex-direction: column;
+        gap: .9rem;
+    }
+
+    .cp-summary-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        margin: 0;
+        padding-bottom: .8rem;
+        border-bottom: 2px solid rgba(61,28,2,.08);
+    }
+
+    /* Summary rows */
+    .cp-sum-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-size: .9rem;
+    }
+
+    .cp-sum-label {
+        color: var(--color-primary-text);
+        font-weight: 500;
+    }
+
+    .cp-sum-note {
+        font-size: .68rem;
+        opacity: .42;
+        font-weight: 400;
+    }
+
+    .cp-sum-val {
+        font-weight: 700;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+    }
+
+    .cp-sum-row--discount .cp-sum-label { color: #2e7d32; }
+    .cp-sum-val--discount               { color: #2e7d32 !important; }
+
+    .cp-sum-row--muted { opacity: .58; }
+
+    .cp-sum-row--total { margin-top: .15rem; }
+    .cp-sum-label--total { font-size: .97rem; font-weight: 700; }
+    .cp-sum-val--total   { font-size: 1.3rem; font-weight: 900; color: var(--color-heading-text); }
+
+    .cp-sum-divider {
+        height: 1.5px;
+        background: rgba(61,28,2,.1);
+        border: none;
+        border-radius: 4px;
+        margin: .1rem 0;
+    }
+
+    /* ── Promo Code ── */
+    .cp-promo-section {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+        background: rgba(196,132,138,.06);
+        border: 1.5px dashed rgba(196,132,138,.38);
+        border-radius: 14px;
+        padding: .95rem 1rem;
+    }
+
+    .cp-promo-label {
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: var(--color-button-primary);
+        opacity: .8;
+    }
+
+    .cp-promo-row {
+        display: flex;
+        gap: .5rem;
+    }
+
+    .cp-promo-input {
+        flex: 1;
+        padding: .55rem .9rem;
+        border: 1.5px solid rgba(61,28,2,.15);
+        border-radius: 9px;
+        background: var(--color-page-bg);
+        color: var(--color-primary-text);
+        font-size: .88rem;
+        font-weight: 600;
+        outline: none;
+        transition: border-color .18s, box-shadow .18s;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+    }
+
+    .cp-promo-input::placeholder { text-transform: none; letter-spacing: 0; opacity: .45; }
+    .cp-promo-input:focus        { border-color: var(--color-border-accent); box-shadow: 0 0 0 3px rgba(196,132,138,.18); }
+    .cp-promo-input--error       { border-color: #e57373; }
+    .cp-promo-input--success     { border-color: #66bb6a; }
+    .cp-promo-input:disabled     { opacity: .55; cursor: not-allowed; }
+
+    .cp-promo-apply-btn {
+        background: var(--color-navbar-bg);
+        color: var(--color-page-bg);
+        border: none;
+        border-radius: 9px;
+        padding: .55rem 1rem;
+        font-size: .82rem;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: opacity .15s;
+    }
+
+    .cp-promo-apply-btn:disabled       { opacity: .38; cursor: not-allowed; }
+    .cp-promo-apply-btn:not(:disabled):hover { opacity: .78; }
+
+    .cp-promo-remove-btn {
+        background: rgba(61,28,2,.1);
+        border: none;
+        border-radius: 9px;
+        padding: .55rem .8rem;
+        cursor: pointer;
+        font-size: .8rem;
+        color: var(--color-heading-text);
+        transition: background .15s;
+    }
+
+    .cp-promo-remove-btn:hover { background: rgba(61,28,2,.2); }
+
+    .cp-promo-msg {
+        font-size: .77rem;
+        font-weight: 600;
+        margin: 0;
+        line-height: 1.45;
+    }
+
+    .cp-promo-msg--error   { color: #c62828; }
+    .cp-promo-msg--success { color: #2e7d32; }
+
+    /* ── Checkout CTA ── */
+    .cp-btn-checkout {
+        background: var(--color-navbar-bg);
+        color: var(--color-page-bg);
+        border: none;
+        border-radius: 13px;
+        padding: .95rem 1.2rem;
+        font-size: .98rem;
+        font-weight: 800;
+        cursor: pointer;
+        width: 100%;
+        letter-spacing: .3px;
+        transition: opacity .18s, transform .12s, box-shadow .18s;
+        margin-top: .1rem;
+    }
+
+    .cp-btn-checkout:not(:disabled):hover {
+        opacity: .84;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(61,28,2,.22);
+    }
+
+    .cp-btn-checkout:not(:disabled):active { transform: scale(.99); }
+    .cp-btn-checkout:disabled { opacity: .3; cursor: not-allowed; }
+
+    .cp-btn-continue {
+        background: none;
+        border: 1.5px solid rgba(61,28,2,.18);
+        border-radius: 11px;
+        color: var(--color-primary-text);
+        font-size: .84rem;
+        font-weight: 600;
+        padding: .62rem;
+        cursor: pointer;
+        width: 100%;
+        transition: border-color .15s, opacity .15s;
+        opacity: .55;
+    }
+
+    .cp-btn-continue:hover { opacity: 1; border-color: var(--color-border-accent); }
+
+    /* Trust badges */
+    .cp-trust-row {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: .35rem;
+        padding-top: .2rem;
+        border-top: 1px solid rgba(61,28,2,.06);
+    }
+
+    .cp-trust-item {
+        font-size: .65rem;
+        color: var(--color-primary-text);
+        opacity: .38;
+        font-weight: 500;
+    }
+
+    /* ── Generic Primary Button ── */
+    .cp-btn-primary {
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 11px;
+        padding: .75rem 1.85rem;
+        font-size: .92rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .16s, transform .1s;
+        letter-spacing: .3px;
+    }
+
+    .cp-btn-primary:hover { background: var(--color-button-hover); transform: scale(1.02); }
+
+    /* ════════════════════════════════════════════
+       SUCCESS / FULL-PAGE RECEIPT
+       ════════════════════════════════════════════ */
+    .cp-success-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 4rem 1.5rem 5rem;
+        text-align: center;
+        animation: cpFadeUp .45s ease;
+    }
+
+    .cp-success-anim {
+        font-size: 4.5rem;
+        margin-bottom: .75rem;
+        animation: popIn .5s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    @@keyframes popIn {
+        from { transform: scale(0.4); opacity: 0; }
+        to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .cp-success-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        margin: 0 0 .4rem;
+    }
+
+    .cp-success-sub {
+        font-size: .95rem;
+        color: var(--color-primary-text);
+        opacity: .5;
+        margin: 0 0 1.75rem;
+    }
+
+    .cp-receipt-card {
+        background: var(--color-card-bg);
+        border: 1.5px solid rgba(61,28,2,.12);
+        border-radius: 18px;
+        padding: 1.6rem 2rem;
+        max-width: 500px;
+        width: 100%;
+        text-align: left;
+        box-shadow: 0 10px 36px rgba(61,28,2,.09);
+        margin-bottom: 0;
+    }
+
+    .cp-receipt-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: .5rem;
+    }
+
+    .cp-receipt-brand { font-size: .9rem; font-weight: 800; color: var(--color-heading-text); }
+
+    .cp-receipt-date {
+        font-size: .75rem;
+        opacity: .42;
+        margin-top: .18rem;
+    }
+
+    .cp-receipt-num-badge {
+        background: var(--color-button-primary);
+        color: #fff;
+        font-size: .72rem;
+        font-weight: 700;
+        padding: .28rem .7rem;
+        border-radius: 50px;
+        letter-spacing: .4px;
+        font-family: 'Courier New', monospace;
+    }
+
+    .cp-receipt-divider {
+        height: 1px;
+        background: rgba(61,28,2,.1);
+        margin: .75rem 0;
+    }
+
+    .cp-receipt-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: .88rem;
+        padding: .22rem 0;
+        color: var(--color-primary-text);
+    }
+
+    .cp-receipt-row--discount { color: #2e7d32; }
+
+    .cp-receipt-row--grand {
+        font-size: 1rem;
+        color: var(--color-heading-text);
+    }
+
+    /* ════════════════════════════════════════════
+       CHECKOUT MODAL
+       ════════════════════════════════════════════ */
+    .cp-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(61,28,2,.52);
+        z-index: 400;
+        animation: overlayIn .2s ease;
+    }
+
+    @@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .cp-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 401;
+        background: var(--color-card-bg);
+        border-radius: 24px;
+        width: min(540px, 95vw);
+        max-height: 92vh;
+        overflow-y: auto;
+        box-shadow: 0 30px 90px rgba(61,28,2,.3);
+        animation: modalIn .26s cubic-bezier(.34,1.56,.64,1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    @@keyframes modalIn {
+        from { opacity: 0; transform: translate(-50%, -46%) scale(.9); }
+        to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    .cp-modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(61,28,2,.09);
+        border: none;
+        border-radius: 50%;
+        width: 2.25rem;
+        height: 2.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: .95rem;
+        color: var(--color-heading-text);
+        transition: background .15s, transform .12s;
+        z-index: 2;
+    }
+
+    .cp-modal-close:hover {
+        background: rgba(61,28,2,.18);
+        transform: rotate(90deg);
+    }
+
+    /* ── Step Progress ── */
+    .cp-step-bar {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem 2rem .6rem;
+        gap: 0;
+    }
+
+    .cp-step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .3rem;
+        opacity: .32;
+        transition: opacity .25s;
+        flex-shrink: 0;
+    }
+
+    .cp-step--active { opacity: 1; }
+
+    .cp-step-dot {
+        width: 2.1rem;
+        height: 2.1rem;
+        border-radius: 50%;
+        background: rgba(61,28,2,.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .8rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        transition: background .25s, color .25s;
+    }
+
+    .cp-step--active .cp-step-dot {
+        background: var(--color-button-primary);
+        color: #fff;
+        box-shadow: 0 3px 12px rgba(196,132,138,.4);
+    }
+
+    .cp-step-label {
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .5px;
+        text-transform: uppercase;
+        color: var(--color-primary-text);
+    }
+
+    .cp-step-line {
+        flex: 1;
+        height: 2px;
+        background: rgba(61,28,2,.1);
+        margin-bottom: 1.3rem;
+        min-width: 30px;
+        transition: background .3s;
+    }
+
+    .cp-step-line--done { background: var(--color-button-primary); }
+
+    /* ── Modal Body ── */
+    .cp-modal-body {
+        padding: .6rem 2rem 1rem;
+        flex: 1;
+    }
+
+    .cp-modal-body--success {
+        text-align: center;
+        padding-top: 1rem;
+    }
+
+    .cp-modal-success-icon {
+        font-size: 3.5rem;
+        margin-bottom: .5rem;
+        animation: popIn .5s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    .cp-modal-title {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        margin: 0 0 .2rem;
+    }
+
+    .cp-modal-subtitle {
+        font-size: .87rem;
+        color: var(--color-primary-text);
+        opacity: .5;
+        margin: 0 0 1.2rem;
+        line-height: 1.55;
+    }
+
+    /* Step 1 — compact item list */
+    .cp-modal-items {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+        max-height: 210px;
+        overflow-y: auto;
+        padding-right: .2rem;
+        margin-bottom: .9rem;
+        scrollbar-width: thin;
+    }
+
+    .cp-modal-item {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        padding: .55rem .7rem;
+        background: rgba(61,28,2,.04);
+        border-radius: 10px;
+        border: 1px solid rgba(61,28,2,.07);
+    }
+
+    .cp-modal-item-img-wrap {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: rgba(196,132,138,.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .cp-modal-item-img { width: 100%; height: 100%; object-fit: cover; }
+    .cp-modal-item-ph  { font-size: 1.1rem; }
+
+    .cp-modal-item-name  { flex: 1; font-size: .87rem; font-weight: 600; color: var(--color-heading-text); }
+    .cp-modal-item-qty   { font-size: .78rem; opacity: .45; white-space: nowrap; }
+    .cp-modal-item-price { font-size: .87rem; font-weight: 700; color: var(--color-heading-text); white-space: nowrap; }
+
+    /* Totals summary block */
+    .cp-modal-sum {
+        background: rgba(196,132,138,.06);
+        border-radius: 13px;
+        padding: .9rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+    }
+
+    .cp-modal-sum-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: .88rem;
+        color: var(--color-primary-text);
+    }
+
+    .cp-modal-sum-row--total {
+        font-size: 1rem;
+        color: var(--color-heading-text);
+        margin-top: .05rem;
+    }
+
+    .cp-modal-sum-row--discount { color: #2e7d32; }
+    .cp-modal-sum-row--muted    { opacity: .55; }
+
+    .cp-modal-sum-divider {
+        height: 1px;
+        background: rgba(61,28,2,.1);
+        margin: .1rem 0;
+    }
+
+    /* Step 2 — Payment grid */
+    .cp-payment-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: .9rem;
+        margin-bottom: .9rem;
+    }
+
+    .cp-payment-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .35rem;
+        padding: 1.15rem .75rem .95rem;
+        border: 2px solid rgba(61,28,2,.12);
+        border-radius: 16px;
+        background: var(--color-page-bg);
+        cursor: pointer;
+        transition: border-color .2s, box-shadow .2s, transform .14s, background .2s;
+        text-align: center;
+    }
+
+    .cp-payment-card:hover {
+        border-color: var(--color-border-accent);
+        box-shadow: 0 5px 18px rgba(196,132,138,.22);
+        transform: translateY(-3px);
+    }
+
+    .cp-payment-card--active {
+        border-color: var(--color-button-primary);
+        background: rgba(196,132,138,.08);
+        box-shadow: 0 6px 22px rgba(196,132,138,.28);
+    }
+
+    .cp-payment-icon  { font-size: 1.8rem; }
+    .cp-payment-label { font-size: .88rem; font-weight: 700; color: var(--color-heading-text); }
+    .cp-payment-desc  { font-size: .65rem; color: var(--color-primary-text); opacity: .42; }
+
+    .cp-payment-check {
+        position: absolute;
+        top: .5rem;
+        right: .5rem;
+        background: var(--color-button-primary);
+        color: #fff;
+        border-radius: 50%;
+        width: 1.2rem;
+        height: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .7rem;
+        font-weight: 800;
+    }
+
+    .cp-payment-amount-pill {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: .5rem;
+        background: rgba(61,28,2,.05);
+        border-radius: 50px;
+        padding: .5rem 1.25rem;
+        font-size: .88rem;
+        color: var(--color-primary-text);
+        border: 1px solid rgba(61,28,2,.08);
+        margin-bottom: .5rem;
+    }
+
+    .cp-payment-amount-pill strong {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+    }
+
+    /* Modal error */
+    .cp-modal-error {
+        background: #fff0f0;
+        border: 1.5px solid #f4b8b8;
+        border-radius: 10px;
+        padding: .7rem .9rem;
+        color: #8b2121;
+        font-size: .84rem;
+        font-weight: 500;
+        margin-top: .5rem;
+    }
+
+    /* Spinner */
+    .cp-spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2.5px solid rgba(255,248,220,.3);
+        border-top-color: var(--color-page-bg);
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+        vertical-align: middle;
+        margin-right: .35rem;
+        flex-shrink: 0;
+    }
+
+    @@keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Step 3 — Modal receipt */
+    .cp-modal-receipt {
+        background: rgba(61,28,2,.03);
+        border: 1px solid rgba(61,28,2,.1);
+        border-radius: 14px;
+        padding: 1.1rem 1.2rem;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: .38rem;
+        margin-bottom: .5rem;
+    }
+
+    .cp-modal-receipt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: .25rem;
+    }
+
+    .cp-modal-receipt-brand {
+        font-size: .87rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+    }
+
+    .cp-modal-receipt-num {
+        font-size: .75rem;
+        font-family: 'Courier New', monospace;
+        background: var(--color-button-primary);
+        color: #fff;
+        padding: .2rem .55rem;
+        border-radius: 50px;
+        font-weight: 700;
+    }
+
+    .cp-modal-receipt-date {
+        font-size: .73rem;
+        opacity: .42;
+        margin-bottom: .15rem;
+    }
+
+    /* Modal footer */
+    .cp-modal-footer {
+        display: flex;
+        gap: .75rem;
+        padding: .9rem 2rem 1.6rem;
+        border-top: 1.5px solid rgba(61,28,2,.07);
+    }
+
+    .cp-modal-footer--single { justify-content: center; }
+
+    .cp-modal-btn-ghost {
+        flex: 1;
+        background: none;
+        border: 1.5px solid rgba(61,28,2,.16);
+        border-radius: 11px;
+        padding: .72rem;
+        font-size: .88rem;
+        font-weight: 600;
+        color: var(--color-primary-text);
+        cursor: pointer;
+        opacity: .55;
+        transition: border-color .15s, opacity .15s;
+    }
+
+    .cp-modal-btn-ghost:hover { opacity: 1; border-color: var(--color-border-accent); }
+
+    .cp-modal-btn-primary {
+        flex: 2;
+        background: var(--color-navbar-bg);
+        color: var(--color-page-bg);
+        border: none;
+        border-radius: 11px;
+        padding: .72rem;
+        font-size: .92rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity .18s, transform .12s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+    }
+
+    .cp-modal-btn-primary:not(:disabled):hover { opacity: .82; transform: translateY(-1px); }
+    .cp-modal-btn-primary:disabled { opacity: .3; cursor: not-allowed; }
+
+    .cp-modal-btn-place {
+        flex: 2;
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 11px;
+        padding: .72rem;
+        font-size: .92rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .18s, opacity .18s, transform .12s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .35rem;
+    }
+
+    .cp-modal-btn-place:not(:disabled):hover { background: var(--color-button-hover); transform: translateY(-1px); }
+    .cp-modal-btn-place:disabled { opacity: .3; cursor: not-allowed; }
+
+    /* ════════════════════════════════════════════
+       RESPONSIVE BREAKPOINTS
+       ════════════════════════════════════════════ */
+    @@media (max-width: 1100px) {
+        .cp-summary-col { width: 320px; }
+        .cp-items-thead { grid-template-columns: 72px 1fr 100px 100px 44px; }
+        .cp-item        { grid-template-columns: 72px 1fr 100px 100px 44px; }
+    }
+
+    @@media (max-width: 860px) {
+        .cp-body {
+            flex-direction: column;
+            padding: 1rem 1rem 3rem;
+            gap: 1.25rem;
+        }
+        .cp-summary-col {
+            width: 100%;
+            position: static;
+        }
+        .cp-items-thead { display: none; }
+        /* Collapse to 2-column on mobile */
+        .cp-item {
+            grid-template-columns: 60px 1fr;
+            grid-template-rows: auto auto auto;
+            gap: .65rem .85rem;
+        }
+        .cp-item-thumb { width: 60px; height: 60px; }
+        .cp-item-qty-col {
+            grid-column: 2;
+            justify-content: flex-start;
+        }
+        .cp-item-line-col {
+            grid-column: 2;
+            text-align: left;
+        }
+        .cp-item-del-col {
+            grid-column: 1 / -1;
+            justify-content: flex-end;
+        }
+        .cp-payment-grid { grid-template-columns: 1fr; }
+        .cp-modal-body   { padding: .5rem 1.4rem .75rem; }
+        .cp-modal-footer { padding: .8rem 1.4rem 1.3rem; }
+        .cp-step-bar     { padding: 1.2rem 1.4rem .5rem; }
+    }
+
+    @@media (max-width: 480px) {
+        .cp-header-inner    { padding: .75rem 1rem; }
+        .cp-header-title    { font-size: 1rem; }
+        .cp-body            { padding: .75rem .75rem 2.5rem; }
+        .cp-item            { padding: .85rem .9rem; border-radius: 14px; }
+        .cp-summary-card    { padding: 1.25rem 1.3rem; border-radius: 16px; }
+        .cp-modal           { width: 96vw; border-radius: 18px; }
+        .cp-trust-row       { flex-direction: column; align-items: center; gap: .2rem; }
+        .cp-trust-item      { font-size: .6rem; }
+    }
+</style>
+
+
+@code {
+    // ── Promo Code State ──────────────────────────────────────────────────
+    private string               _promoCode      = string.Empty;
+    private bool                 _isApplyingPromo = false;
+    private ApplyPromoResultDto? _appliedPromo    = null;
+    private string?              _promoError      = null;
+
+    // ── Checkout Modal State ──────────────────────────────────────────────
+    private bool          _showCheckoutModal = false;
+    private int           _checkoutStep      = 1;
+    private PaymentMethod _selectedPayment   = PaymentMethod.Cash;
+    private bool          _isPlacingOrder    = false;
+    private string?       _checkoutError     = null;
+
+    // ── Post-Order State ──────────────────────────────────────────────────
+    private SaleResultDto? _saleResult  = null;
+    private bool           _orderPlaced = false;
+
+    // ── Computed Totals ───────────────────────────────────────────────────
+    /// <summary>
+    /// Discount from applied promo. Defaults to 0 until MaryamJ's promo service
+    /// is wired and a valid promo is applied.
+    /// </summary>
+    private decimal DiscountAmount => _appliedPromo?.DiscountAmount ?? 0m;
+
+    /// <summary>
+    /// Client-side GST estimate at 5%. The final authoritative tax is
+    /// computed server-side by ISaleService.ProcessSale → IFBRService.CalculateTax.
+    /// </summary>
+    private decimal EstimatedTax => Math.Round((CartState.SubTotal - DiscountAmount) * 0.05m, 0);
+
+    private decimal GrandTotal => CartState.SubTotal - DiscountAmount + EstimatedTax;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────
+    protected override void OnInitialized()
+    {
+        // Subscribe to cart changes so this page re-renders when
+        // Shop.razor mutates the shared CartStateService (e.g. user
+        // navigates back and modifies an item in the sidebar).
+        CartState.OnCartChanged += HandleCartChanged;
+    }
+
+    private void HandleCartChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        CartState.OnCartChanged -= HandleCartChanged;
+    }
+
+    // ── Cart Mutations ────────────────────────────────────────────────────
+    private void Increment(int productId) => CartState.UpdateQuantity(productId, +1);
+    private void Decrement(int productId) => CartState.UpdateQuantity(productId, -1);
+    private void Remove(int productId)    => CartState.RemoveItem(productId);
+    private void ClearAll()              => CartState.Clear();
+
+    // ── Promo Code ────────────────────────────────────────────────────────
+    /// <summary>
+    /// Promo code validation UI shell.
+    ///
+    /// ╔══════════════════════════════════════════════════════════╗
+    /// ║  TODO — WIRE-UP PENDING (MaryamJ branch merge)          ║
+    /// ║                                                          ║
+    /// ║  Once MaryamJ's IPromotionService is merged, replace     ║
+    /// ║  the stub below with:                                    ║
+    /// ║                                                          ║
+    /// ║    1. Add @inject IPromotionService PromotionService     ║
+    /// ║       to the top of this file.                          ║
+    /// ║                                                          ║
+    /// ║    2. Replace the Task.Delay stub with:                  ║
+    /// ║         var r = await PromotionService                   ║
+    /// ║                   .ValidateAndApply(                     ║
+    /// ║                       _promoCode.Trim(),                 ║
+    /// ║                       CartState.SubTotal);               ║
+    /// ║         if (r.Success && r.Data?.IsValid == true)        ║
+    /// ║             _appliedPromo = r.Data;                      ║
+    /// ║         else                                             ║
+    /// ║             _promoError = r.Data?.Message ?? r.Message;  ║
+    /// ╚══════════════════════════════════════════════════════════╝
+    /// </summary>
+    private async Task ApplyPromoCode()
+    {
+        if (string.IsNullOrWhiteSpace(_promoCode)) return;
+
+        _isApplyingPromo = true;
+        _promoError      = null;
+        _appliedPromo    = null;
+        StateHasChanged();
+
+        // ── STUB: Simulates a network call while MaryamJ's service is in development ──
+        await Task.Delay(700);
+        _promoError = $"Code \"{_promoCode.Trim().ToUpperInvariant()}\" — promo validation service is pending (MaryamJ branch).";
+        // ─────────────────────────────────────────────────────────────────────────────
+
+        _isApplyingPromo = false;
+    }
+
+    private void RemovePromo()
+    {
+        _appliedPromo = null;
+        _promoCode    = string.Empty;
+        _promoError   = null;
+    }
+
+    // ── Checkout Modal ────────────────────────────────────────────────────
+    private void OpenCheckoutModal()
+    {
+        _checkoutStep      = 1;
+        _checkoutError     = null;
+        _selectedPayment   = PaymentMethod.Cash;
+        _showCheckoutModal = true;
+    }
+
+    private void CloseCheckoutModal()
+    {
+        _showCheckoutModal = false;
+        _checkoutError     = null;
+    }
+
+    // ── Place Order ───────────────────────────────────────────────────────
+    /// <summary>
+    /// Assembles CreateSaleDto from current cart state and calls
+    /// ISaleService.ProcessSale (Shahzain's implementation in SaleService.cs).
+    ///
+    /// Notes:
+    ///  • UserId  = 1 as guest/fallback until ClaimsPrincipal auth is integrated.
+    ///  • CustomerId = null for anonymous guest checkout.
+    ///  • On success: cart is cleared, receipt shown in modal step 3.
+    ///  • On failure: error displayed inline in step 2.
+    /// </summary>
+    private async Task PlaceOrder()
+    {
+        _isPlacingOrder = true;
+        _checkoutError  = null;
+        StateHasChanged();
+
+        var dto = new CreateSaleDto
+        {
+            CustomerId    = null,     // TODO: resolve from auth context once login is wired
+            UserId        = 1,        // TODO: replace with authenticated user ID
+            PromoCode     = _appliedPromo is not null ? _promoCode.Trim() : null,
+            SaleType      = SaleType.Online,
+            PaymentMethod = _selectedPayment,
+            Items         = CartState.Items
+                .Select(i => new SaleItemDto
+                {
+                    ProductId   = i.Product.Id,
+                    ProductName = i.Product.Name,
+                    Quantity    = i.Quantity,
+                    UnitPrice   = i.Product.Price,
+                    LineTotal   = i.Product.Price * i.Quantity
+                })
+                .ToList()
+        };
+
+        var result = await SaleService.ProcessSale(dto);
+
+        _isPlacingOrder = false;
+
+        if (result.Success && result.Data is not null)
+        {
+            _saleResult   = result.Data;
+            _checkoutStep = 3;          // advance to receipt step
+            CartState.Clear();          // clear cart — order is placed
+        }
+        else
+        {
+            _checkoutError = result.Message.Length > 0
+                ? result.Message
+                : "An unexpected error occurred. Please try again.";
+        }
+    }
+
+    /// <summary>
+    /// Called when user clicks "Done" on the receipt step.
+    /// Closes modal and shows the full-page receipt (cart page empty state).
+    /// </summary>
+    private void FinishOrder()
+    {
+        _showCheckoutModal = false;
+        _orderPlaced       = true;
+        // _saleResult stays set — used by the full-page receipt section
+    }
+
+    // ── Navigation ────────────────────────────────────────────────────────
+    private void GoToShop() => Navigation.NavigateTo("/customer/shop");
+}

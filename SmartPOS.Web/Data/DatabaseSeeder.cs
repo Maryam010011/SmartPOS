@@ -13,7 +13,7 @@ public static class DatabaseSeeder
      public static async Task SeedAsync(IServiceProvider serviceProvider)
      {
           using var scope = serviceProvider.CreateScope();
-          var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+          using var db = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
 
           // Seed Roles
           if (!await db.Roles.AnyAsync())

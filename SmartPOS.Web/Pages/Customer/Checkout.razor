@@ -1,0 +1,2095 @@
+@page "/customer/checkout"
+@rendermode InteractiveServer
+@layout CustomerLayout
+
+@* ── DI Injections (all registered in Program.cs as Scoped) ── *@
+@inject CartStateService    CartState
+@inject ISaleService        SaleService
+@inject NavigationManager   Navigation
+
+@* Implement IDisposable to unsubscribe from CartState.OnCartChanged *@
+@implements IDisposable
+
+<PageTitle>Checkout — SmartPOS+ Bakery</PageTitle>
+
+<div class="chk-root">
+
+    @* ═══════════════════════════════════════════════════════════
+       STICKY TOP HEADER BAR
+       ═══════════════════════════════════════════════════════════ *@
+    <header class="chk-header">
+        <div class="chk-header-inner">
+            <button id="chk-back-btn" class="chk-back-btn" @onclick="GoToCart">
+                <span class="chk-back-arrow">←</span>
+                <span>Back to Cart</span>
+            </button>
+            <div class="chk-header-brand">
+                <span class="chk-header-icon">🥐</span>
+                <h1 class="chk-header-title">SmartPOS+ Bakery</h1>
+            </div>
+            <div class="chk-header-step-label">
+                <span class="chk-step-pill">Secure Checkout 🔒</span>
+            </div>
+        </div>
+    </header>
+
+
+    @* ═══════════════════════════════════════════════════════════
+       EMPTY CART GUARD — redirect hint when cart is empty
+       ═══════════════════════════════════════════════════════════ *@
+    @if (CartState.Count == 0 && !_orderPlaced)
+    {
+        <div class="chk-empty">
+            <div class="chk-empty-icon">🛒</div>
+            <h2 class="chk-empty-title">Your cart is empty</h2>
+            <p class="chk-empty-sub">Add some delicious items before checking out.</p>
+            <button id="chk-go-shop-btn" class="chk-btn-primary" @onclick="GoToShop">
+                Browse Products
+            </button>
+        </div>
+    }
+
+
+    @* ═══════════════════════════════════════════════════════════
+       ORDER-PLACED SUCCESS SCREEN
+       ═══════════════════════════════════════════════════════════ *@
+    @if (_orderPlaced && _saleResult is not null)
+    {
+        <div class="chk-success-page" id="chk-success-screen">
+            <div class="chk-success-icon-wrap">
+                <div class="chk-success-checkmark">✓</div>
+            </div>
+            <h2 class="chk-success-title">Order Confirmed!</h2>
+            <p class="chk-success-sub">
+                Thank you, <strong>@_fullName</strong>! Your order has been received
+                and is being processed. Here's your digital receipt.
+            </p>
+
+            <div class="chk-receipt-card">
+                <div class="chk-receipt-header">
+                    <div>
+                        <div class="chk-receipt-brand">SmartPOS+ Bakery</div>
+                        <div class="chk-receipt-date">
+                            @_saleResult.SaleDate.ToString("dd MMM yyyy, hh:mm tt")
+                        </div>
+                    </div>
+                    <div class="chk-receipt-num-badge">
+                        #@_saleResult.ReceiptNumber
+                    </div>
+                </div>
+
+                <div class="chk-receipt-divider"></div>
+
+                @foreach (var line in _saleResult.Items)
+                {
+                    <div class="chk-receipt-row">
+                        <span>@line.ProductName &times; @line.Quantity</span>
+                        <span>Rs.&nbsp;@line.LineTotal.ToString("N0")</span>
+                    </div>
+                }
+
+                <div class="chk-receipt-divider"></div>
+
+                <div class="chk-receipt-row">
+                    <span>Subtotal</span>
+                    <span>Rs.&nbsp;@_saleResult.SubTotal.ToString("N0")</span>
+                </div>
+                @if (_saleResult.DiscountAmount > 0)
+                {
+                    <div class="chk-receipt-row chk-receipt-row--discount">
+                        <span>Discount</span>
+                        <span>− Rs.&nbsp;@_saleResult.DiscountAmount.ToString("N0")</span>
+                    </div>
+                }
+                <div class="chk-receipt-row">
+                    <span>Tax (17% GST)</span>
+                    <span>Rs.&nbsp;@_saleResult.TaxAmount.ToString("N0")</span>
+                </div>
+
+                <div class="chk-receipt-divider"></div>
+
+                <div class="chk-receipt-row chk-receipt-row--grand">
+                    <strong>Total Paid</strong>
+                    <strong>Rs.&nbsp;@_saleResult.TotalAmount.ToString("N0")</strong>
+                </div>
+            </div>
+
+            <div class="chk-success-delivery">
+                <div class="chk-success-delivery-icon">📦</div>
+                <div>
+                    <div class="chk-success-delivery-title">Delivery Address</div>
+                    <div class="chk-success-delivery-addr">
+                        @_address, @_city — @_postalCode
+                    </div>
+                </div>
+            </div>
+
+            <button id="chk-back-to-shop-btn" class="chk-btn-primary" @onclick="GoToShop">
+                ← Continue Shopping
+            </button>
+        </div>
+    }
+
+
+    @* ═══════════════════════════════════════════════════════════
+       MAIN CHECKOUT BODY — Two-Column Layout
+       ═══════════════════════════════════════════════════════════ *@
+    @if (CartState.Count > 0 && !_orderPlaced)
+    {
+        <div class="chk-body">
+
+            @* ── LEFT COLUMN: FORM SECTIONS ─────────────────────────────── *@
+            <main class="chk-form-col">
+
+                @* ── PROGRESS STEPS ─────────────────────────────────────── *@
+                <div class="chk-progress" aria-label="Checkout steps">
+                    <div class="chk-progress-step chk-progress-step--done">
+                        <div class="chk-progress-dot">✓</div>
+                        <span class="chk-progress-label">Cart</span>
+                    </div>
+                    <div class="chk-progress-line chk-progress-line--done"></div>
+                    <div class="chk-progress-step chk-progress-step--active">
+                        <div class="chk-progress-dot">2</div>
+                        <span class="chk-progress-label">Details</span>
+                    </div>
+                    <div class="chk-progress-line"></div>
+                    <div class="chk-progress-step">
+                        <div class="chk-progress-dot">3</div>
+                        <span class="chk-progress-label">Payment</span>
+                    </div>
+                    <div class="chk-progress-line"></div>
+                    <div class="chk-progress-step">
+                        <div class="chk-progress-dot">4</div>
+                        <span class="chk-progress-label">Confirm</span>
+                    </div>
+                </div>
+
+                @* Global error banner *@
+                @if (_globalError is not null)
+                {
+                    <div class="chk-error-banner" role="alert" id="chk-global-error">
+                        <span>⚠️&nbsp;@_globalError</span>
+                        <button class="chk-error-dismiss" @onclick="@(() => _globalError = null)">✕</button>
+                    </div>
+                }
+
+                @* ──────────────────────────────────────────────────────────
+                   SECTION 1 — CONTACT INFORMATION
+                   ────────────────────────────────────────────────────────── *@
+                <div class="chk-card">
+                    <div class="chk-card-header">
+                        <span class="chk-card-icon">👤</span>
+                        <h2 class="chk-card-title">Contact Information</h2>
+                    </div>
+
+                    <div class="chk-form-grid chk-form-grid--2">
+                        <div class="chk-field @(HasError("FullName") ? "chk-field--error" : "")">
+                            <label class="chk-label" for="chk-full-name">Full Name *</label>
+                            <input id="chk-full-name"
+                                   class="chk-input"
+                                   type="text"
+                                   placeholder="e.g. Ahmed Khan"
+                                   @bind="_fullName"
+                                   @bind:event="oninput"
+                                   @onfocus="@(() => ClearFieldError("FullName"))"
+                                   maxlength="80"
+                                   autocomplete="name" />
+                            @if (HasError("FullName"))
+                            {
+                                <span class="chk-field-error" role="alert">@GetError("FullName")</span>
+                            }
+                        </div>
+
+                        <div class="chk-field @(HasError("Email") ? "chk-field--error" : "")">
+                            <label class="chk-label" for="chk-email">Email Address *</label>
+                            <input id="chk-email"
+                                   class="chk-input"
+                                   type="email"
+                                   placeholder="you@example.com"
+                                   @bind="_email"
+                                   @bind:event="oninput"
+                                   @onfocus="@(() => ClearFieldError("Email"))"
+                                   maxlength="120"
+                                   autocomplete="email" />
+                            @if (HasError("Email"))
+                            {
+                                <span class="chk-field-error" role="alert">@GetError("Email")</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="chk-field @(HasError("Phone") ? "chk-field--error" : "")">
+                        <label class="chk-label" for="chk-phone">Phone Number *</label>
+                        <div class="chk-input-prefix-wrap">
+                            <span class="chk-input-prefix">+92</span>
+                            <input id="chk-phone"
+                                   class="chk-input chk-input--prefixed"
+                                   type="tel"
+                                   placeholder="3XX-XXXXXXX"
+                                   @bind="_phone"
+                                   @bind:event="oninput"
+                                   @onfocus="@(() => ClearFieldError("Phone"))"
+                                   maxlength="15"
+                                   autocomplete="tel" />
+                        </div>
+                        @if (HasError("Phone"))
+                        {
+                            <span class="chk-field-error" role="alert">@GetError("Phone")</span>
+                        }
+                    </div>
+                </div>
+
+
+                @* ──────────────────────────────────────────────────────────
+                   SECTION 2 — SHIPPING ADDRESS
+                   ────────────────────────────────────────────────────────── *@
+                <div class="chk-card">
+                    <div class="chk-card-header">
+                        <span class="chk-card-icon">📍</span>
+                        <h2 class="chk-card-title">Shipping Address</h2>
+                    </div>
+
+                    <div class="chk-field @(HasError("Address") ? "chk-field--error" : "")">
+                        <label class="chk-label" for="chk-address">Street Address *</label>
+                        <input id="chk-address"
+                               class="chk-input"
+                               type="text"
+                               placeholder="House / Street / Block"
+                               @bind="_address"
+                               @bind:event="oninput"
+                               @onfocus="@(() => ClearFieldError("Address"))"
+                               maxlength="200"
+                               autocomplete="street-address" />
+                        @if (HasError("Address"))
+                        {
+                            <span class="chk-field-error" role="alert">@GetError("Address")</span>
+                        }
+                    </div>
+
+                    <div class="chk-form-grid chk-form-grid--3">
+                        <div class="chk-field @(HasError("City") ? "chk-field--error" : "")">
+                            <label class="chk-label" for="chk-city">City *</label>
+                            <input id="chk-city"
+                                   class="chk-input"
+                                   type="text"
+                                   placeholder="e.g. Lahore"
+                                   @bind="_city"
+                                   @bind:event="oninput"
+                                   @onfocus="@(() => ClearFieldError("City"))"
+                                   maxlength="60"
+                                   autocomplete="address-level2" />
+                            @if (HasError("City"))
+                            {
+                                <span class="chk-field-error" role="alert">@GetError("City")</span>
+                            }
+                        </div>
+
+                        <div class="chk-field">
+                            <label class="chk-label" for="chk-province">Province</label>
+                            <select id="chk-province" class="chk-select" @bind="_province" autocomplete="address-level1">
+                                <option value="">Select province</option>
+                                <option value="Punjab">Punjab</option>
+                                <option value="Sindh">Sindh</option>
+                                <option value="KPK">Khyber Pakhtunkhwa</option>
+                                <option value="Balochistan">Balochistan</option>
+                                <option value="Islamabad">Islamabad Capital Territory</option>
+                                <option value="AJK">Azad Jammu & Kashmir</option>
+                                <option value="GB">Gilgit-Baltistan</option>
+                            </select>
+                        </div>
+
+                        <div class="chk-field @(HasError("PostalCode") ? "chk-field--error" : "")">
+                            <label class="chk-label" for="chk-postal">Postal Code *</label>
+                            <input id="chk-postal"
+                                   class="chk-input"
+                                   type="text"
+                                   placeholder="e.g. 54000"
+                                   @bind="_postalCode"
+                                   @bind:event="oninput"
+                                   @onfocus="@(() => ClearFieldError("PostalCode"))"
+                                   maxlength="10"
+                                   autocomplete="postal-code" />
+                            @if (HasError("PostalCode"))
+                            {
+                                <span class="chk-field-error" role="alert">@GetError("PostalCode")</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="chk-field">
+                        <label class="chk-label" for="chk-delivery-notes">Delivery Notes <span class="chk-label-opt">(optional)</span></label>
+                        <textarea id="chk-delivery-notes"
+                                  class="chk-textarea"
+                                  placeholder="Gate code, landmark, or special instructions…"
+                                  @bind="_deliveryNotes"
+                                  @bind:event="oninput"
+                                  rows="3"
+                                  maxlength="500"></textarea>
+                    </div>
+                </div>
+
+
+                @* ──────────────────────────────────────────────────────────
+                   SECTION 3 — PROMO CODE
+                   ────────────────────────────────────────────────────────── *@
+                <div class="chk-card">
+                    <div class="chk-card-header">
+                        <span class="chk-card-icon">🏷️</span>
+                        <h2 class="chk-card-title">Promo Code</h2>
+                    </div>
+
+                    <div class="chk-promo-row">
+                        <input id="chk-promo-input"
+                               class="chk-input chk-promo-input
+                                      @(_promoError is not null ? "chk-promo-input--error" : "")
+                                      @(_promoApplied ? "chk-promo-input--success" : "")"
+                               type="text"
+                               placeholder="Enter promo code…"
+                               @bind="_promoCode"
+                               @bind:event="oninput"
+                               disabled="@(_promoApplied || _isApplyingPromo)"
+                               maxlength="30"
+                               aria-label="Promo code" />
+
+                        @if (!_promoApplied)
+                        {
+                            <button id="chk-apply-promo-btn"
+                                    class="chk-promo-apply-btn"
+                                    @onclick="ApplyPromo"
+                                    disabled="@(string.IsNullOrWhiteSpace(_promoCode) || _isApplyingPromo)">
+                                @(_isApplyingPromo ? "Checking…" : "Apply")
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="chk-promo-remove-btn"
+                                    @onclick="RemovePromo"
+                                    aria-label="Remove promo code">✕</button>
+                        }
+                    </div>
+
+                    @if (_promoError is not null)
+                    {
+                        <p class="chk-promo-msg chk-promo-msg--error" role="alert">
+                            ⚠&nbsp;@_promoError
+                        </p>
+                    }
+                    @if (_promoApplied)
+                    {
+                        <p class="chk-promo-msg chk-promo-msg--success">
+                            🎉&nbsp;Promo code applied! You saved Rs.&nbsp;@_promoDiscount.ToString("N0")
+                        </p>
+                    }
+                </div>
+
+
+                @* ──────────────────────────────────────────────────────────
+                   SECTION 4 — PAYMENT METHOD
+                   ────────────────────────────────────────────────────────── *@
+                <div class="chk-card">
+                    <div class="chk-card-header">
+                        <span class="chk-card-icon">💳</span>
+                        <h2 class="chk-card-title">Payment Method</h2>
+                    </div>
+
+                    @if (HasError("Payment"))
+                    {
+                        <span class="chk-field-error chk-field-error--standalone" role="alert">
+                            @GetError("Payment")
+                        </span>
+                    }
+
+                    <div class="chk-payment-grid">
+                        @* Cash on Delivery *@
+                        <button id="chk-pay-cod"
+                                class="chk-pay-card @(_paymentMethod == PaymentMethod.Cash ? "chk-pay-card--active" : "")"
+                                @onclick="@(() => { _paymentMethod = PaymentMethod.Cash; ClearFieldError("Payment"); })">
+                            <span class="chk-pay-icon">💵</span>
+                            <span class="chk-pay-label">Cash on Delivery</span>
+                            <span class="chk-pay-desc">Pay when you receive</span>
+                            @if (_paymentMethod == PaymentMethod.Cash)
+                            {
+                                <span class="chk-pay-check">✓</span>
+                            }
+                        </button>
+
+                        @* Debit / Credit Card — Stripe shell *@
+                        <button id="chk-pay-card"
+                                class="chk-pay-card @(_paymentMethod == PaymentMethod.Card ? "chk-pay-card--active" : "")"
+                                @onclick="@(() => { _paymentMethod = PaymentMethod.Card; ClearFieldError("Payment"); })">
+                            <span class="chk-pay-icon">💳</span>
+                            <span class="chk-pay-label">Credit / Debit Card</span>
+                            <span class="chk-pay-desc">Visa, Mastercard</span>
+                            @if (_paymentMethod == PaymentMethod.Card)
+                            {
+                                <span class="chk-pay-check">✓</span>
+                            }
+                        </button>
+
+                        @* Online (JazzCash / EasyPaisa) *@
+                        <button id="chk-pay-online"
+                                class="chk-pay-card @(_paymentMethod == PaymentMethod.Online ? "chk-pay-card--active" : "")"
+                                @onclick="@(() => { _paymentMethod = PaymentMethod.Online; ClearFieldError("Payment"); })">
+                            <span class="chk-pay-icon">📱</span>
+                            <span class="chk-pay-label">Mobile Wallet</span>
+                            <span class="chk-pay-desc">JazzCash / EasyPaisa</span>
+                            @if (_paymentMethod == PaymentMethod.Online)
+                            {
+                                <span class="chk-pay-check">✓</span>
+                            }
+                        </button>
+                    </div>
+
+                    @* ────────────────────────────────────────────────────────
+                       STRIPE PAYMENT UI SHELL
+                       ── NOTE TO TEAM ──────────────────────────────────────
+                       The full Stripe gateway integration (tokenisation, 3DS,
+                       payment-intent creation, webhook confirmation) is currently
+                       being developed by MaryamJ on her feature branch.
+                       This section is the complete UI layout; bindings and the
+                       method stub PlaceOrderWithStripe() are wired and ready.
+                       Once MaryamJ's branch is merged, replace the TODO stub
+                       body with the actual Stripe.js JS-interop call.
+                       ──────────────────────────────────────────────────── *@
+                    @if (_paymentMethod == PaymentMethod.Card)
+                    {
+                        <div class="chk-stripe-shell" id="chk-stripe-container">
+                            <div class="chk-stripe-badge">
+                                <span class="chk-stripe-lock">🔒</span>
+                                <span class="chk-stripe-text">Secured by <strong>Stripe</strong></span>
+                                <span class="chk-stripe-cards">
+                                    <span class="chk-card-chip">VISA</span>
+                                    <span class="chk-card-chip">MC</span>
+                                    <span class="chk-card-chip">AMEX</span>
+                                </span>
+                            </div>
+
+                            <div class="chk-stripe-field-wrap">
+                                <div class="chk-field">
+                                    <label class="chk-label" for="chk-card-name">Name on Card *</label>
+                                    <input id="chk-card-name"
+                                           class="chk-input"
+                                           type="text"
+                                           placeholder="As printed on card"
+                                           @bind="_cardName"
+                                           @bind:event="oninput"
+                                           maxlength="80"
+                                           autocomplete="cc-name" />
+                                </div>
+
+                                <div class="chk-field">
+                                    <label class="chk-label" for="chk-card-number">Card Number *</label>
+                                    <div class="chk-input-icon-wrap">
+                                        <input id="chk-card-number"
+                                               class="chk-input chk-input--card"
+                                               type="text"
+                                               placeholder="•••• •••• •••• ••••"
+                                               @bind="_cardNumber"
+                                               @bind:event="oninput"
+                                               maxlength="19"
+                                               autocomplete="cc-number"
+                                               inputmode="numeric" />
+                                        <span class="chk-input-card-icon">💳</span>
+                                    </div>
+                                </div>
+
+                                <div class="chk-form-grid chk-form-grid--2">
+                                    <div class="chk-field">
+                                        <label class="chk-label" for="chk-card-expiry">Expiry *</label>
+                                        <input id="chk-card-expiry"
+                                               class="chk-input"
+                                               type="text"
+                                               placeholder="MM / YY"
+                                               @bind="_cardExpiry"
+                                               @bind:event="oninput"
+                                               maxlength="7"
+                                               autocomplete="cc-exp"
+                                               inputmode="numeric" />
+                                    </div>
+                                    <div class="chk-field">
+                                        <label class="chk-label" for="chk-card-cvc">CVC *</label>
+                                        <div class="chk-input-icon-wrap">
+                                            <input id="chk-card-cvc"
+                                                   class="chk-input"
+                                                   type="password"
+                                                   placeholder="•••"
+                                                   @bind="_cardCvc"
+                                                   @bind:event="oninput"
+                                                   maxlength="4"
+                                                   autocomplete="cc-csc"
+                                                   inputmode="numeric" />
+                                            <span class="chk-input-card-icon">🛡</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="chk-stripe-disclaimer">
+                                ⓘ&nbsp;Card details are encrypted end-to-end via Stripe's PCI DSS certified gateway.
+                                We never store your raw card data.
+                            </div>
+                        </div>
+                    }
+                </div>
+
+
+                @* ── PLACE ORDER CTA ─────────────────────────────────────── *@
+                <div class="chk-cta-wrap">
+                    <button id="chk-place-order-btn"
+                            class="chk-btn-place-order"
+                            @onclick="PlaceOrder"
+                            disabled="@_isPlacingOrder">
+                        @if (_isPlacingOrder)
+                        {
+                            <span class="chk-spinner"></span>
+                            <span>Placing Order…</span>
+                        }
+                        else
+                        {
+                            <span>Place Order — Rs.&nbsp;@GrandTotal.ToString("N0")</span>
+                            <span class="chk-btn-arrow">→</span>
+                        }
+                    </button>
+
+                    <div class="chk-trust-row">
+                        <span class="chk-trust-item">🔒&nbsp;SSL Encrypted</span>
+                        <span class="chk-trust-item">🧾&nbsp;FBR Compliant</span>
+                        <span class="chk-trust-item">✅&nbsp;Quality Guaranteed</span>
+                        <span class="chk-trust-item">🚚&nbsp;Fast Delivery</span>
+                    </div>
+                </div>
+
+            </main>  @* /chk-form-col *@
+
+
+            @* ── RIGHT COLUMN: STICKY ORDER SUMMARY ──────────────────────── *@
+            <aside class="chk-summary-col" aria-label="Order summary">
+                <div class="chk-summary-card">
+
+                    <h2 class="chk-summary-title">
+                        <span>Order Summary</span>
+                        <span class="chk-summary-count-badge">
+                            @CartState.Count item@(CartState.Count != 1 ? "s" : "")
+                        </span>
+                    </h2>
+
+                    @* Item list *@
+                    <div class="chk-summary-items" role="list">
+                        @foreach (var item in CartState.Items)
+                        {
+                            <div class="chk-summary-item" role="listitem" id="chk-sum-item-@item.Product.Id">
+                                <div class="chk-summary-item-thumb">
+                                    @if (!string.IsNullOrEmpty(item.Product.ImageURL))
+                                    {
+                                        <img src="@item.Product.ImageURL"
+                                             class="chk-summary-item-img"
+                                             alt="@item.Product.Name"
+                                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                        <div class="chk-summary-item-img-ph" style="display:none;">🥖</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="chk-summary-item-img-ph">🥖</div>
+                                    }
+                                    <span class="chk-summary-item-qty-badge">@item.Quantity</span>
+                                </div>
+                                <div class="chk-summary-item-info">
+                                    <span class="chk-summary-item-name">@item.Product.Name</span>
+                                    <span class="chk-summary-item-unit">Rs.&nbsp;@item.Product.Price.ToString("N0") each</span>
+                                </div>
+                                <span class="chk-summary-item-total">
+                                    Rs.&nbsp;@((item.Product.Price * item.Quantity).ToString("N0"))
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="chk-sum-divider"></div>
+
+                    @* Subtotal *@
+                    <div class="chk-sum-row">
+                        <span class="chk-sum-label">Subtotal</span>
+                        <span class="chk-sum-val">Rs.&nbsp;@CartState.SubTotal.ToString("N0")</span>
+                    </div>
+
+                    @* Promo discount *@
+                    @if (_promoApplied && _promoDiscount > 0)
+                    {
+                        <div class="chk-sum-row chk-sum-row--discount">
+                            <span class="chk-sum-label">Discount (@_promoCode.ToUpper())</span>
+                            <span class="chk-sum-val chk-sum-val--discount">− Rs.&nbsp;@_promoDiscount.ToString("N0")</span>
+                        </div>
+                    }
+
+                    @* Tax — Pakistan standard 17% GST applied by SaleService.ProcessSale *@
+                    <div class="chk-sum-row chk-sum-row--muted">
+                        <span class="chk-sum-label">
+                            GST (17%)
+                            <span class="chk-sum-note">· confirmed at processing</span>
+                        </span>
+                        <span class="chk-sum-val">Rs.&nbsp;@EstimatedTax.ToString("N0")</span>
+                    </div>
+
+                    @* Delivery *@
+                    <div class="chk-sum-row chk-sum-row--muted">
+                        <span class="chk-sum-label">Delivery</span>
+                        <span class="chk-sum-val chk-sum-val--free">FREE</span>
+                    </div>
+
+                    <div class="chk-sum-divider"></div>
+
+                    @* Grand total *@
+                    <div class="chk-sum-row chk-sum-row--grand">
+                        <span class="chk-sum-label chk-sum-label--grand">Grand Total</span>
+                        <strong class="chk-sum-val chk-sum-val--grand">Rs.&nbsp;@GrandTotal.ToString("N0")</strong>
+                    </div>
+
+                    @* Payment method pill *@
+                    @if (_paymentMethod.HasValue)
+                    {
+                        <div class="chk-sum-pay-pill">
+                            @PaymentIcon(_paymentMethod.Value)
+                            &nbsp;Paying via&nbsp;<strong>@PaymentLabel(_paymentMethod.Value)</strong>
+                        </div>
+                    }
+
+                    @* Sale type label — always Online for this checkout flow *@
+                    <div class="chk-sum-online-badge">
+                        🌐&nbsp;Online Order
+                    </div>
+
+                    @* CTA mirror (desktop sidebar) *@
+                    <button id="chk-sum-place-order-btn"
+                            class="chk-btn-place-order chk-btn-place-order--sm"
+                            @onclick="PlaceOrder"
+                            disabled="@_isPlacingOrder">
+                        @(_isPlacingOrder ? "Placing Order…" : $"Place Order →")
+                    </button>
+
+                    @* Edit cart link *@
+                    <button class="chk-edit-cart-link" @onclick="GoToCart" id="chk-edit-cart-btn">
+                        ← Edit Cart
+                    </button>
+                </div>
+            </aside>  @* /chk-summary-col *@
+
+        </div>  @* /chk-body *@
+    }
+
+</div>  @* /chk-root *@
+
+
+@* ═══════════════════════════════════════════════════════════════════════
+   @CODE SECTION
+   ═══════════════════════════════════════════════════════════════════════ *@
+@code {
+
+    // ── Contact fields ────────────────────────────────────────────────────
+    private string _fullName   = string.Empty;
+    private string _email      = string.Empty;
+    private string _phone      = string.Empty;
+
+    // ── Shipping fields ───────────────────────────────────────────────────
+    private string _address      = string.Empty;
+    private string _city         = string.Empty;
+    private string _province     = string.Empty;
+    private string _postalCode   = string.Empty;
+    private string _deliveryNotes = string.Empty;
+
+    // ── Promo fields ──────────────────────────────────────────────────────
+    private string  _promoCode     = string.Empty;
+    private bool    _promoApplied  = false;
+    private decimal _promoDiscount = 0m;
+    private string? _promoError    = null;
+    private bool    _isApplyingPromo = false;
+
+    // ── Payment ───────────────────────────────────────────────────────────
+    private PaymentMethod? _paymentMethod = null;
+
+    // ── Stripe card fields (UI shell — wired but gateway is a TODO stub) ──
+    private string _cardName   = string.Empty;
+    private string _cardNumber = string.Empty;
+    private string _cardExpiry = string.Empty;
+    private string _cardCvc    = string.Empty;
+
+    // ── State ─────────────────────────────────────────────────────────────
+    private bool            _isPlacingOrder = false;
+    private bool            _orderPlaced    = false;
+    private SaleResultDto?  _saleResult     = null;
+    private string?         _globalError    = null;
+
+    // ── Validation dictionary (field key → message) ───────────────────────
+    private readonly Dictionary<string, string> _fieldErrors = new();
+
+    // ── Computed properties ───────────────────────────────────────────────
+
+    /// <summary>
+    /// Tax preview at 17% on the discounted sub-total.
+    /// The SaleService.ProcessSale applies the same rate server-side.
+    /// </summary>
+    private decimal EstimatedTax =>
+        Math.Round((CartState.SubTotal - _promoDiscount) * 0.17m, 0);
+
+    /// <summary>Grand total displayed in the order summary and CTA button.</summary>
+    private decimal GrandTotal =>
+        CartState.SubTotal - _promoDiscount + EstimatedTax;
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────
+
+    protected override void OnInitialized()
+    {
+        CartState.OnCartChanged += OnCartChanged;
+    }
+
+    private void OnCartChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        CartState.OnCartChanged -= OnCartChanged;
+    }
+
+    // ── Navigation helpers ────────────────────────────────────────────────
+
+    private void GoToCart() => Navigation.NavigateTo("/customer/cart");
+    private void GoToShop() => Navigation.NavigateTo("/customer/shop");
+
+    // ── Validation helpers ────────────────────────────────────────────────
+
+    private bool   HasError(string key) => _fieldErrors.ContainsKey(key);
+    private string GetError(string key) => _fieldErrors.TryGetValue(key, out var msg) ? msg : string.Empty;
+    private void   ClearFieldError(string key) => _fieldErrors.Remove(key);
+
+    private bool ValidateForm()
+    {
+        _fieldErrors.Clear();
+
+        if (string.IsNullOrWhiteSpace(_fullName))
+            _fieldErrors["FullName"] = "Full name is required.";
+
+        if (string.IsNullOrWhiteSpace(_email) ||
+            !System.Text.RegularExpressions.Regex.IsMatch(_email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            _fieldErrors["Email"] = "A valid email address is required.";
+
+        if (string.IsNullOrWhiteSpace(_phone))
+            _fieldErrors["Phone"] = "Phone number is required.";
+
+        if (string.IsNullOrWhiteSpace(_address))
+            _fieldErrors["Address"] = "Street address is required.";
+
+        if (string.IsNullOrWhiteSpace(_city))
+            _fieldErrors["City"] = "City is required.";
+
+        if (string.IsNullOrWhiteSpace(_postalCode))
+            _fieldErrors["PostalCode"] = "Postal code is required.";
+
+        if (!_paymentMethod.HasValue)
+            _fieldErrors["Payment"] = "Please select a payment method.";
+
+        return _fieldErrors.Count == 0;
+    }
+
+    // ── Promo code ────────────────────────────────────────────────────────
+
+    private async Task ApplyPromo()
+    {
+        _promoError = null;
+        if (string.IsNullOrWhiteSpace(_promoCode)) return;
+
+        _isApplyingPromo = true;
+        StateHasChanged();
+
+        // TODO: Replace with real IPromotionService.ValidateAndApply call
+        // once MaryamJ's promo module is merged.
+        await Task.Delay(600); // simulated network call
+        _promoError = "Promo code feature is coming soon. Please check back later.";
+        _isApplyingPromo = false;
+    }
+
+    private void RemovePromo()
+    {
+        _promoApplied  = false;
+        _promoDiscount = 0m;
+        _promoCode     = string.Empty;
+        _promoError    = null;
+    }
+
+    // ── Stripe gateway stub ───────────────────────────────────────────────
+
+    /// <summary>
+    /// Stripe payment gateway placeholder.
+    /// ─────────────────────────────────────────────────────────────────────
+    /// TODO (MaryamJ): Wire the actual Stripe gateway call here once your
+    /// payment-intent / tokenisation feature branch is merged into main.
+    /// Expected flow:
+    ///   1. Call Stripe.js via JSInterop to tokenise card fields.
+    ///   2. Send the payment-intent ID to the backend endpoint.
+    ///   3. Await confirmation before calling SaleService.ProcessSale.
+    /// ─────────────────────────────────────────────────────────────────────
+    /// </summary>
+    private async Task<bool> PlaceOrderWithStripe()
+    {
+        // Placeholder — always returns true in the stub.
+        // Replace this body with the real Stripe JS interop flow.
+        await Task.CompletedTask;
+        return true;
+    }
+
+    // ── Main order submission ─────────────────────────────────────────────
+
+    /// <summary>
+    /// Validates the form, optionally processes Stripe payment (stub),
+    /// then calls SaleService.ProcessSale with SaleType explicitly set to Online.
+    /// </summary>
+    private async Task PlaceOrder()
+    {
+        _globalError = null;
+
+        // ── 1. Client-side validation ────────────────────────────────────
+        if (!ValidateForm())
+        {
+            StateHasChanged();
+            return;
+        }
+
+        // ── 2. Guard against empty cart ──────────────────────────────────
+        if (CartState.Count == 0)
+        {
+            _globalError = "Your cart is empty. Please add items before placing an order.";
+            return;
+        }
+
+        _isPlacingOrder = true;
+        StateHasChanged();
+
+        try
+        {
+            // ── 3. Stripe gateway (stub — see PlaceOrderWithStripe summary) ──
+            if (_paymentMethod == PaymentMethod.Card)
+            {
+                var stripeSuccess = await PlaceOrderWithStripe();
+                if (!stripeSuccess)
+                {
+                    _globalError = "Card payment could not be processed. Please try again or use another method.";
+                    return;
+                }
+            }
+
+            // ── 4. Build CreateSaleDto ────────────────────────────────────
+            //       SaleType is explicitly set to Online — this is a customer
+            //       web checkout, never an Onsite / cashier transaction.
+            var dto = new CreateSaleDto
+            {
+                CustomerId    = null,          // Guest checkout; set after auth module integration
+                UserId        = 0,             // System user ID placeholder for online orders
+                PromoCode     = _promoApplied && !string.IsNullOrWhiteSpace(_promoCode)
+                                    ? _promoCode.Trim()
+                                    : null,
+                SaleType      = SaleType.Online,    // ← Explicitly Online for every web checkout
+                PaymentMethod = _paymentMethod!.Value,
+                Items         = CartState.Items.Select(i => new SaleItemDto
+                {
+                    ProductId   = i.Product.Id,
+                    ProductName = i.Product.Name,
+                    Quantity    = i.Quantity,
+                    UnitPrice   = i.Product.Price,
+                    LineTotal   = i.Product.Price * i.Quantity
+                }).ToList()
+            };
+
+            // ── 5. Call SaleService.ProcessSale ──────────────────────────
+            var response = await SaleService.ProcessSale(dto);
+
+            if (!response.Success || response.Data is null)
+            {
+                _globalError = response.Message.Length > 0
+                    ? response.Message
+                    : "Order could not be placed. Please try again.";
+                return;
+            }
+
+            // ── 6. Success: store result, clear cart, show receipt ────────
+            _saleResult  = response.Data;
+            _orderPlaced = true;
+            CartState.Clear();
+        }
+        catch (Exception ex)
+        {
+            _globalError = $"An unexpected error occurred: {ex.Message}";
+        }
+        finally
+        {
+            _isPlacingOrder = false;
+            StateHasChanged();
+        }
+    }
+
+    // ── UI helpers ────────────────────────────────────────────────────────
+
+    private static string PaymentIcon(PaymentMethod m) => m switch
+    {
+        PaymentMethod.Cash   => "💵",
+        PaymentMethod.Card   => "💳",
+        PaymentMethod.Online => "📱",
+        _                    => "💳"
+    };
+
+    private static string PaymentLabel(PaymentMethod m) => m switch
+    {
+        PaymentMethod.Cash   => "Cash on Delivery",
+        PaymentMethod.Card   => "Credit / Debit Card",
+        PaymentMethod.Online => "Mobile Wallet",
+        _                    => "Card"
+    };
+}
+
+
+@* ═══════════════════════════════════════════════════════════════════════
+   SCOPED STYLES — EVERY COLOR COMES FROM colors.css CUSTOM PROPERTIES
+   ═══════════════════════════════════════════════════════════════════════ *@
+<style>
+    /* ── Google Font ── */
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@@300;400;500;600;700;800;900&display=swap');
+
+    /* ── Box-sizing reset scoped to this page ── */
+    .chk-root *,
+    .chk-header * {
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* ════════════════════════════════════════════════════
+       ROOT
+       ════════════════════════════════════════════════════ */
+    .chk-root {
+        min-height: 100vh;
+        background: var(--color-page-bg);
+        color: var(--color-primary-text);
+        animation: chkFadeIn .35s ease;
+    }
+
+    @@keyframes chkFadeIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: none; }
+    }
+
+    /* ════════════════════════════════════════════════════
+       STICKY HEADER
+       ════════════════════════════════════════════════════ */
+    .chk-header {
+        position: sticky;
+        top: 0;
+        z-index: 200;
+        background: var(--color-navbar-bg);
+        box-shadow: 0 2px 18px rgba(61,28,2,.30);
+    }
+
+    .chk-header-inner {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        padding: .8rem 2rem;
+        max-width: 1340px;
+        margin: 0 auto;
+    }
+
+    .chk-back-btn {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        background: rgba(255,248,220,.12);
+        color: var(--color-page-bg);
+        border: 1.5px solid rgba(255,248,220,.22);
+        border-radius: 8px;
+        padding: .42rem .9rem;
+        font-size: .8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .16s, border-color .16s;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .chk-back-btn:hover {
+        background: rgba(255,248,220,.24);
+        border-color: rgba(255,248,220,.4);
+    }
+
+    .chk-back-arrow { font-size: 1rem; }
+
+    .chk-header-brand {
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+        flex: 1;
+    }
+
+    .chk-header-icon { font-size: 1.45rem; }
+
+    .chk-header-title {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--color-page-bg);
+        letter-spacing: -.2px;
+    }
+
+    .chk-step-pill {
+        background: rgba(196,132,138,.28);
+        color: var(--color-page-bg);
+        font-size: .72rem;
+        font-weight: 700;
+        padding: .3rem .85rem;
+        border-radius: 50px;
+        border: 1px solid rgba(196,132,138,.4);
+        white-space: nowrap;
+        letter-spacing: .3px;
+    }
+
+    /* ════════════════════════════════════════════════════
+       EMPTY STATE
+       ════════════════════════════════════════════════════ */
+    .chk-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 70vh;
+        text-align: center;
+        gap: .85rem;
+        padding: 3rem 1.5rem;
+        animation: chkFadeIn .4s ease;
+    }
+
+    .chk-empty-icon { font-size: 5rem; opacity: .18; }
+
+    .chk-empty-title {
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        margin: 0;
+    }
+
+    .chk-empty-sub {
+        font-size: .95rem;
+        color: var(--color-primary-text);
+        opacity: .52;
+        margin: 0;
+        max-width: 380px;
+        line-height: 1.7;
+    }
+
+    /* ════════════════════════════════════════════════════
+       TWO-COLUMN BODY
+       ════════════════════════════════════════════════════ */
+    .chk-body {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 2.25rem;
+        max-width: 1340px;
+        margin: 0 auto;
+        padding: 2rem 2rem 5rem;
+        align-items: flex-start;
+    }
+
+    @@media (max-width: 1024px) {
+        .chk-body {
+            grid-template-columns: 1fr;
+        }
+        .chk-summary-col {
+            order: -1;
+        }
+    }
+
+    /* ════════════════════════════════════════════════════
+       PROGRESS STEPS
+       ════════════════════════════════════════════════════ */
+    .chk-progress {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        margin-bottom: 1.75rem;
+    }
+
+    .chk-progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .3rem;
+        flex-shrink: 0;
+    }
+
+    .chk-progress-dot {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: rgba(61,28,2,.12);
+        color: var(--color-primary-text);
+        font-size: .75rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid transparent;
+        transition: background .2s, border-color .2s;
+    }
+
+    .chk-progress-step--active .chk-progress-dot {
+        background: var(--color-button-primary);
+        color: #fff;
+        border-color: var(--color-button-primary);
+        box-shadow: 0 0 0 4px rgba(196,132,138,.22);
+    }
+
+    .chk-progress-step--done .chk-progress-dot {
+        background: var(--color-navbar-bg);
+        color: var(--color-page-bg);
+        border-color: var(--color-navbar-bg);
+    }
+
+    .chk-progress-label {
+        font-size: .65rem;
+        font-weight: 600;
+        color: var(--color-primary-text);
+        opacity: .55;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+
+    .chk-progress-step--active .chk-progress-label,
+    .chk-progress-step--done  .chk-progress-label {
+        opacity: 1;
+        color: var(--color-heading-text);
+    }
+
+    .chk-progress-line {
+        flex: 1;
+        height: 2px;
+        background: rgba(61,28,2,.12);
+        margin: 0 .35rem;
+        margin-bottom: 1.1rem;
+        transition: background .2s;
+    }
+
+    .chk-progress-line--done {
+        background: var(--color-navbar-bg);
+    }
+
+    /* ════════════════════════════════════════════════════
+       ERROR BANNER
+       ════════════════════════════════════════════════════ */
+    .chk-error-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff0f0;
+        border: 1.5px solid #f4b8b8;
+        border-radius: 12px;
+        padding: .8rem 1.1rem;
+        margin-bottom: 1.25rem;
+        color: #8b2121;
+        font-size: .88rem;
+        font-weight: 500;
+        animation: chkFadeIn .25s ease;
+    }
+
+    .chk-error-dismiss {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: .85rem;
+        color: #8b2121;
+        opacity: .6;
+        transition: opacity .15s;
+        padding: 0 .25rem;
+    }
+
+    .chk-error-dismiss:hover { opacity: 1; }
+
+    /* ════════════════════════════════════════════════════
+       CARDS / SECTIONS
+       ════════════════════════════════════════════════════ */
+    .chk-card {
+        background: #fff;
+        border: 1.5px solid rgba(61,28,2,.10);
+        border-radius: 16px;
+        padding: 1.6rem 1.75rem;
+        margin-bottom: 1.4rem;
+        transition: box-shadow .2s;
+    }
+
+    .chk-card:hover {
+        box-shadow: 0 6px 28px rgba(61,28,2,.08);
+    }
+
+    .chk-card-header {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        margin-bottom: 1.25rem;
+        padding-bottom: .85rem;
+        border-bottom: 1.5px solid rgba(61,28,2,.07);
+    }
+
+    .chk-card-icon { font-size: 1.2rem; }
+
+    .chk-card-title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        letter-spacing: -.15px;
+    }
+
+    /* ════════════════════════════════════════════════════
+       FORM GRID
+       ════════════════════════════════════════════════════ */
+    .chk-form-grid {
+        display: grid;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .chk-form-grid--2 { grid-template-columns: 1fr 1fr; }
+    .chk-form-grid--3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    @@media (max-width: 640px) {
+        .chk-form-grid--2,
+        .chk-form-grid--3 { grid-template-columns: 1fr; }
+    }
+
+    /* ════════════════════════════════════════════════════
+       FORM FIELDS
+       ════════════════════════════════════════════════════ */
+    .chk-field {
+        display: flex;
+        flex-direction: column;
+        gap: .38rem;
+        margin-bottom: .95rem;
+    }
+
+    .chk-form-grid .chk-field { margin-bottom: 0; }
+
+    .chk-label {
+        font-size: .78rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        letter-spacing: .1px;
+    }
+
+    .chk-label-opt {
+        font-weight: 400;
+        opacity: .5;
+        font-size: .73rem;
+    }
+
+    .chk-input,
+    .chk-select,
+    .chk-textarea {
+        width: 100%;
+        padding: .7rem 1rem;
+        border: 1.75px solid rgba(61,28,2,.15);
+        border-radius: 10px;
+        background: var(--color-page-bg);
+        color: var(--color-primary-text);
+        font-size: .92rem;
+        font-weight: 500;
+        outline: none;
+        transition: border-color .18s, box-shadow .18s;
+        appearance: none;
+    }
+
+    .chk-select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%233D1C02' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 2.5rem;
+        cursor: pointer;
+    }
+
+    .chk-textarea {
+        resize: vertical;
+        min-height: 80px;
+        font-family: 'Inter', sans-serif;
+        line-height: 1.55;
+    }
+
+    .chk-input:focus,
+    .chk-select:focus,
+    .chk-textarea:focus {
+        border-color: var(--color-border-accent);
+        box-shadow: 0 0 0 3.5px rgba(196,132,138,.18);
+    }
+
+    .chk-input::placeholder,
+    .chk-textarea::placeholder {
+        color: var(--color-primary-text);
+        opacity: .35;
+        font-weight: 400;
+    }
+
+    /* Error state */
+    .chk-field--error .chk-input,
+    .chk-field--error .chk-select,
+    .chk-field--error .chk-textarea {
+        border-color: #e05252;
+        box-shadow: 0 0 0 3px rgba(224,82,82,.12);
+    }
+
+    .chk-field-error {
+        font-size: .74rem;
+        font-weight: 600;
+        color: #c0392b;
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+        animation: chkFadeIn .2s ease;
+    }
+
+    .chk-field-error--standalone {
+        margin-bottom: .75rem;
+    }
+
+    /* Phone prefix */
+    .chk-input-prefix-wrap {
+        display: flex;
+        align-items: center;
+    }
+
+    .chk-input-prefix {
+        background: rgba(61,28,2,.08);
+        border: 1.75px solid rgba(61,28,2,.15);
+        border-right: none;
+        border-radius: 10px 0 0 10px;
+        padding: .7rem .75rem;
+        font-size: .88rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .chk-input--prefixed {
+        border-radius: 0 10px 10px 0;
+    }
+
+    /* Card number icon */
+    .chk-input-icon-wrap {
+        position: relative;
+    }
+
+    .chk-input-icon-wrap .chk-input { padding-right: 2.6rem; }
+
+    .chk-input-card-icon {
+        position: absolute;
+        right: .85rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        pointer-events: none;
+        opacity: .45;
+    }
+
+    .chk-input--card { letter-spacing: .12em; }
+
+    /* ════════════════════════════════════════════════════
+       PROMO
+       ════════════════════════════════════════════════════ */
+    .chk-promo-row {
+        display: flex;
+        gap: .6rem;
+        align-items: stretch;
+        margin-bottom: .5rem;
+    }
+
+    .chk-promo-input { flex: 1; margin-bottom: 0; }
+
+    .chk-promo-input--error {
+        border-color: #e05252 !important;
+    }
+
+    .chk-promo-input--success {
+        border-color: #27ae60 !important;
+        box-shadow: 0 0 0 3px rgba(39,174,96,.12) !important;
+    }
+
+    .chk-promo-apply-btn {
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 0 1.2rem;
+        font-size: .85rem;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background .16s, transform .1s;
+        flex-shrink: 0;
+    }
+
+    .chk-promo-apply-btn:hover:not(:disabled) {
+        background: var(--color-button-hover);
+        transform: scale(1.03);
+    }
+
+    .chk-promo-apply-btn:disabled {
+        opacity: .5;
+        cursor: not-allowed;
+    }
+
+    .chk-promo-remove-btn {
+        background: rgba(61,28,2,.08);
+        color: var(--color-heading-text);
+        border: 1.5px solid rgba(61,28,2,.15);
+        border-radius: 10px;
+        padding: 0 .9rem;
+        font-size: .95rem;
+        cursor: pointer;
+        transition: background .15s;
+        flex-shrink: 0;
+    }
+
+    .chk-promo-remove-btn:hover { background: rgba(61,28,2,.14); }
+
+    .chk-promo-msg {
+        font-size: .8rem;
+        font-weight: 600;
+        margin: 0;
+        padding: .45rem .75rem;
+        border-radius: 8px;
+    }
+
+    .chk-promo-msg--error   { background: #fff0f0; color: #c0392b; }
+    .chk-promo-msg--success { background: #eafaf1; color: #1e8449; }
+
+    /* ════════════════════════════════════════════════════
+       PAYMENT METHOD GRID
+       ════════════════════════════════════════════════════ */
+    .chk-payment-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: .85rem;
+        margin-bottom: 1.1rem;
+    }
+
+    @@media (max-width: 540px) {
+        .chk-payment-grid { grid-template-columns: 1fr; }
+    }
+
+    .chk-pay-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .3rem;
+        padding: 1rem .75rem;
+        border: 2px solid rgba(61,28,2,.12);
+        border-radius: 14px;
+        background: var(--color-card-bg);
+        cursor: pointer;
+        transition: border-color .18s, box-shadow .18s, transform .12s, background .16s;
+        text-align: center;
+    }
+
+    .chk-pay-card:hover {
+        border-color: var(--color-border-accent);
+        box-shadow: 0 4px 14px rgba(196,132,138,.18);
+        transform: translateY(-2px);
+    }
+
+    .chk-pay-card--active {
+        border-color: var(--color-button-primary);
+        background: rgba(196,132,138,.10);
+        box-shadow: 0 0 0 3.5px rgba(196,132,138,.22);
+        transform: translateY(-2px);
+    }
+
+    .chk-pay-icon { font-size: 1.6rem; }
+
+    .chk-pay-label {
+        font-size: .82rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+    }
+
+    .chk-pay-desc {
+        font-size: .68rem;
+        color: var(--color-primary-text);
+        opacity: .55;
+        font-weight: 400;
+    }
+
+    .chk-pay-check {
+        position: absolute;
+        top: .5rem;
+        right: .6rem;
+        font-size: .8rem;
+        font-weight: 800;
+        color: var(--color-button-primary);
+    }
+
+    /* ════════════════════════════════════════════════════
+       STRIPE SHELL
+       ════════════════════════════════════════════════════ */
+    .chk-stripe-shell {
+        border: 2px dashed rgba(196,132,138,.4);
+        border-radius: 14px;
+        padding: 1.2rem 1.3rem;
+        background: rgba(196,132,138,.04);
+        margin-top: 1rem;
+        animation: chkFadeIn .25s ease;
+    }
+
+    .chk-stripe-badge {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .chk-stripe-lock { font-size: 1rem; }
+
+    .chk-stripe-text {
+        font-size: .8rem;
+        color: var(--color-heading-text);
+        opacity: .7;
+    }
+
+    .chk-stripe-cards {
+        display: flex;
+        gap: .3rem;
+        margin-left: auto;
+    }
+
+    .chk-card-chip {
+        background: var(--color-navbar-bg);
+        color: var(--color-page-bg);
+        font-size: .6rem;
+        font-weight: 800;
+        padding: .18rem .45rem;
+        border-radius: 4px;
+        letter-spacing: .5px;
+    }
+
+    .chk-stripe-field-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: .85rem;
+    }
+
+    .chk-stripe-field-wrap .chk-field { margin-bottom: 0; }
+
+    .chk-stripe-disclaimer {
+        font-size: .72rem;
+        color: var(--color-primary-text);
+        opacity: .5;
+        margin-top: 1rem;
+        line-height: 1.5;
+    }
+
+    /* ════════════════════════════════════════════════════
+       CTA AREA
+       ════════════════════════════════════════════════════ */
+    .chk-cta-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .chk-btn-place-order {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .6rem;
+        width: 100%;
+        padding: 1.05rem 1.5rem;
+        background: var(--color-navbar-bg);
+        color: var(--color-page-bg);
+        border: none;
+        border-radius: 14px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: background .18s, transform .12s, box-shadow .18s;
+        letter-spacing: .2px;
+    }
+
+    .chk-btn-place-order:hover:not(:disabled) {
+        background: #5a2c06;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(61,28,2,.22);
+    }
+
+    .chk-btn-place-order:disabled {
+        opacity: .65;
+        cursor: not-allowed;
+    }
+
+    .chk-btn-place-order--sm {
+        font-size: .88rem;
+        padding: .8rem 1rem;
+    }
+
+    .chk-btn-arrow {
+        font-size: 1.1rem;
+        transition: transform .15s;
+    }
+
+    .chk-btn-place-order:hover:not(:disabled) .chk-btn-arrow {
+        transform: translateX(4px);
+    }
+
+    /* Trust row */
+    .chk-trust-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: .9rem;
+    }
+
+    .chk-trust-item {
+        font-size: .73rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        opacity: .55;
+        white-space: nowrap;
+    }
+
+    /* Spinner */
+    .chk-spinner {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border: 2.5px solid rgba(255,248,220,.35);
+        border-top-color: var(--color-page-bg);
+        border-radius: 50%;
+        animation: chkSpin .75s linear infinite;
+        flex-shrink: 0;
+    }
+
+    @@keyframes chkSpin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Generic primary button */
+    .chk-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        padding: .8rem 1.8rem;
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: .9rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .16s, transform .12s;
+        letter-spacing: .2px;
+    }
+
+    .chk-btn-primary:hover {
+        background: var(--color-button-hover);
+        transform: translateY(-2px);
+    }
+
+    /* ════════════════════════════════════════════════════
+       ORDER SUMMARY COLUMN (RIGHT / STICKY)
+       ════════════════════════════════════════════════════ */
+    .chk-summary-col {
+        position: sticky;
+        top: 80px;
+    }
+
+    .chk-summary-card {
+        background: #fff;
+        border: 1.5px solid rgba(61,28,2,.10);
+        border-radius: 18px;
+        padding: 1.6rem 1.65rem;
+        box-shadow: 0 6px 28px rgba(61,28,2,.08);
+    }
+
+    .chk-summary-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        margin: 0 0 1.2rem;
+    }
+
+    .chk-summary-count-badge {
+        background: var(--color-button-primary);
+        color: #fff;
+        font-size: .65rem;
+        font-weight: 700;
+        padding: .22rem .65rem;
+        border-radius: 50px;
+        letter-spacing: .3px;
+    }
+
+    /* Items list */
+    .chk-summary-items {
+        display: flex;
+        flex-direction: column;
+        gap: .85rem;
+        max-height: 280px;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(61,28,2,.15) transparent;
+    }
+
+    .chk-summary-item {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+    }
+
+    .chk-summary-item-thumb {
+        position: relative;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 10px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: rgba(196,132,138,.08);
+    }
+
+    .chk-summary-item-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .chk-summary-item-img-ph {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .chk-summary-item-qty-badge {
+        position: absolute;
+        top: -.3rem;
+        right: -.3rem;
+        background: var(--color-navbar-bg);
+        color: var(--color-page-bg);
+        font-size: .58rem;
+        font-weight: 800;
+        border-radius: 50%;
+        min-width: 1.1rem;
+        height: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fff;
+    }
+
+    .chk-summary-item-info {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+        gap: .15rem;
+    }
+
+    .chk-summary-item-name {
+        font-size: .82rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chk-summary-item-unit {
+        font-size: .7rem;
+        color: var(--color-primary-text);
+        opacity: .5;
+    }
+
+    .chk-summary-item-total {
+        font-size: .85rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Summary rows */
+    .chk-sum-divider {
+        height: 1.5px;
+        background: rgba(61,28,2,.08);
+        margin: .85rem 0;
+    }
+
+    .chk-sum-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: .5rem;
+        margin-bottom: .6rem;
+    }
+
+    .chk-sum-label {
+        font-size: .84rem;
+        font-weight: 500;
+        color: var(--color-primary-text);
+    }
+
+    .chk-sum-val {
+        font-size: .88rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+    }
+
+    .chk-sum-row--muted .chk-sum-label,
+    .chk-sum-row--muted .chk-sum-val {
+        opacity: .55;
+        font-size: .8rem;
+        font-weight: 500;
+    }
+
+    .chk-sum-note {
+        font-size: .7rem;
+        opacity: .6;
+        font-weight: 400;
+    }
+
+    .chk-sum-row--discount .chk-sum-val--discount {
+        color: #1e8449;
+        font-weight: 700;
+    }
+
+    .chk-sum-val--free {
+        color: #1e8449;
+        font-weight: 700;
+    }
+
+    .chk-sum-row--grand .chk-sum-label--grand {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+    }
+
+    .chk-sum-val--grand {
+        font-size: 1.15rem;
+        font-weight: 900;
+        color: var(--color-heading-text);
+    }
+
+    /* Payment pill */
+    .chk-sum-pay-pill {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .3rem;
+        font-size: .78rem;
+        background: rgba(61,28,2,.06);
+        border: 1px solid rgba(61,28,2,.1);
+        border-radius: 50px;
+        padding: .38rem .9rem;
+        margin-bottom: .6rem;
+        color: var(--color-heading-text);
+    }
+
+    /* Online badge */
+    .chk-sum-online-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .72rem;
+        font-weight: 700;
+        color: var(--color-button-primary);
+        background: rgba(196,132,138,.1);
+        border: 1px solid rgba(196,132,138,.25);
+        border-radius: 8px;
+        padding: .3rem .75rem;
+        margin-bottom: 1rem;
+        letter-spacing: .2px;
+    }
+
+    /* Edit cart link */
+    .chk-edit-cart-link {
+        display: block;
+        width: 100%;
+        text-align: center;
+        background: none;
+        border: none;
+        font-size: .8rem;
+        font-weight: 600;
+        color: var(--color-primary-text);
+        opacity: .55;
+        cursor: pointer;
+        padding: .5rem;
+        transition: opacity .15s, color .15s;
+        margin-top: .5rem;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    .chk-edit-cart-link:hover {
+        opacity: 1;
+        color: var(--color-heading-text);
+    }
+
+    /* ════════════════════════════════════════════════════
+       SUCCESS / RECEIPT SCREEN
+       ════════════════════════════════════════════════════ */
+    .chk-success-page {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 3rem 1.5rem 4rem;
+        max-width: 600px;
+        margin: 0 auto;
+        gap: 1rem;
+        animation: chkFadeIn .4s ease;
+    }
+
+    .chk-success-icon-wrap {
+        width: 5rem;
+        height: 5rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--color-button-primary), #d4a0a6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 28px rgba(196,132,138,.35);
+        animation: chkBounceIn .5s cubic-bezier(.36,.07,.19,.97);
+    }
+
+    @@keyframes chkBounceIn {
+        0%   { transform: scale(0); }
+        60%  { transform: scale(1.12); }
+        100% { transform: scale(1); }
+    }
+
+    .chk-success-checkmark {
+        font-size: 2.2rem;
+        color: #fff;
+        font-weight: 900;
+    }
+
+    .chk-success-title {
+        font-size: 1.9rem;
+        font-weight: 900;
+        color: var(--color-heading-text);
+        margin: 0;
+        letter-spacing: -.3px;
+    }
+
+    .chk-success-sub {
+        font-size: .95rem;
+        color: var(--color-primary-text);
+        opacity: .6;
+        margin: 0;
+        line-height: 1.65;
+        max-width: 440px;
+    }
+
+    .chk-receipt-card {
+        width: 100%;
+        background: #fff;
+        border: 1.5px solid rgba(61,28,2,.10);
+        border-radius: 16px;
+        padding: 1.4rem 1.5rem;
+        text-align: left;
+        box-shadow: 0 4px 18px rgba(61,28,2,.08);
+    }
+
+    .chk-receipt-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: .1rem;
+    }
+
+    .chk-receipt-brand {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+    }
+
+    .chk-receipt-date {
+        font-size: .75rem;
+        color: var(--color-primary-text);
+        opacity: .5;
+        margin-top: .25rem;
+    }
+
+    .chk-receipt-num-badge {
+        background: var(--color-navbar-bg);
+        color: var(--color-page-bg);
+        font-size: .68rem;
+        font-weight: 800;
+        padding: .28rem .7rem;
+        border-radius: 8px;
+        white-space: nowrap;
+        letter-spacing: .3px;
+    }
+
+    .chk-receipt-divider {
+        height: 1px;
+        background: rgba(61,28,2,.08);
+        margin: .75rem 0;
+    }
+
+    .chk-receipt-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: .84rem;
+        color: var(--color-primary-text);
+        padding: .22rem 0;
+    }
+
+    .chk-receipt-row--discount { color: #1e8449; }
+
+    .chk-receipt-row--grand {
+        font-size: 1rem;
+        color: var(--color-heading-text);
+        padding-top: .1rem;
+    }
+
+    .chk-success-delivery {
+        display: flex;
+        align-items: center;
+        gap: .85rem;
+        background: rgba(196,132,138,.08);
+        border: 1px solid rgba(196,132,138,.22);
+        border-radius: 14px;
+        padding: .9rem 1.1rem;
+        width: 100%;
+        text-align: left;
+    }
+
+    .chk-success-delivery-icon { font-size: 1.6rem; flex-shrink: 0; }
+
+    .chk-success-delivery-title {
+        font-size: .7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--color-heading-text);
+        opacity: .55;
+        margin-bottom: .2rem;
+    }
+
+    .chk-success-delivery-addr {
+        font-size: .88rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+    }
+</style>

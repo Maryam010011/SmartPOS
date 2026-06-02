@@ -18,7 +18,7 @@ namespace SmartPOS.Web.Services.Shahzain
     public class BERTService : IBERTService
     {
         private readonly HttpClient _httpClient;
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
         private readonly string _apiKey;
         private readonly string _modelId;
         private readonly string _baseUrl;
@@ -27,12 +27,12 @@ namespace SmartPOS.Web.Services.Shahzain
         /// Initializes a new instance of the <see cref="BERTService"/> class.
         /// </summary>
         /// <param name="httpClient">The HTTP client for making HuggingFace API requests.</param>
-        /// <param name="context">The application database context for querying reviews.</param>
+        /// <param name="factory">The database context factory for querying reviews.</param>
         /// <param name="configuration">The application configuration for HuggingFace API credentials.</param>
-        public BERTService(HttpClient httpClient, AppDbContext context, IConfiguration configuration)
+        public BERTService(HttpClient httpClient, IDbContextFactory<AppDbContext> factory, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _context = context;
+            _factory = factory;
             _apiKey = configuration["BERTService:ApiKey"] ?? string.Empty;
             _modelId = configuration["BERTService:ModelId"] ?? "nlptown/bert-base-multilingual-uncased-sentiment";
             _baseUrl = configuration["BERTService:BaseUrl"] ?? "https://api-inference.huggingface.co";
@@ -113,7 +113,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var query = _context.Reviews
+                using var context = _factory.CreateDbContext();
+                var query = context.Reviews
                     .Include(r => r.Product)
                     .AsQueryable();
 

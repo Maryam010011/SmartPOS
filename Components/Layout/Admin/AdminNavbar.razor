@@ -1,0 +1,311 @@
+@namespace SmartPOS.Components.Layout
+@inject NavigationManager Nav
+
+<header class="smartpos-navbar" id="admin-navbar">
+    <div class="navbar-inner">
+
+        <!-- Brand -->
+        <a class="navbar-brand" href="/admin/analytics">
+            <span class="brand-icon">🥐</span>
+            <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
+            <span class="brand-role-tag">Admin</span>
+        </a>
+
+        <!-- Desktop Nav Links -->
+        <nav class="navbar-links" aria-label="Admin navigation">
+            <a class="nav-link @(IsActive("/admin/analytics"))"      href="/admin/analytics">
+                <span class="nav-icon">📊</span><span>Analytics</span>
+            </a>
+            <a class="nav-link @(IsActive("/admin/products"))"       href="/admin/products">
+                <span class="nav-icon">🧁</span><span>Products</span>
+            </a>
+            <a class="nav-link @(IsActive("/admin/categories"))"     href="/admin/categories">
+                <span class="nav-icon">🗂️</span><span>Categories</span>
+            </a>
+            <a class="nav-link @(IsActive("/admin/suppliers"))"      href="/admin/suppliers">
+                <span class="nav-icon">🚚</span><span>Suppliers</span>
+            </a>
+            <a class="nav-link @(IsActive("/admin/sentiment-charts"))" href="/admin/sentiment-charts">
+                <span class="nav-icon">🤖</span><span>Sentiment</span>
+            </a>
+        </nav>
+
+        <!-- Right Controls -->
+        <div class="navbar-right">
+            <span class="navbar-time">@_currentTime</span>
+            <button class="nav-avatar-btn" @onclick="ToggleDrawer"
+                    aria-label="Open profile drawer" id="admin-profile-btn">
+                <span class="avatar-ring">
+                    <span class="avatar-initials">AD</span>
+                </span>
+            </button>
+            <!-- Mobile hamburger -->
+            <button class="hamburger-btn @(_mobileOpen ? "ham-open" : "")"
+                    @onclick="ToggleMobile" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile dropdown -->
+    @if (_mobileOpen)
+    {
+        <nav class="mobile-menu" aria-label="Admin mobile navigation">
+            <a class="mobile-link @(IsActive("/admin/analytics"))"        href="/admin/analytics"        @onclick="CloseMobile">📊 Analytics</a>
+            <a class="mobile-link @(IsActive("/admin/products"))"          href="/admin/products"          @onclick="CloseMobile">🧁 Products</a>
+            <a class="mobile-link @(IsActive("/admin/categories"))"        href="/admin/categories"        @onclick="CloseMobile">🗂️ Categories</a>
+            <a class="mobile-link @(IsActive("/admin/suppliers"))"         href="/admin/suppliers"         @onclick="CloseMobile">🚚 Suppliers</a>
+            <a class="mobile-link @(IsActive("/admin/sentiment-charts"))"  href="/admin/sentiment-charts"  @onclick="CloseMobile">🤖 Sentiment</a>
+        </nav>
+    }
+</header>
+
+@code {
+    [Parameter] public EventCallback OnAvatarClick { get; set; }
+
+    private bool   _mobileOpen  = false;
+    private string _currentTime = "";
+    private System.Threading.Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        UpdateTime();
+        _timer = new System.Threading.Timer(_ =>
+        {
+            UpdateTime();
+            InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(30));
+    }
+
+    private void UpdateTime() =>
+        _currentTime = DateTime.Now.ToString("hh:mm tt");
+
+    private async Task ToggleDrawer() => await OnAvatarClick.InvokeAsync();
+
+    private void ToggleMobile() => _mobileOpen = !_mobileOpen;
+    private void CloseMobile()  => _mobileOpen = false;
+
+    private string IsActive(string path) =>
+        Nav.Uri.Contains(path, StringComparison.OrdinalIgnoreCase) ? "nav-link-active" : "";
+
+    public void Dispose() => _timer?.Dispose();
+}
+
+<style>
+    /* ═══════════════════════════════════════════════════════════
+       AdminNavbar — SmartPOS+ Bakery Theme
+       ═══════════════════════════════════════════════════════════ */
+
+    .smartpos-navbar {
+        position: sticky;
+        top: 0;
+        z-index: 900;
+        height: var(--nav-height, 64px);
+        background: var(--nav-bg-glass, rgba(61,28,2,0.96));
+        border-bottom: 1px solid var(--nav-border, rgba(196,132,138,0.25));
+        box-shadow: var(--nav-shadow, 0 2px 16px rgba(61,28,2,0.22));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+    }
+
+    .navbar-inner {
+        display: flex;
+        align-items: center;
+        height: var(--nav-height, 64px);
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+        gap: 0.5rem;
+    }
+
+    /* Brand */
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        text-decoration: none;
+        flex-shrink: 0;
+        margin-right: 1rem;
+    }
+
+    .brand-icon { font-size: 1.25rem; line-height: 1; }
+
+    .brand-text {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--nav-text, #FFF8DC);
+        letter-spacing: -0.02em;
+    }
+
+    .brand-plus { color: var(--color-rose, #C4848A); }
+
+    .brand-role-tag {
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: rgba(196,132,138,0.22);
+        color: var(--color-rose, #C4848A);
+        border: 1px solid rgba(196,132,138,0.35);
+        padding: 0.15rem 0.5rem;
+        border-radius: 9999px;
+        line-height: 1.6;
+    }
+
+    /* Desktop Links */
+    .navbar-links {
+        display: flex;
+        align-items: center;
+        gap: 0.15rem;
+        flex: 1;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.75rem;
+        border-radius: var(--radius-md, 0.625rem);
+        font-size: 0.84rem;
+        font-weight: 500;
+        color: var(--nav-text-muted, rgba(255,248,220,0.60));
+        text-decoration: none;
+        transition: background var(--transition-fast, 0.15s ease),
+                    color var(--transition-fast, 0.15s ease);
+        white-space: nowrap;
+    }
+
+    .nav-link:hover {
+        background: var(--nav-hover-bg, rgba(196,132,138,0.14));
+        color: var(--nav-text, #FFF8DC);
+    }
+
+    .nav-link-active {
+        background: var(--nav-active-bg, rgba(196,132,138,0.22));
+        color: var(--nav-text, #FFF8DC) !important;
+        font-weight: 600;
+        position: relative;
+    }
+
+    .nav-link-active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 28px;
+        height: 2px;
+        background: var(--nav-active-indicator, #C4848A);
+        border-radius: 2px 2px 0 0;
+    }
+
+    .nav-icon { font-size: 0.9rem; line-height: 1; }
+
+    /* Right */
+    .navbar-right {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    .navbar-time {
+        font-size: 0.75rem;
+        color: var(--nav-text-muted, rgba(255,248,220,0.60));
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
+
+    .nav-avatar-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .avatar-ring {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--drawer-avatar-bg, rgba(196,132,138,0.20));
+        border: 2px solid rgba(196,132,138,0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: border-color var(--transition-fast, 0.15s ease),
+                    transform var(--transition-fast, 0.15s ease);
+    }
+
+    .nav-avatar-btn:hover .avatar-ring {
+        border-color: var(--color-rose, #C4848A);
+        transform: scale(1.06);
+    }
+
+    .avatar-initials {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #FFF8DC;
+        letter-spacing: 0.03em;
+    }
+
+    /* Hamburger */
+    .hamburger-btn {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 0.4rem;
+    }
+
+    .hamburger-btn span {
+        display: block;
+        width: 20px;
+        height: 2px;
+        background: var(--nav-text, #FFF8DC);
+        border-radius: 2px;
+        transition: all var(--transition-base, 0.25s ease);
+    }
+
+    /* Mobile Menu */
+    .mobile-menu {
+        background: rgba(42,18,1,0.98);
+        border-top: 1px solid var(--nav-border, rgba(196,132,138,0.25));
+        display: flex;
+        flex-direction: column;
+        padding: 0.5rem 1rem 1rem;
+        gap: 0.25rem;
+    }
+
+    .mobile-link {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.7rem 0.75rem;
+        border-radius: var(--radius-md, 0.625rem);
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--nav-text-muted, rgba(255,248,220,0.60));
+        text-decoration: none;
+        transition: background var(--transition-fast, 0.15s ease),
+                    color var(--transition-fast, 0.15s ease);
+    }
+
+    .mobile-link:hover,
+    .mobile-link.nav-link-active {
+        background: var(--nav-hover-bg, rgba(196,132,138,0.14));
+        color: var(--nav-text, #FFF8DC);
+    }
+
+    @@media (max-width: 900px) {
+        .navbar-links  { display: none; }
+        .navbar-time   { display: none; }
+        .hamburger-btn { display: flex; }
+    }
+</style>

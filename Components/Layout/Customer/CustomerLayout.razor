@@ -1,0 +1,56 @@
+@namespace SmartPOS.Components.Layout
+@inherits LayoutComponentBase
+
+<div class="customer-layout-shell">
+
+    <CustomerNavbar OnAvatarClick="OpenDrawer" CartCount="@_cartCount" />
+
+    <ProfileDrawer IsOpen="@_drawerOpen"
+                   OnClose="CloseDrawer"
+                   DisplayName="Guest Customer"
+                   RoleName="Customer"
+                   RoleColor="var(--role-customer-accent, #C4A85A)"
+                   DashboardRoute="/customer/home"
+                   SettingsRoute="" />
+
+    <main class="customer-main" id="customer-content">
+        <div class="customer-content-wrap">
+            @Body
+        </div>
+    </main>
+
+    <Footer />
+
+</div>
+
+@code {
+    private bool _drawerOpen = false;
+    private int  _cartCount  = 0;
+
+    private void OpenDrawer()  => _drawerOpen = true;
+    private void CloseDrawer() => _drawerOpen = false;
+}
+
+<style>
+    .customer-layout-shell {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background: var(--surface-0, #FFF8DC);
+        font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+    }
+
+    .customer-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .customer-content-wrap {
+        flex: 1;
+        width: 100%;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0;
+    }
+</style>

@@ -13,15 +13,15 @@ namespace SmartPOS.Web.Services.Shahzain
     /// </summary>
     public class SupplierService : ISupplierService
     {
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SupplierService"/> class.
         /// </summary>
-        /// <param name="context">The application database context.</param>
-        public SupplierService(AppDbContext context)
+        /// <param name="factory">The application database context factory.</param>
+        public SupplierService(IDbContextFactory<AppDbContext> factory)
         {
-            _context = context;
+            _factory = factory;
         }
 
         /// <summary>
@@ -33,7 +33,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var supplier = await _context.Suppliers.FindAsync(id);
+                using var context = _factory.CreateDbContext();
+                var supplier = await context.Suppliers.FindAsync(id);
 
                 if (supplier == null)
                     return ApiResponse<SupplierDto>.Fail("Supplier not found.");
@@ -54,7 +55,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var suppliers = await _context.Suppliers.ToListAsync();
+                using var context = _factory.CreateDbContext();
+                var suppliers = await context.Suppliers.ToListAsync();
 
                 return ApiResponse<List<SupplierDto>>.Ok(suppliers.Select(MapToDto).ToList());
             }
@@ -73,13 +75,14 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
+                using var context = _factory.CreateDbContext();
                 // Validate required fields
                 if (string.IsNullOrWhiteSpace(dto.Name))
                     return ApiResponse<SupplierDto>.Fail("Supplier name is required.");
 
                 // Check for duplicate email if provided
                 if (!string.IsNullOrWhiteSpace(dto.Email) &&
-                    await _context.Suppliers.AnyAsync(s => s.Email == dto.Email))
+                    await context.Suppliers.AnyAsync(s => s.Email == dto.Email))
                     return ApiResponse<SupplierDto>.Fail("A supplier with this email already exists.");
 
                 var supplier = new Supplier
@@ -92,8 +95,8 @@ namespace SmartPOS.Web.Services.Shahzain
                     IsActive = true
                 };
 
-                _context.Suppliers.Add(supplier);
-                await _context.SaveChangesAsync();
+                context.Suppliers.Add(supplier);
+                await context.SaveChangesAsync();
 
                 return ApiResponse<SupplierDto>.Ok(MapToDto(supplier), "Supplier created successfully.");
             }
@@ -112,7 +115,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var supplier = await _context.Suppliers.FindAsync(dto.Id);
+                using var context = _factory.CreateDbContext();
+                var supplier = await context.Suppliers.FindAsync(dto.Id);
                 if (supplier == null)
                     return ApiResponse<SupplierDto>.Fail("Supplier not found.");
 
@@ -123,7 +127,7 @@ namespace SmartPOS.Web.Services.Shahzain
                 // Check for duplicate email if changed
                 if (!string.IsNullOrWhiteSpace(dto.Email) &&
                     supplier.Email != dto.Email &&
-                    await _context.Suppliers.AnyAsync(s => s.Email == dto.Email))
+                    await context.Suppliers.AnyAsync(s => s.Email == dto.Email))
                     return ApiResponse<SupplierDto>.Fail("Another supplier with this email already exists.");
 
                 supplier.Name = dto.Name;
@@ -133,7 +137,7 @@ namespace SmartPOS.Web.Services.Shahzain
                 supplier.Address = dto.Address;
                 supplier.IsActive = dto.IsActive;
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 return ApiResponse<SupplierDto>.Ok(MapToDto(supplier), "Supplier updated successfully.");
             }
@@ -152,7 +156,8 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var supplier = await _context.Suppliers
+                using var context = _factory.CreateDbContext();
+                var supplier = await context.Suppliers
                     .Include(s => s.Products)
                     .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -163,8 +168,8 @@ namespace SmartPOS.Web.Services.Shahzain
                 if (supplier.Products.Any())
                     return ApiResponse.Fail("Cannot delete supplier with associated products. Remove or reassign products first.");
 
-                _context.Suppliers.Remove(supplier);
-                await _context.SaveChangesAsync();
+                context.Suppliers.Remove(supplier);
+                await context.SaveChangesAsync();
 
                 return ApiResponse.Ok("Supplier deleted successfully.");
             }

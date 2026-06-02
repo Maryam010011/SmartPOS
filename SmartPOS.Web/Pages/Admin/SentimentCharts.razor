@@ -1,0 +1,1272 @@
+@page "/admin/sentiment"
+@rendermode @(Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer)
+@layout AdminLayout
+
+<PageTitle>Sentiment & Reviews — SmartPOS+</PageTitle>
+
+<div class="sentiment-page">
+
+    <!-- ── Page Header ─────────────────────────────────────────────── -->
+    <header class="page-header">
+        <div class="page-title">
+            <h1>Customer Sentiment &amp; Reviews</h1>
+            <p>AI-powered sentiment intelligence from BERT analysis across all products.</p>
+        </div>
+        <div class="header-actions">
+            @if (lastRefreshed.HasValue)
+            {
+                <span class="last-refreshed">Updated @lastRefreshed.Value.ToLocalTime().ToString("hh:mm tt")</span>
+            }
+            <button id="sentiment-refresh-btn" class="btn btn-outline" @onclick="RefreshAllAsync" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span class="spinner"></span>
+                    <span>Refreshing…</span>
+                }
+                else
+                {
+                    <span class="icon-refresh">↻</span>
+                    <span>Refresh</span>
+                }
+            </button>
+        </div>
+    </header>
+
+    <!-- ── Status Alert ────────────────────────────────────────────── -->
+    @if (!string.IsNullOrWhiteSpace(statusMessage))
+    {
+        <div class="alert @(isStatusSuccess ? "alert-success" : "alert-error")">
+            <span>@statusMessage</span>
+            <button class="btn btn-text" @onclick="ClearStatus">✕</button>
+        </div>
+    }
+
+    <!-- ── KPI Summary Row ─────────────────────────────────────────── -->
+    <section class="kpi-grid">
+
+        <!-- Positive Sentiment Rate -->
+        <div class="kpi-card kpi-positive">
+            <div class="kpi-icon-wrap kpi-icon-pos">😊</div>
+            <div class="kpi-content">
+                <span class="kpi-label">Positive Sentiment</span>
+                @if (isLoading)
+                {
+                    <span class="kpi-value kpi-skeleton">——</span>
+                }
+                else
+                {
+                    <span class="kpi-value" style="color:var(--color-positive)">@OverallPositivePct.ToString("F1")%</span>
+                    <span class="kpi-unit">of all reviews</span>
+                }
+            </div>
+        </div>
+
+        <!-- Total Reviews -->
+        <div class="kpi-card kpi-total">
+            <div class="kpi-icon-wrap kpi-icon-total">📝</div>
+            <div class="kpi-content">
+                <span class="kpi-label">Total Reviews</span>
+                @if (isLoading)
+                {
+                    <span class="kpi-value kpi-skeleton">——</span>
+                }
+                else
+                {
+                    <span class="kpi-value">@TotalReviewCount.ToString("N0")</span>
+                    <span class="kpi-unit">reviews processed</span>
+                }
+            </div>
+        </div>
+
+        <!-- Average Rating -->
+        <div class="kpi-card kpi-rating">
+            <div class="kpi-icon-wrap kpi-icon-rating">⭐</div>
+            <div class="kpi-content">
+                <span class="kpi-label">Avg. Customer Rating</span>
+                @if (isLoading)
+                {
+                    <span class="kpi-value kpi-skeleton">——</span>
+                }
+                else
+                {
+                    <span class="kpi-value">@OverallAvgRating.ToString("F2")<span class="kpi-denom"> / 5.0</span></span>
+                    <div class="star-row" aria-label="Rating @OverallAvgRating out of 5">
+                        @for (int s = 1; s <= 5; s++)
+                        {
+                            int si = s;
+                            <span class="star @(OverallAvgRating >= si ? "star-full" : OverallAvgRating >= si - 0.5 ? "star-half" : "star-empty")">★</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Compound Sentiment Bar -->
+        <div class="kpi-card kpi-breakdown">
+            <div class="kpi-content" style="width:100%">
+                <span class="kpi-label">Overall Sentiment Breakdown</span>
+                @if (isLoading)
+                {
+                    <div class="compound-bar-skel"></div>
+                }
+                else if (TotalReviewCount == 0)
+                {
+                    <div class="compound-bar-empty">No data</div>
+                }
+                else
+                {
+                    <div class="compound-bar" role="img" aria-label="Sentiment breakdown">
+                        <div class="compound-seg seg-pos" style="width:@OverallPositivePct.ToString("F1")%">
+                            @if (OverallPositivePct > 8) { <span>@OverallPositivePct.ToString("F0")%</span> }
+                        </div>
+                        <div class="compound-seg seg-neu" style="width:@OverallNeutralPct.ToString("F1")%">
+                            @if (OverallNeutralPct > 8) { <span>@OverallNeutralPct.ToString("F0")%</span> }
+                        </div>
+                        <div class="compound-seg seg-neg" style="width:@OverallNegativePct.ToString("F1")%">
+                            @if (OverallNegativePct > 8) { <span>@OverallNegativePct.ToString("F0")%</span> }
+                        </div>
+                    </div>
+                    <div class="compound-legend">
+                        <span class="legend-item"><span class="legend-dot dot-pos"></span>Positive (@TotalPositive)</span>
+                        <span class="legend-item"><span class="legend-dot dot-neu"></span>Neutral (@TotalNeutral)</span>
+                        <span class="legend-item"><span class="legend-dot dot-neg"></span>Negative (@TotalNegative)</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ── Filter Toolbar ─────────────────────────────────────────── -->
+    <section class="filter-bar">
+        <!-- Product Selector -->
+        <div class="filter-group">
+            <span class="filter-label">Filter by Product</span>
+            <select id="sentiment-product-select" class="filter-select"
+                    value="@selectedProductName"
+                    @onchange="OnProductChange">
+                <option value="">All Products</option>
+                @foreach (var stat in sentimentStats)
+                {
+                    <option value="@stat.ProductName">@stat.ProductName</option>
+                }
+            </select>
+        </div>
+
+        <!-- Sentiment Pills -->
+        <div class="filter-group">
+            <span class="filter-label">Sentiment Filter</span>
+            <div class="pill-group">
+                <button id="sentiment-pill-all"      class="pill @(sentimentFilter == "All"      ? "pill-active" : "")" @onclick='() => SetSentimentFilter("All")'>All</button>
+                <button id="sentiment-pill-positive" class="pill pill-pos @(sentimentFilter == "Positive" ? "pill-active pill-active-pos" : "")" @onclick='() => SetSentimentFilter("Positive")'>😊 Positive</button>
+                <button id="sentiment-pill-neutral"  class="pill pill-neu @(sentimentFilter == "Neutral"  ? "pill-active pill-active-neu" : "")" @onclick='() => SetSentimentFilter("Neutral")'>😐 Neutral</button>
+                <button id="sentiment-pill-negative" class="pill pill-neg @(sentimentFilter == "Negative" ? "pill-active pill-active-neg" : "")" @onclick='() => SetSentimentFilter("Negative")'>😟 Negative</button>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="filter-group filter-search">
+            <span class="filter-label">Search Comments</span>
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input id="sentiment-search-input"
+                       type="text"
+                       class="filter-input search-input"
+                       placeholder="Search review text…"
+                       value="@searchQuery"
+                       @oninput="OnSearchInput" />
+                @if (!string.IsNullOrEmpty(searchQuery))
+                {
+                    <button class="search-clear" @onclick="ClearSearch">✕</button>
+                }
+            </div>
+        </div>
+
+        <!-- Reset -->
+        <div class="filter-actions">
+            <button id="sentiment-reset-btn" class="btn btn-outline" @onclick="ResetFilters">Reset</button>
+        </div>
+    </section>
+
+    <!-- ── Product Sentiment Leaderboard ──────────────────────────── -->
+    <section class="card">
+        <div class="card-header">
+            <div>
+                <h2>Product Sentiment Leaderboard</h2>
+                <p class="card-subtitle">Per-product AI sentiment breakdown and average ratings</p>
+            </div>
+            @if (!isLoading && sentimentStats.Any())
+            {
+                <span class="badge">@sentimentStats.Count products</span>
+            }
+        </div>
+        <div class="card-body">
+            @if (isLoading)
+            {
+                <div class="loading-state">
+                    <span class="spinner"></span>
+                    <span>Aggregating BERT sentiment data…</span>
+                </div>
+            }
+            else if (!sentimentStats.Any())
+            {
+                <div class="empty-state">No sentiment data available. Reviews will appear here once customers submit feedback.</div>
+            }
+            else
+            {
+                var displayStats = string.IsNullOrEmpty(selectedProductName)
+                    ? sentimentStats
+                    : sentimentStats.Where(s => s.ProductName == selectedProductName).ToList();
+
+                if (!displayStats.Any())
+                {
+                    <div class="empty-state">No data for the selected product.</div>
+                }
+                else
+                {
+                    <div class="table-scroll">
+                        <table class="table" id="sentiment-leaderboard-table">
+                            <thead>
+                                <tr>
+                                    <th class="rank-col">#</th>
+                                    <th>Product</th>
+                                    <th class="num-col">Reviews</th>
+                                    <th class="num-col">Avg. Rating</th>
+                                    <th class="sentiment-col">Sentiment Distribution</th>
+                                    <th class="num-col">Positive %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < displayStats.Count; i++)
+                                {
+                                    var stat = displayStats[i];
+                                    double posPct = stat.TotalReviews > 0 ? (double)stat.Positive / stat.TotalReviews * 100 : 0;
+                                    double neuPct = stat.TotalReviews > 0 ? (double)stat.Neutral  / stat.TotalReviews * 100 : 0;
+                                    double negPct = stat.TotalReviews > 0 ? (double)stat.Negative / stat.TotalReviews * 100 : 0;
+
+                                    <tr class="@(i % 2 == 1 ? "row-alt" : "")">
+                                        <td><span class="rank-badge @(i < 3 ? "rank-top" : "")">@(i + 1)</span></td>
+                                        <td class="product-name-cell">@stat.ProductName</td>
+                                        <td class="num-col">@stat.TotalReviews</td>
+                                        <td class="num-col rating-cell">
+                                            <span>@stat.AverageRating.ToString("F1")</span>
+                                            <span class="rating-star">★</span>
+                                        </td>
+                                        <td class="sentiment-col">
+                                            <div class="mini-compound-bar">
+                                                <div class="compound-seg seg-pos" style="width:@posPct.ToString("F1")%" title="Positive: @stat.Positive"></div>
+                                                <div class="compound-seg seg-neu" style="width:@neuPct.ToString("F1")%" title="Neutral: @stat.Neutral"></div>
+                                                <div class="compound-seg seg-neg" style="width:@negPct.ToString("F1")%" title="Negative: @stat.Negative"></div>
+                                            </div>
+                                            <div class="mini-counts">
+                                                <span class="count-pos">+@stat.Positive</span>
+                                                <span class="count-neu">~@stat.Neutral</span>
+                                                <span class="count-neg">-@stat.Negative</span>
+                                            </div>
+                                        </td>
+                                        <td class="num-col">
+                                            <span class="pos-pct-badge @(posPct >= 70 ? "badge-high" : posPct >= 40 ? "badge-mid" : "badge-low")">
+                                                @posPct.ToString("F0")%
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+        </div>
+    </section>
+
+    <!-- ── Customer Reviews Feed ──────────────────────────────────── -->
+    <section class="card">
+        <div class="card-header">
+            <div>
+                <h2>Customer Reviews Feed</h2>
+                <p class="card-subtitle">
+                    @if (!string.IsNullOrEmpty(searchQuery) || sentimentFilter != "All" || !string.IsNullOrEmpty(selectedProductName))
+                    {
+                        <span>Showing @FilteredReviews.Count of @allReviews.Count reviews</span>
+                    }
+                    else
+                    {
+                        <span>Most recent @Math.Min(allReviews.Count, pageSize * currentPage) of @allReviews.Count reviews</span>
+                    }
+                </p>
+            </div>
+            @if (FilteredReviews.Any())
+            {
+                <span class="badge">@FilteredReviews.Count reviews</span>
+            }
+        </div>
+        <div class="card-body">
+            @if (isLoadingReviews)
+            {
+                <div class="loading-state">
+                    <span class="spinner"></span>
+                    <span>Loading customer reviews…</span>
+                </div>
+            }
+            else if (!FilteredReviews.Any())
+            {
+                <div class="empty-state">
+                    @if (!string.IsNullOrEmpty(searchQuery) || sentimentFilter != "All")
+                    {
+                        <span>No reviews match the current filters. <button class="btn-link" @onclick="ResetFilters">Clear filters</button></span>
+                    }
+                    else
+                    {
+                        <span>No customer reviews have been submitted yet.</span>
+                    }
+                </div>
+            }
+            else
+            {
+                var pagedReviews = FilteredReviews
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Take(pageSize * currentPage)
+                    .ToList();
+
+                <div class="reviews-feed" id="sentiment-reviews-feed">
+                    @foreach (var review in pagedReviews)
+                    {
+                        <div class="review-card @GetSentimentClass(review.Sentiment)">
+                            <!-- Avatar + Meta Row -->
+                            <div class="review-meta-row">
+                                <div class="review-avatar" aria-label="Customer @review.CustomerId">
+                                    @GetAvatarInitials(review)
+                                </div>
+                                <div class="review-meta">
+                                    <span class="review-customer">Customer #@review.CustomerId</span>
+                                    <span class="review-product">@review.ProductName</span>
+                                    <span class="review-date">@review.CreatedAt.ToLocalTime().ToString("dd MMM yyyy · hh:mm tt")</span>
+                                </div>
+                                <div class="review-right">
+                                    <!-- Star Rating -->
+                                    <div class="review-stars" aria-label="@review.Rating out of 5">
+                                        @for (int s = 1; s <= 5; s++)
+                                        {
+                                            <span class="star-sm @(s <= review.Rating ? "star-full" : "star-empty")">★</span>
+                                        }
+                                    </div>
+                                    <!-- Sentiment Badge -->
+                                    <span class="sentiment-badge badge-@review.Sentiment.ToLower()">
+                                        @GetSentimentEmoji(review.Sentiment) @review.Sentiment
+                                    </span>
+                                    @if (review.SentimentScore > 0)
+                                    {
+                                        <span class="confidence-tag">@((review.SentimentScore * 100).ToString("F1"))% conf.</span>
+                                    }
+                                </div>
+                            </div>
+                            <!-- Comment -->
+                            @if (!string.IsNullOrWhiteSpace(review.Comment))
+                            {
+                                <p class="review-comment">"@review.Comment"</p>
+                            }
+                            else
+                            {
+                                <p class="review-comment review-no-comment">No written comment provided.</p>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <!-- Load More -->
+                @if (FilteredReviews.Count > pageSize * currentPage)
+                {
+                    <div class="load-more-row">
+                        <button id="sentiment-load-more-btn" class="btn btn-outline" @onclick="LoadMore">
+                            Load More Reviews (@(FilteredReviews.Count - pageSize * currentPage) remaining)
+                        </button>
+                    </div>
+                }
+            }
+        </div>
+    </section>
+
+</div>
+
+@code {
+
+    // ── Services ───────────────────────────────────────────────────────
+    [Inject] private IReviewService ReviewService { get; set; } = default!;
+    [Inject] private IBERTService   BertService   { get; set; } = default!;
+
+    // ── Raw Data ───────────────────────────────────────────────────────
+    private List<SentimentStatDto> sentimentStats = new();
+    private List<ReviewDto>        allReviews     = new();
+
+    // ── Filters ────────────────────────────────────────────────────────
+    private string selectedProductName = string.Empty;
+    private string sentimentFilter     = "All";
+    private string searchQuery         = string.Empty;
+
+    // ── Pagination ─────────────────────────────────────────────────────
+    private int pageSize    = 10;
+    private int currentPage = 1;
+
+    // ── Loading / Status ───────────────────────────────────────────────
+    private bool      isLoading;
+    private bool      isLoadingReviews;
+    private DateTime? lastRefreshed;
+    private string?   statusMessage;
+    private bool      isStatusSuccess;
+
+    // ── Computed: Filtered Reviews ────────────────────────────────────
+    private List<ReviewDto> FilteredReviews
+    {
+        get
+        {
+            var q = allReviews.AsEnumerable();
+
+            if (!string.IsNullOrEmpty(selectedProductName))
+                q = q.Where(r => r.ProductName == selectedProductName);
+
+            if (sentimentFilter != "All")
+                q = q.Where(r => string.Equals(r.Sentiment, sentimentFilter, StringComparison.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrWhiteSpace(searchQuery))
+                q = q.Where(r => r.Comment.Contains(searchQuery, StringComparison.OrdinalIgnoreCase));
+
+            return q.OrderByDescending(r => r.CreatedAt).ToList();
+        }
+    }
+
+    // ── Computed: Overall KPIs ─────────────────────────────────────────
+    private int TotalReviewCount   => sentimentStats.Sum(s => s.TotalReviews);
+    private int TotalPositive      => sentimentStats.Sum(s => s.Positive);
+    private int TotalNeutral       => sentimentStats.Sum(s => s.Neutral);
+    private int TotalNegative      => sentimentStats.Sum(s => s.Negative);
+
+    private double OverallPositivePct => TotalReviewCount > 0 ? (double)TotalPositive / TotalReviewCount * 100 : 0;
+    private double OverallNeutralPct  => TotalReviewCount > 0 ? (double)TotalNeutral  / TotalReviewCount * 100 : 0;
+    private double OverallNegativePct => TotalReviewCount > 0 ? (double)TotalNegative / TotalReviewCount * 100 : 0;
+    private double OverallAvgRating   => sentimentStats.Any()
+        ? sentimentStats.Sum(s => s.AverageRating * s.TotalReviews) / Math.Max(TotalReviewCount, 1)
+        : 0;
+
+    // ── Lifecycle ──────────────────────────────────────────────────────
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadSentimentStatsAsync(), LoadReviewsAsync());
+        lastRefreshed = DateTime.UtcNow;
+    }
+
+    // ── Data Loaders ──────────────────────────────────────────────────
+
+    private async Task LoadSentimentStatsAsync()
+    {
+        isLoading = true;
+        var result = await BertService.GetSentimentStats();
+        if (result.Success && result.Data != null)
+        {
+            sentimentStats = result.Data;
+        }
+        else
+        {
+            sentimentStats = new();
+            SetStatus(result.Message ?? "Failed to load sentiment statistics.", false);
+        }
+        isLoading = false;
+    }
+
+    private async Task LoadReviewsAsync()
+    {
+        isLoadingReviews = true;
+        var result = await ReviewService.GetAll();
+        if (result.Success && result.Data != null)
+        {
+            allReviews = result.Data;
+        }
+        else
+        {
+            allReviews = new();
+            SetStatus(result.Message ?? "Failed to load reviews.", false);
+        }
+        isLoadingReviews = false;
+    }
+
+    // ── User Actions ──────────────────────────────────────────────────
+
+    private async Task RefreshAllAsync()
+    {
+        ClearStatus();
+        currentPage = 1;
+        StateHasChanged();
+        await Task.WhenAll(LoadSentimentStatsAsync(), LoadReviewsAsync());
+        lastRefreshed = DateTime.UtcNow;
+    }
+
+    private void OnProductChange(ChangeEventArgs e)
+    {
+        selectedProductName = e.Value?.ToString() ?? string.Empty;
+        currentPage = 1;
+    }
+
+    private void SetSentimentFilter(string filter)
+    {
+        sentimentFilter = filter;
+        currentPage = 1;
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+        currentPage = 1;
+    }
+
+    private void ClearSearch()
+    {
+        searchQuery = string.Empty;
+        currentPage = 1;
+    }
+
+    private void LoadMore() => currentPage++;
+
+    private void ResetFilters()
+    {
+        selectedProductName = string.Empty;
+        sentimentFilter     = "All";
+        searchQuery         = string.Empty;
+        currentPage         = 1;
+        ClearStatus();
+    }
+
+    private void SetStatus(string msg, bool success)
+    {
+        statusMessage   = msg;
+        isStatusSuccess = success;
+    }
+
+    private void ClearStatus() => statusMessage = null;
+
+    // ── Helpers ───────────────────────────────────────────────────────
+
+    private static string GetSentimentClass(string sentiment) => sentiment?.ToLower() switch
+    {
+        "positive" => "review-positive",
+        "negative" => "review-negative",
+        "neutral"  => "review-neutral",
+        _          => "review-neutral"
+    };
+
+    private static string GetSentimentEmoji(string sentiment) => sentiment?.ToLower() switch
+    {
+        "positive" => "😊",
+        "negative" => "😟",
+        "neutral"  => "😐",
+        _          => "😐"
+    };
+
+    private static string GetAvatarInitials(ReviewDto review)
+    {
+        // Since CustomerName is not populated, derive a short code from CustomerId
+        return $"C{review.CustomerId % 100:D2}";
+    }
+}
+
+<style>
+
+    /* ═══════════════════════════════════════════════════════════════
+       Sentiment Charts Page — SmartPOS+ Bakery Theme
+       All colors reference tokens from wwwroot/css/colors.css
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* ── Semantic Color Variables (Sentiment-specific) ─────────────── */
+    :root {
+        --color-positive:    #5a7a52;   /* Sage green — harmonious with bakery palette */
+        --color-positive-bg: #edf4eb;
+        --color-neutral:     #8a7040;   /* Warm honey — accent warmth                  */
+        --color-neutral-bg:  #fef6e4;
+        --color-negative:    #8b4040;   /* Soft terracotta — warming red               */
+        --color-negative-bg: #faeaea;
+    }
+
+    /* ── Page Shell ─────────────────────────────────────────────────── */
+    .sentiment-page {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.75rem;
+        background-color: var(--color-page-bg);
+        color: var(--color-primary-text);
+        min-height: 100vh;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    /* ── Page Header ───────────────────────────────────────────────── */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-title h1 {
+        margin: 0;
+        font-size: 1.9rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        letter-spacing: -0.025em;
+    }
+
+    .page-title p {
+        margin: 0.3rem 0 0;
+        font-size: 0.9rem;
+        color: var(--color-primary-text);
+        opacity: 0.6;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .last-refreshed {
+        font-size: 0.8rem;
+        opacity: 0.5;
+        color: var(--color-primary-text);
+    }
+
+    .icon-refresh {
+        display: inline-block;
+        transition: transform 0.45s ease;
+        font-size: 1.1rem;
+    }
+    .btn-outline:hover:enabled .icon-refresh {
+        transform: rotate(180deg);
+    }
+
+    /* ── Alerts ─────────────────────────────────────────────────────── */
+    .alert {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.85rem 1.1rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--color-border-accent);
+        background-color: var(--color-card-bg);
+        font-size: 0.9rem;
+    }
+    .alert-success { border-color: var(--color-accent); }
+    .alert-error   { border-color: var(--color-navbar-bg); }
+
+    /* ── Buttons ─────────────────────────────────────────────────────── */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.55rem 1.1rem;
+        border-radius: 0.55rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1.5px solid transparent;
+        line-height: 1.4;
+        white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-primary {
+        background-color: var(--color-button-primary);
+        color: var(--color-card-bg);
+        border-color: var(--color-button-primary);
+    }
+    .btn-primary:hover:enabled {
+        background-color: var(--color-button-hover);
+        border-color: var(--color-button-hover);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: var(--color-primary-text);
+        border-color: var(--color-border-accent);
+    }
+    .btn-outline:hover:enabled {
+        background-color: rgba(196, 132, 138, 0.08);
+        border-color: var(--color-button-primary);
+        color: var(--color-button-primary);
+    }
+
+    .btn-text {
+        background: none;
+        border: none;
+        padding: 0.2rem 0.4rem;
+        cursor: pointer;
+        opacity: 0.55;
+        font-size: 0.9rem;
+        color: var(--color-primary-text);
+        border-radius: 0.3rem;
+    }
+    .btn-text:hover { opacity: 1; }
+
+    .btn-link {
+        background: none;
+        border: none;
+        padding: 0;
+        color: var(--color-button-primary);
+        font-size: inherit;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    /* ── Spinner ─────────────────────────────────────────────────────── */
+    .spinner {
+        display: inline-block;
+        width: 14px; height: 14px;
+        border: 2px solid rgba(61,28,2,0.2);
+        border-top-color: var(--color-navbar-bg);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+    }
+    @@keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── KPI Grid ────────────────────────────────────────────────────── */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+    }
+
+    .kpi-card {
+        background-color: var(--color-card-bg);
+        border: 1px solid rgba(196, 132, 138, 0.25);
+        border-radius: 1rem;
+        padding: 1.25rem 1.35rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        position: relative;
+        overflow: hidden;
+        transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        border-radius: 1rem 1rem 0 0;
+    }
+    .kpi-positive::before { background: var(--color-positive); }
+    .kpi-total::before    { background: var(--color-button-primary); }
+    .kpi-rating::before   { background: var(--color-neutral); }
+    .kpi-breakdown::before{ background: linear-gradient(90deg, var(--color-positive), var(--color-neutral), var(--color-negative)); }
+
+    .kpi-card:hover {
+        box-shadow: 0 4px 20px rgba(61, 28, 2, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .kpi-icon-wrap {
+        width: 44px; height: 44px;
+        border-radius: 0.65rem;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+        background-color: rgba(196, 132, 138, 0.1);
+    }
+    .kpi-icon-pos   { background-color: var(--color-positive-bg); }
+    .kpi-icon-total { background-color: rgba(196, 132, 138, 0.12); }
+    .kpi-icon-rating{ background-color: var(--color-neutral-bg); }
+
+    .kpi-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .kpi-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--color-primary-text);
+        opacity: 0.5;
+    }
+
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+    }
+    .kpi-denom {
+        font-size: 1rem;
+        font-weight: 500;
+        opacity: 0.5;
+    }
+    .kpi-unit {
+        font-size: 0.78rem;
+        color: var(--color-primary-text);
+        opacity: 0.5;
+        margin-top: 0.1rem;
+    }
+    .kpi-skeleton {
+        color: rgba(61,28,2,0.2) !important;
+        animation: pulse 1.4s ease-in-out infinite;
+    }
+    @@keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+    /* Stars */
+    .star-row, .review-stars {
+        display: flex;
+        gap: 0.1rem;
+        margin-top: 0.3rem;
+    }
+    .star, .star-sm {
+        font-size: 1rem;
+        transition: color 0.15s;
+    }
+    .star-sm { font-size: 0.8rem; }
+    .star-full  { color: #e8a020; }
+    .star-half  { color: #e8a020; opacity: 0.6; }
+    .star-empty { color: rgba(61,28,2,0.18); }
+
+    /* Compound Bar */
+    .compound-bar {
+        display: flex;
+        height: 22px;
+        border-radius: 0.4rem;
+        overflow: hidden;
+        margin: 0.65rem 0 0.4rem;
+        background: rgba(61,28,2,0.05);
+    }
+    .compound-bar-skel {
+        height: 22px;
+        border-radius: 0.4rem;
+        background: linear-gradient(90deg, rgba(196,132,138,0.1) 25%, rgba(196,132,138,0.25) 50%, rgba(196,132,138,0.1) 75%);
+        background-size: 400% 100%;
+        animation: shimmer 1.8s ease infinite;
+        margin: 0.65rem 0 0.4rem;
+    }
+    @@keyframes shimmer { 0%{background-position:100% 50%} 100%{background-position:0 50%} }
+    .compound-bar-empty { margin: 0.65rem 0; font-size: 0.85rem; opacity: 0.4; }
+
+    .compound-seg {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #fff;
+        min-width: 0;
+        transition: width 0.5s ease;
+        overflow: hidden;
+    }
+    .seg-pos { background: var(--color-positive); }
+    .seg-neu { background: var(--color-neutral); }
+    .seg-neg { background: var(--color-negative); }
+
+    .compound-legend {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        font-size: 0.77rem;
+        color: var(--color-primary-text);
+        opacity: 0.7;
+    }
+    .legend-item { display: flex; align-items: center; gap: 0.35rem; }
+    .legend-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .dot-pos { background: var(--color-positive); }
+    .dot-neu { background: var(--color-neutral); }
+    .dot-neg { background: var(--color-negative); }
+
+    /* ── Filter Bar ─────────────────────────────────────────────────── */
+    .filter-bar {
+        display: flex;
+        align-items: flex-end;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+        background-color: var(--color-card-bg);
+        border: 1px solid rgba(196, 132, 138, 0.3);
+        border-radius: 0.9rem;
+        padding: 1.1rem 1.35rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .filter-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--color-primary-text);
+        opacity: 0.55;
+    }
+
+    .filter-select {
+        appearance: none;
+        background-color: var(--color-page-bg);
+        border: 1.5px solid var(--color-border-accent);
+        border-radius: 0.5rem;
+        padding: 0.5rem 2.2rem 0.5rem 0.8rem;
+        font-size: 0.875rem;
+        color: var(--color-primary-text);
+        cursor: pointer;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233D1C02' fill-opacity='0.5' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.65rem center;
+        min-width: 170px;
+    }
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--color-button-primary);
+        box-shadow: 0 0 0 3px rgba(196, 132, 138, 0.18);
+    }
+
+    /* Sentiment Pills */
+    .pill-group {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .pill {
+        padding: 0.42rem 0.9rem;
+        border-radius: 2rem;
+        border: 1.5px solid var(--color-border-accent);
+        background: transparent;
+        color: var(--color-primary-text);
+        font-size: 0.84rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        line-height: 1.4;
+    }
+    .pill:hover { background-color: rgba(196, 132, 138, 0.1); border-color: var(--color-button-primary); }
+    .pill-active { background-color: var(--color-button-primary); border-color: var(--color-button-primary); color: var(--color-card-bg); font-weight: 600; }
+    .pill-active-pos { background-color: var(--color-positive); border-color: var(--color-positive); }
+    .pill-active-neu { background-color: var(--color-neutral);  border-color: var(--color-neutral); }
+    .pill-active-neg { background-color: var(--color-negative); border-color: var(--color-negative); }
+
+    /* Search */
+    .filter-search { flex: 1; min-width: 200px; }
+    .search-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .search-icon {
+        position: absolute;
+        left: 0.7rem;
+        font-size: 0.85rem;
+        pointer-events: none;
+    }
+    .search-input {
+        width: 100%;
+        padding: 0.5rem 2.4rem 0.5rem 2.1rem;
+    }
+    .filter-input {
+        border: 1.5px solid var(--color-border-accent);
+        border-radius: 0.5rem;
+        background-color: var(--color-page-bg);
+        color: var(--color-primary-text);
+        font-size: 0.875rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        padding: 0.5rem 0.8rem;
+    }
+    .filter-input:focus {
+        outline: none;
+        border-color: var(--color-button-primary);
+        box-shadow: 0 0 0 3px rgba(196, 132, 138, 0.18);
+    }
+    .search-clear {
+        position: absolute;
+        right: 0.5rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 0.8rem;
+        opacity: 0.5;
+        padding: 0.2rem;
+        color: var(--color-primary-text);
+        border-radius: 0.2rem;
+        transition: opacity 0.15s;
+    }
+    .search-clear:hover { opacity: 1; }
+    .filter-actions { display: flex; align-items: flex-end; }
+
+    /* ── Cards ──────────────────────────────────────────────────────── */
+    .card {
+        background-color: var(--color-card-bg);
+        border: 1px solid rgba(196, 132, 138, 0.2);
+        border-radius: 1rem;
+        overflow: hidden;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.15rem 1.5rem;
+        border-bottom: 1px solid rgba(196, 132, 138, 0.15);
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+    }
+
+    .card-subtitle {
+        margin: 0.2rem 0 0;
+        font-size: 0.82rem;
+        color: var(--color-primary-text);
+        opacity: 0.55;
+    }
+
+    .card-body {
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* Badge */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.28rem 0.75rem;
+        border-radius: 2rem;
+        background-color: rgba(196, 132, 138, 0.15);
+        color: var(--color-button-primary);
+        font-size: 0.78rem;
+        font-weight: 700;
+        border: 1px solid rgba(196, 132, 138, 0.3);
+    }
+
+    /* ── Loading / Empty States ─────────────────────────────────────── */
+    .loading-state {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 2rem 0;
+        justify-content: center;
+        font-size: 0.9rem;
+        color: var(--color-primary-text);
+        opacity: 0.6;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        font-size: 0.92rem;
+        color: var(--color-primary-text);
+        opacity: 0.5;
+    }
+
+    /* ── Table ──────────────────────────────────────────────────────── */
+    .table-scroll {
+        overflow-x: auto;
+        border-radius: 0.65rem;
+    }
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+    }
+    .table th {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--color-primary-text);
+        opacity: 0.55;
+        border-bottom: 1.5px solid rgba(196, 132, 138, 0.15);
+        white-space: nowrap;
+    }
+    .table td {
+        padding: 0.8rem 1rem;
+        color: var(--color-primary-text);
+        vertical-align: middle;
+        border-bottom: 1px solid rgba(196, 132, 138, 0.08);
+    }
+    .row-alt { background-color: var(--color-table-row-alt); }
+    .num-col { text-align: right; }
+    .rank-col { width: 48px; text-align: center; }
+    .sentiment-col { width: 280px; }
+    .product-name-cell { font-weight: 600; }
+    .rating-cell { font-weight: 700; color: var(--color-heading-text); }
+    .rating-star { color: #e8a020; font-size: 0.9rem; }
+
+    /* Rank Badge */
+    .rank-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 26px; height: 26px;
+        border-radius: 50%;
+        background-color: rgba(196,132,138,0.1);
+        border: 1.5px solid rgba(196,132,138,0.25);
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--color-primary-text);
+    }
+    .rank-top {
+        background-color: var(--color-button-primary);
+        border-color: var(--color-button-primary);
+        color: var(--color-card-bg);
+    }
+
+    /* Mini compound bar */
+    .mini-compound-bar {
+        display: flex;
+        height: 8px;
+        border-radius: 0.25rem;
+        overflow: hidden;
+        margin-bottom: 0.35rem;
+        background: rgba(61,28,2,0.06);
+        min-width: 160px;
+    }
+    .mini-counts {
+        display: flex;
+        gap: 0.6rem;
+        font-size: 0.72rem;
+    }
+    .count-pos { color: var(--color-positive); font-weight: 600; }
+    .count-neu { color: var(--color-neutral);  font-weight: 600; }
+    .count-neg { color: var(--color-negative); font-weight: 600; }
+
+    /* Positive % badge */
+    .pos-pct-badge {
+        display: inline-flex; align-items: center; justify-content: center;
+        padding: 0.22rem 0.6rem;
+        border-radius: 2rem;
+        font-size: 0.77rem;
+        font-weight: 700;
+        min-width: 52px;
+    }
+    .badge-high { background: var(--color-positive-bg); color: var(--color-positive); }
+    .badge-mid  { background: var(--color-neutral-bg);  color: var(--color-neutral); }
+    .badge-low  { background: var(--color-negative-bg); color: var(--color-negative); }
+
+    /* ── Reviews Feed ────────────────────────────────────────────────── */
+    .reviews-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+    }
+
+    .review-card {
+        background-color: var(--color-page-bg);
+        border: 1.5px solid rgba(196, 132, 138, 0.18);
+        border-radius: 0.85rem;
+        padding: 1rem 1.25rem;
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+    .review-card:hover {
+        box-shadow: 0 3px 14px rgba(61,28,2,0.09);
+        border-color: rgba(196,132,138,0.35);
+    }
+    .review-positive { border-left: 3px solid var(--color-positive); }
+    .review-neutral  { border-left: 3px solid var(--color-neutral);  }
+    .review-negative { border-left: 3px solid var(--color-negative); }
+
+    .review-meta-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.9rem;
+        flex-wrap: wrap;
+    }
+
+    .review-avatar {
+        width: 42px; height: 42px;
+        border-radius: 50%;
+        background-color: var(--color-button-primary);
+        color: var(--color-card-bg);
+        font-size: 0.78rem;
+        font-weight: 800;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        letter-spacing: 0.02em;
+    }
+
+    .review-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        flex: 1;
+        min-width: 0;
+    }
+    .review-customer {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+    }
+    .review-product {
+        font-size: 0.8rem;
+        color: var(--color-button-primary);
+        font-weight: 600;
+    }
+    .review-date {
+        font-size: 0.75rem;
+        color: var(--color-primary-text);
+        opacity: 0.45;
+    }
+
+    .review-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.35rem;
+        flex-shrink: 0;
+    }
+
+    .sentiment-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.22rem 0.6rem;
+        border-radius: 2rem;
+        font-size: 0.76rem;
+        font-weight: 700;
+    }
+    .badge-positive { background: var(--color-positive-bg); color: var(--color-positive); }
+    .badge-neutral  { background: var(--color-neutral-bg);  color: var(--color-neutral); }
+    .badge-negative { background: var(--color-negative-bg); color: var(--color-negative); }
+    .badge-         { background: var(--color-neutral-bg);  color: var(--color-neutral); } /* fallback */
+
+    .confidence-tag {
+        font-size: 0.7rem;
+        color: var(--color-primary-text);
+        opacity: 0.45;
+    }
+
+    .review-comment {
+        margin: 0.75rem 0 0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--color-primary-text);
+        padding-left: 0.25rem;
+        font-style: italic;
+    }
+    .review-no-comment {
+        opacity: 0.4;
+        font-style: italic;
+    }
+
+    /* Load More */
+    .load-more-row {
+        display: flex;
+        justify-content: center;
+        padding-top: 1.25rem;
+    }
+</style>

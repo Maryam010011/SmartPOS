@@ -1,0 +1,264 @@
+@namespace SmartPOS.Components.Layout
+@inject NavigationManager Nav
+
+<header class="smartpos-navbar cashier-navbar" id="cashier-navbar">
+    <div class="navbar-inner">
+
+        <!-- Brand -->
+        <a class="navbar-brand" href="/cashier/pos">
+            <span class="brand-icon">🥐</span>
+            <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
+            <span class="brand-role-tag cashier-tag">Cashier</span>
+        </a>
+
+        <!-- Desktop Nav Links -->
+        <nav class="navbar-links" aria-label="Cashier navigation">
+            <a class="nav-link @(IsActive("/cashier/pos"))" href="/cashier/pos">
+                <span class="nav-icon">🖥️</span><span>Point of Sale</span>
+            </a>
+        </nav>
+
+        <!-- Right Controls -->
+        <div class="navbar-right">
+            <div class="cashier-status-pill">
+                <span class="status-dot live"></span>
+                <span>Terminal Active</span>
+            </div>
+            <span class="navbar-time">@_currentTime</span>
+            <button class="nav-avatar-btn" @onclick="ToggleDrawer"
+                    aria-label="Open profile drawer" id="cashier-profile-btn">
+                <span class="avatar-ring cashier-avatar">
+                    <span class="avatar-initials">CS</span>
+                </span>
+            </button>
+            <button class="hamburger-btn @(_mobileOpen ? "ham-open" : "")"
+                    @onclick="ToggleMobile" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+
+    @if (_mobileOpen)
+    {
+        <nav class="mobile-menu" aria-label="Cashier mobile navigation">
+            <a class="mobile-link @(IsActive("/cashier/pos"))" href="/cashier/pos" @onclick="CloseMobile">🖥️ Point of Sale</a>
+        </nav>
+    }
+</header>
+
+@code {
+    [Parameter] public EventCallback OnAvatarClick { get; set; }
+
+    private bool   _mobileOpen  = false;
+    private string _currentTime = "";
+    private System.Threading.Timer? _timer;
+
+    protected override void OnInitialized()
+    {
+        UpdateTime();
+        _timer = new System.Threading.Timer(_ =>
+        {
+            UpdateTime();
+            InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    private void UpdateTime() => _currentTime = DateTime.Now.ToString("hh:mm:ss tt");
+    private async Task ToggleDrawer() => await OnAvatarClick.InvokeAsync();
+    private void ToggleMobile() => _mobileOpen = !_mobileOpen;
+    private void CloseMobile()  => _mobileOpen = false;
+
+    private string IsActive(string path) =>
+        Nav.Uri.Contains(path, StringComparison.OrdinalIgnoreCase) ? "nav-link-active" : "";
+
+    public void Dispose() => _timer?.Dispose();
+}
+
+<style>
+    .cashier-navbar {
+        background: linear-gradient(135deg,
+            rgba(28,70,50,0.97) 0%,
+            rgba(24,62,44,0.97) 100%) !important;
+        border-bottom-color: rgba(126,184,154,0.28) !important;
+    }
+
+    .cashier-tag {
+        background: rgba(126,184,154,0.20) !important;
+        color: var(--role-cashier-accent, #7EB89A) !important;
+        border-color: rgba(126,184,154,0.38) !important;
+    }
+
+    .cashier-avatar {
+        border-color: rgba(126,184,154,0.45) !important;
+    }
+
+    .cashier-navbar .nav-link-active {
+        background: rgba(126,184,154,0.20) !important;
+    }
+
+    .cashier-navbar .nav-link-active::after {
+        background: var(--role-cashier-accent, #7EB89A) !important;
+    }
+
+    .cashier-navbar .nav-link:hover {
+        background: rgba(126,184,154,0.14) !important;
+    }
+
+    .cashier-status-pill {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(61,143,111,0.18);
+        border: 1px solid rgba(61,143,111,0.30);
+        color: #7EB89A;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.25rem 0.65rem;
+        border-radius: 9999px;
+        letter-spacing: 0.03em;
+    }
+
+    .status-dot.live {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #3d8f6f;
+        animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @@keyframes pulse-dot {
+        0%, 100% { box-shadow: 0 0 0 2px rgba(61,143,111,0.22); }
+        50%       { box-shadow: 0 0 0 5px rgba(61,143,111,0.08); }
+    }
+
+    /* Shared base */
+    .smartpos-navbar {
+        position: sticky;
+        top: 0;
+        z-index: 900;
+        height: var(--nav-height, 64px);
+        background: var(--nav-bg-glass, rgba(61,28,2,0.96));
+        border-bottom: 1px solid var(--nav-border, rgba(196,132,138,0.25));
+        box-shadow: var(--nav-shadow, 0 2px 16px rgba(61,28,2,0.22));
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+    }
+
+    .navbar-inner {
+        display: flex;
+        align-items: center;
+        height: var(--nav-height, 64px);
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 1.25rem;
+        gap: 0.5rem;
+    }
+
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        text-decoration: none;
+        flex-shrink: 0;
+        margin-right: 1rem;
+    }
+
+    .brand-icon { font-size: 1.25rem; }
+    .brand-text { font-size: 1.05rem; font-weight: 800; color: #FFF8DC; letter-spacing: -0.02em; }
+    .brand-plus { color: var(--color-rose, #C4848A); }
+
+    .brand-role-tag {
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: rgba(196,132,138,0.22);
+        color: var(--color-rose, #C4848A);
+        border: 1px solid rgba(196,132,138,0.35);
+        padding: 0.15rem 0.5rem;
+        border-radius: 9999px;
+        line-height: 1.6;
+    }
+
+    .navbar-links {
+        display: flex;
+        align-items: center;
+        gap: 0.15rem;
+        flex: 1;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.75rem;
+        border-radius: var(--radius-md, 0.625rem);
+        font-size: 0.84rem;
+        font-weight: 500;
+        color: rgba(255,248,220,0.60);
+        text-decoration: none;
+        transition: background 0.15s ease, color 0.15s ease;
+        white-space: nowrap;
+    }
+
+    .nav-link:hover { background: rgba(196,132,138,0.14); color: #FFF8DC; }
+    .nav-link-active { background: rgba(196,132,138,0.22); color: #FFF8DC !important; font-weight: 600; position: relative; }
+    .nav-link-active::after {
+        content: ''; position: absolute; bottom: -1px; left: 50%;
+        transform: translateX(-50%); width: 28px; height: 2px;
+        background: var(--nav-active-indicator, #C4848A); border-radius: 2px 2px 0 0;
+    }
+
+    .nav-icon { font-size: 0.9rem; }
+
+    .navbar-right {
+        display: flex; align-items: center; gap: 0.6rem;
+        margin-left: auto; flex-shrink: 0;
+    }
+
+    .navbar-time {
+        font-size: 0.75rem; color: rgba(255,248,220,0.60); font-weight: 500;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .nav-avatar-btn { background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; }
+
+    .avatar-ring {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: rgba(196,132,138,0.20); border: 2px solid rgba(196,132,138,0.45);
+        display: flex; align-items: center; justify-content: center;
+        transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .nav-avatar-btn:hover .avatar-ring { border-color: var(--color-rose, #C4848A); transform: scale(1.06); }
+    .avatar-initials { font-size: 0.72rem; font-weight: 700; color: #FFF8DC; }
+
+    .hamburger-btn {
+        display: none; flex-direction: column; gap: 5px;
+        background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 0.4rem;
+    }
+
+    .hamburger-btn span { display: block; width: 20px; height: 2px; background: #FFF8DC; border-radius: 2px; transition: all 0.25s ease; }
+
+    .mobile-menu {
+        background: rgba(20,55,38,0.98);
+        border-top: 1px solid rgba(126,184,154,0.25);
+        display: flex; flex-direction: column; padding: 0.5rem 1rem 1rem; gap: 0.25rem;
+    }
+
+    .mobile-link {
+        display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 0.75rem;
+        border-radius: var(--radius-md, 0.625rem); font-size: 0.875rem; font-weight: 500;
+        color: rgba(255,248,220,0.60); text-decoration: none; transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .mobile-link:hover, .mobile-link.nav-link-active { background: rgba(126,184,154,0.14); color: #FFF8DC; }
+
+    @@media (max-width: 900px) {
+        .navbar-links { display: none; }
+        .navbar-time  { display: none; }
+        .cashier-status-pill { display: none; }
+        .hamburger-btn { display: flex; }
+    }
+</style>

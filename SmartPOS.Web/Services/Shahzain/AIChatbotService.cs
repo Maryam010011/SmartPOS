@@ -18,7 +18,7 @@ namespace SmartPOS.Web.Services.Shahzain
     public class AIChatbotService : IAIChatbotService
     {
         private readonly HttpClient _httpClient;
-        private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _factory;
         private readonly string _apiKey;
         private readonly string _model;
         private readonly string _baseUrl;
@@ -27,12 +27,12 @@ namespace SmartPOS.Web.Services.Shahzain
         /// Initializes a new instance of the <see cref="AIChatbotService"/> class.
         /// </summary>
         /// <param name="httpClient">The HTTP client for making API requests.</param>
-        /// <param name="context">The application database context for querying sales data.</param>
+        /// <param name="factory">The database context factory for querying sales data.</param>
         /// <param name="configuration">The application configuration for API key and model settings.</param>
-        public AIChatbotService(HttpClient httpClient, AppDbContext context, IConfiguration configuration)
+        public AIChatbotService(HttpClient httpClient, IDbContextFactory<AppDbContext> factory, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _context = context;
+            _factory = factory;
             _apiKey = configuration["AIService:ApiKey"] ?? string.Empty;
             _model = configuration["AIService:Model"] ?? "gpt-4o-mini";
             _baseUrl = configuration["AIService:BaseUrl"] ?? "https://api.openai.com/v1";
@@ -90,7 +90,8 @@ namespace SmartPOS.Web.Services.Shahzain
             try
             {
                 // Query sales from database based on filter
-                var salesQuery = _context.Sales
+                using var context = _factory.CreateDbContext();
+                var salesQuery = context.Sales
                     .Include(s => s.SaleItems)
                     .ThenInclude(si => si.Product)
                     .AsQueryable();
@@ -187,12 +188,13 @@ namespace SmartPOS.Web.Services.Shahzain
         {
             try
             {
-                var product = await _context.Products.FindAsync(productId);
+                using var context = _factory.CreateDbContext();
+                var product = await context.Products.FindAsync(productId);
                 if (product == null)
                     return ApiResponse<string>.Fail("Product not found.");
 
                 // Get sales history for this product
-                var salesHistory = await _context.SaleItems
+                var salesHistory = await context.SaleItems
                     .Include(si => si.Sale)
                     .Include(si => si.Product)
                     .Where(si => si.ProductId == productId && si.Sale.Status == Shared.Enums.SaleStatus.Completed)
@@ -328,14 +330,15 @@ namespace SmartPOS.Web.Services.Shahzain
             var thirtyDaysAgo = today.AddDays(-30);
             var sevenDaysAgo = today.AddDays(-7);
 
-            var recentSales = await _context.Sales
+            using var context = _factory.CreateDbContext();
+            var recentSales = await context.Sales
                 .Where(s => s.SaleDate >= thirtyDaysAgo && s.Status == Shared.Enums.SaleStatus.Completed)
                 .ToListAsync();
 
             var weekSales = recentSales.Where(s => s.SaleDate >= sevenDaysAgo).ToList();
 
-            var totalProducts = await _context.Products.CountAsync(p => p.IsActive);
-            var totalCategories = await _context.Categories.CountAsync();
+            var totalProducts = await context.Products.CountAsync(p => p.IsActive);
+            var totalCategories = await context.Categories.CountAsync();
 
             return $"""
                 Business Overview (Last 30 Days):

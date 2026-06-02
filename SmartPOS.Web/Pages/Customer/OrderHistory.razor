@@ -1,0 +1,1265 @@
+@page "/customer/orders"
+@rendermode InteractiveServer
+@layout CustomerLayout
+
+@inject ISaleService SaleService
+@inject NavigationManager NavigationManager
+
+<PageTitle>My Orders — SmartPOS+ Bakery</PageTitle>
+
+<!-- ══════════════════════════════════════════════════════════════
+     ORDER HISTORY ROOT
+     ══════════════════════════════════════════════════════════════ -->
+<div class="oh-root">
+
+    <!-- ── PAGE HEADER ──────────────────────────────────────────── -->
+    <header class="oh-page-header">
+        <div class="oh-header-left">
+            <span class="oh-header-icon">🧾</span>
+            <div>
+                <h1 class="oh-title">My Orders</h1>
+                <p class="oh-subtitle">Browse and track your complete purchase history</p>
+            </div>
+        </div>
+
+        <!-- Summary chips -->
+        <div class="oh-summary-chips">
+            <div class="oh-chip">
+                <span class="oh-chip-value">@_orders.Count</span>
+                <span class="oh-chip-label">Total Orders</span>
+            </div>
+            <div class="oh-chip oh-chip--accent">
+                <span class="oh-chip-value">Rs. @_orders.Sum(o => o.TotalAmount).ToString("N0")</span>
+                <span class="oh-chip-label">Total Spent</span>
+            </div>
+            <div class="oh-chip">
+                <span class="oh-chip-value">@_orders.Count(o => o.Status == SaleStatus.Completed)</span>
+                <span class="oh-chip-label">Completed</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── FILTER BAR ───────────────────────────────────────────── -->
+    <section class="oh-filter-bar">
+
+        <!-- Date From -->
+        <div class="oh-filter-group">
+            <label class="oh-filter-label" for="filter-from">From</label>
+            <input id="filter-from"
+                   type="date"
+                   class="oh-filter-input"
+                   value="@(_filter.From?.ToString("yyyy-MM-dd") ?? "")"
+                   @onchange="@(e => OnFromDateChange(e.Value?.ToString()))" />
+        </div>
+
+        <!-- Date To -->
+        <div class="oh-filter-group">
+            <label class="oh-filter-label" for="filter-to">To</label>
+            <input id="filter-to"
+                   type="date"
+                   class="oh-filter-input"
+                   value="@(_filter.To?.ToString("yyyy-MM-dd") ?? "")"
+                   @onchange="@(e => OnToDateChange(e.Value?.ToString()))" />
+        </div>
+
+        <!-- Status Filter -->
+        <div class="oh-filter-group">
+            <label class="oh-filter-label" for="filter-status">Status</label>
+            <select id="filter-status" class="oh-filter-select"
+                    @onchange="@(e => OnStatusChange(e.Value?.ToString()))">
+                <option value="">All Statuses</option>
+                <option value="Completed">Completed</option>
+                <option value="Voided">Voided</option>
+                <option value="Refunded">Refunded</option>
+            </select>
+        </div>
+
+        <!-- Sale Type Filter -->
+        <div class="oh-filter-group">
+            <label class="oh-filter-label" for="filter-type">Order Type</label>
+            <select id="filter-type" class="oh-filter-select"
+                    @onchange="@(e => OnSaleTypeChange(e.Value?.ToString()))">
+                <option value="">All Types</option>
+                <option value="Online">Online</option>
+                <option value="Onsite">Onsite</option>
+            </select>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="oh-filter-actions">
+            <button id="btn-apply-filters" class="oh-btn-apply" @onclick="ApplyFilters">
+                <span>🔍</span> Apply
+            </button>
+            <button id="btn-reset-filters" class="oh-btn-reset" @onclick="ResetFilters">
+                ↺ Reset
+            </button>
+        </div>
+    </section>
+
+    <!-- ── ERROR BANNER ─────────────────────────────────────────── -->
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="oh-error-banner" role="alert">
+            <span>⚠️ @_errorMessage</span>
+            <button class="oh-error-dismiss" @onclick="@(() => _errorMessage = null)">✕</button>
+        </div>
+    }
+
+    <!-- ── TABLE PANEL ──────────────────────────────────────────── -->
+    <section class="oh-table-panel">
+
+        <!-- Loading Skeleton -->
+        @if (_isLoading)
+        {
+            <div class="oh-skeleton-wrapper">
+                @for (int i = 0; i < 6; i++)
+                {
+                    <div class="oh-skeleton-row">
+                        <div class="oh-skel oh-skel-sm"></div>
+                        <div class="oh-skel oh-skel-md"></div>
+                        <div class="oh-skel oh-skel-sm"></div>
+                        <div class="oh-skel oh-skel-sm"></div>
+                        <div class="oh-skel oh-skel-sm"></div>
+                        <div class="oh-skel oh-skel-xs"></div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Empty State -->
+        else if (_orders.Count == 0)
+        {
+            <div class="oh-empty-state">
+                <div class="oh-empty-icon">📋</div>
+                <h2 class="oh-empty-title">No orders found</h2>
+                <p class="oh-empty-sub">Try adjusting your filters, or place your first order from the shop.</p>
+                <button class="oh-btn-apply" @onclick="@(() => NavigationManager.NavigateTo("/customer/shop"))">
+                    🛍️ Go to Shop
+                </button>
+            </div>
+        }
+
+        <!-- Data Table -->
+        else
+        {
+            <!-- Table Column Headers -->
+            <div class="oh-table-header oh-table-grid">
+                <span class="oh-th">Receipt #</span>
+                <span class="oh-th">Date &amp; Time</span>
+                <span class="oh-th oh-th-center">Items</span>
+                <span class="oh-th oh-th-right">Total</span>
+                <span class="oh-th oh-th-center">Status</span>
+                <span class="oh-th oh-th-center">Action</span>
+            </div>
+
+            <!-- Table Rows -->
+            <div class="oh-table-body">
+                @foreach (var order in _pagedOrders)
+                {
+                    <div class="oh-table-row oh-table-grid" id="order-row-@order.SaleId"
+                         @onclick="@(() => OpenOrderModal(order))">
+
+                        <!-- Receipt Number -->
+                        <div class="oh-td">
+                            <span class="oh-receipt-num">@order.ReceiptNumber</span>
+                        </div>
+
+                        <!-- Date & Time -->
+                        <div class="oh-td">
+                            <span class="oh-date-main">@order.SaleDate.ToString("dd MMM yyyy")</span>
+                            <span class="oh-date-sub">@order.SaleDate.ToString("hh:mm tt")</span>
+                        </div>
+
+                        <!-- Items Count -->
+                        <div class="oh-td oh-td-center">
+                            <span class="oh-items-pill">@order.Items.Count item@(order.Items.Count != 1 ? "s" : "")</span>
+                        </div>
+
+                        <!-- Total -->
+                        <div class="oh-td oh-td-right">
+                            <span class="oh-total-amount">Rs. @order.TotalAmount.ToString("N0")</span>
+                        </div>
+
+                        <!-- Status Badge -->
+                        <div class="oh-td oh-td-center">
+                            <span class="oh-status-badge oh-status-@order.Status.ToString().ToLower()">
+                                @GetStatusIcon(order.Status) @order.Status
+                            </span>
+                        </div>
+
+                        <!-- Action -->
+                        <div class="oh-td oh-td-center" @onclick:stopPropagation="true">
+                            <button id="view-btn-@order.SaleId"
+                                    class="oh-view-btn"
+                                    @onclick="@(() => OpenOrderModal(order))">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- ── PAGINATION ─────────────────────────────────── -->
+            @if (_totalPages > 1)
+            {
+                <div class="oh-pagination">
+                    <button class="oh-page-btn"
+                            disabled="@(_currentPage <= 1)"
+                            @onclick="@(() => GoToPage(_currentPage - 1))">
+                        ‹ Prev
+                    </button>
+
+                    @for (int p = 1; p <= _totalPages; p++)
+                    {
+                        int pg = p;
+                        <button class="oh-page-btn @(pg == _currentPage ? "oh-page-btn--active" : "")"
+                                @onclick="@(() => GoToPage(pg))">
+                            @pg
+                        </button>
+                    }
+
+                    <button class="oh-page-btn"
+                            disabled="@(_currentPage >= _totalPages)"
+                            @onclick="@(() => GoToPage(_currentPage + 1))">
+                        Next ›
+                    </button>
+                </div>
+            }
+
+            <!-- Row count info -->
+            <p class="oh-row-count">
+                Showing @_pagedOrders.Count of @_orders.Count order@(_orders.Count != 1 ? "s" : "")
+            </p>
+        }
+    </section>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     ORDER DETAIL MODAL
+     ══════════════════════════════════════════════════════════════ -->
+@if (_showModal && _selectedOrder is not null)
+{
+    <div class="oh-modal-backdrop" @onclick="CloseModal"></div>
+
+    <div class="oh-modal" role="dialog" aria-modal="true" aria-labelledby="modal-receipt-title">
+
+        <!-- Modal Header -->
+        <div class="oh-modal-header">
+            <div>
+                <h2 id="modal-receipt-title" class="oh-modal-title">Order Details</h2>
+                <p class="oh-modal-receipt">@_selectedOrder.ReceiptNumber</p>
+            </div>
+            <button id="modal-close-btn" class="oh-modal-close" @onclick="CloseModal">✕</button>
+        </div>
+
+        <!-- Order Meta Strip -->
+        <div class="oh-modal-meta-strip">
+            <div class="oh-modal-meta-item">
+                <span class="oh-modal-meta-label">📅 Date</span>
+                <span class="oh-modal-meta-value">@_selectedOrder.SaleDate.ToString("dd MMM yyyy, hh:mm tt")</span>
+            </div>
+            <div class="oh-modal-meta-item">
+                <span class="oh-modal-meta-label">📦 Status</span>
+                <span class="oh-status-badge oh-status-@_selectedOrder.Status.ToString().ToLower()">
+                    @GetStatusIcon(_selectedOrder.Status) @_selectedOrder.Status
+                </span>
+            </div>
+            <div class="oh-modal-meta-item">
+                <span class="oh-modal-meta-label">🛒 Items</span>
+                <span class="oh-modal-meta-value">@_selectedOrder.Items.Count item@(_selectedOrder.Items.Count != 1 ? "s" : "")</span>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="oh-modal-items-header oh-modal-items-grid">
+            <span class="oh-mth">Product</span>
+            <span class="oh-mth oh-mth-center">Qty</span>
+            <span class="oh-mth oh-mth-right">Unit Price</span>
+            <span class="oh-mth oh-mth-right">Line Total</span>
+        </div>
+
+        <div class="oh-modal-items-body">
+            @foreach (var item in _selectedOrder.Items)
+            {
+                <div class="oh-modal-item-row oh-modal-items-grid">
+                    <span class="oh-item-name" title="@item.ProductName">@item.ProductName</span>
+                    <span class="oh-item-qty oh-td-center">× @item.Quantity</span>
+                    <span class="oh-item-price oh-td-right">Rs. @item.UnitPrice.ToString("N0")</span>
+                    <span class="oh-item-total oh-td-right">Rs. @item.LineTotal.ToString("N0")</span>
+                </div>
+            }
+        </div>
+
+        <!-- Totals Breakdown -->
+        <div class="oh-modal-totals">
+            <div class="oh-totals-row">
+                <span>Subtotal</span>
+                <span>Rs. @_selectedOrder.SubTotal.ToString("N0")</span>
+            </div>
+            @if (_selectedOrder.DiscountAmount > 0)
+            {
+                <div class="oh-totals-row oh-totals-discount">
+                    <span>Discount</span>
+                    <span>− Rs. @_selectedOrder.DiscountAmount.ToString("N0")</span>
+                </div>
+            }
+            <div class="oh-totals-row">
+                <span>Tax (17% GST)</span>
+                <span>Rs. @_selectedOrder.TaxAmount.ToString("N0")</span>
+            </div>
+            <div class="oh-totals-row oh-totals-grand">
+                <span>Total Paid</span>
+                <span>Rs. @_selectedOrder.TotalAmount.ToString("N0")</span>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="oh-modal-footer">
+            <button class="oh-btn-reset" @onclick="CloseModal">Close</button>
+        </div>
+    </div>
+}
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCOPED STYLES  — ALL COLORS FROM colors.css VARIABLES
+     ══════════════════════════════════════════════════════════════ -->
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@@300;400;500;600;700;800&display=swap');
+
+    /* ── Scope Reset ── */
+    .oh-root *,
+    .oh-modal *,
+    .oh-modal-backdrop {
+        box-sizing: border-box;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* ════════════════════════════════════════════
+       ROOT WRAPPER
+       ════════════════════════════════════════════ */
+    .oh-root {
+        min-height: 100vh;
+        background: var(--color-page-bg);
+        color: var(--color-primary-text);
+        padding: 2rem 2.5rem 4rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* ════════════════════════════════════════════
+       PAGE HEADER
+       ════════════════════════════════════════════ */
+    .oh-page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid rgba(61,28,2,.1);
+    }
+
+    .oh-header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .oh-header-icon {
+        font-size: 2.4rem;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    .oh-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        margin: 0 0 .2rem;
+        letter-spacing: -.4px;
+    }
+
+    .oh-subtitle {
+        font-size: .875rem;
+        color: var(--color-primary-text);
+        opacity: .55;
+        margin: 0;
+        font-weight: 400;
+    }
+
+    /* Summary Chips */
+    .oh-summary-chips {
+        display: flex;
+        gap: .85rem;
+        flex-wrap: wrap;
+    }
+
+    .oh-chip {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: var(--color-card-bg);
+        border: 1.5px solid rgba(61,28,2,.12);
+        border-radius: 12px;
+        padding: .6rem 1.25rem;
+        min-width: 90px;
+        box-shadow: 0 2px 8px rgba(61,28,2,.07);
+        transition: transform .16s, box-shadow .16s;
+    }
+
+    .oh-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(61,28,2,.12);
+    }
+
+    .oh-chip--accent {
+        background: var(--color-navbar-bg);
+        border-color: var(--color-navbar-bg);
+    }
+
+    .oh-chip--accent .oh-chip-value,
+    .oh-chip--accent .oh-chip-label {
+        color: var(--color-page-bg);
+    }
+
+    .oh-chip-value {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        line-height: 1.2;
+    }
+
+    .oh-chip-label {
+        font-size: .65rem;
+        font-weight: 600;
+        letter-spacing: .6px;
+        text-transform: uppercase;
+        color: var(--color-primary-text);
+        opacity: .55;
+        margin-top: .15rem;
+    }
+
+    /* ════════════════════════════════════════════
+       FILTER BAR
+       ════════════════════════════════════════════ */
+    .oh-filter-bar {
+        display: flex;
+        align-items: flex-end;
+        gap: 1rem;
+        flex-wrap: wrap;
+        background: var(--color-card-bg);
+        border: 1.5px solid rgba(61,28,2,.1);
+        border-radius: 16px;
+        padding: 1.1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 10px rgba(61,28,2,.06);
+    }
+
+    .oh-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+        flex: 1;
+        min-width: 140px;
+    }
+
+    .oh-filter-label {
+        font-size: .68rem;
+        font-weight: 700;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+        color: var(--color-heading-text);
+        opacity: .65;
+    }
+
+    .oh-filter-input,
+    .oh-filter-select {
+        height: 40px;
+        padding: 0 .85rem;
+        border: 1.5px solid rgba(61,28,2,.18);
+        border-radius: 10px;
+        background: var(--color-page-bg);
+        color: var(--color-primary-text);
+        font-size: .875rem;
+        font-weight: 500;
+        outline: none;
+        cursor: pointer;
+        transition: border-color .18s, box-shadow .18s;
+        width: 100%;
+    }
+
+    .oh-filter-input:focus,
+    .oh-filter-select:focus {
+        border-color: var(--color-border-accent);
+        box-shadow: 0 0 0 3px rgba(196,132,138,.2);
+    }
+
+    .oh-filter-select { appearance: auto; }
+
+    .oh-filter-actions {
+        display: flex;
+        gap: .6rem;
+        align-items: flex-end;
+        flex-shrink: 0;
+    }
+
+    .oh-btn-apply {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        height: 40px;
+        padding: 0 1.2rem;
+        font-size: .875rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .16s, transform .12s, box-shadow .16s;
+        letter-spacing: .2px;
+    }
+
+    .oh-btn-apply:hover {
+        background: var(--color-button-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(196,132,138,.35);
+    }
+
+    .oh-btn-reset {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        background: transparent;
+        color: var(--color-heading-text);
+        border: 1.5px solid rgba(61,28,2,.22);
+        border-radius: 10px;
+        height: 40px;
+        padding: 0 1rem;
+        font-size: .875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background .15s, border-color .15s;
+    }
+
+    .oh-btn-reset:hover {
+        background: rgba(61,28,2,.07);
+        border-color: var(--color-heading-text);
+    }
+
+    /* ════════════════════════════════════════════
+       ERROR BANNER
+       ════════════════════════════════════════════ */
+    .oh-error-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #fff0f0;
+        border: 1.5px solid #f4b8b8;
+        border-radius: 10px;
+        padding: .8rem 1.1rem;
+        margin-bottom: 1.25rem;
+        color: #8b2121;
+        font-size: .88rem;
+        font-weight: 500;
+    }
+
+    .oh-error-dismiss {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: .85rem;
+        color: #8b2121;
+        opacity: .55;
+        padding: 0;
+        transition: opacity .15s;
+    }
+    .oh-error-dismiss:hover { opacity: 1; }
+
+    /* ════════════════════════════════════════════
+       TABLE PANEL
+       ════════════════════════════════════════════ */
+    .oh-table-panel {
+        background: var(--color-card-bg);
+        border: 1.5px solid rgba(61,28,2,.1);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(61,28,2,.08);
+    }
+
+    /* Grid layout for 6 columns */
+    .oh-table-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 0.6fr 0.8fr 0.7fr 0.65fr;
+        align-items: center;
+        gap: 0;
+    }
+
+    /* Column Header Row */
+    .oh-table-header {
+        background: var(--color-navbar-bg);
+        padding: .85rem 1.25rem;
+    }
+
+    .oh-th {
+        font-size: .67rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--color-page-bg);
+        opacity: .75;
+        padding: 0 .5rem;
+    }
+
+    .oh-th-center { text-align: center; }
+    .oh-th-right  { text-align: right; }
+
+    /* Data Rows */
+    .oh-table-body { padding: .3rem 0; }
+
+    .oh-table-row {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid rgba(61,28,2,.07);
+        cursor: pointer;
+        transition: background .15s, transform .1s;
+    }
+
+    .oh-table-row:last-child { border-bottom: none; }
+
+    .oh-table-row:hover {
+        background: rgba(196,132,138,.08);
+        transform: translateX(2px);
+    }
+
+    /* TD Cells */
+    .oh-td {
+        padding: 0 .5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .oh-td-center {
+        align-items: center;
+        text-align: center;
+    }
+
+    .oh-td-right {
+        align-items: flex-end;
+        text-align: right;
+    }
+
+    /* Receipt Number */
+    .oh-receipt-num {
+        font-size: .8rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-family: 'Courier New', monospace;
+    }
+
+    /* Date */
+    .oh-date-main {
+        font-size: .875rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+    }
+    .oh-date-sub {
+        font-size: .72rem;
+        color: var(--color-primary-text);
+        opacity: .5;
+        font-weight: 400;
+        margin-top: .1rem;
+    }
+
+    /* Items Pill */
+    .oh-items-pill {
+        display: inline-block;
+        background: rgba(61,28,2,.08);
+        color: var(--color-heading-text);
+        font-size: .72rem;
+        font-weight: 700;
+        padding: .22rem .65rem;
+        border-radius: 50px;
+        letter-spacing: .3px;
+    }
+
+    /* Total */
+    .oh-total-amount {
+        font-size: .95rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+    }
+
+    /* ── Status Badges ── */
+    .oh-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        padding: .28rem .7rem;
+        border-radius: 50px;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+
+    /* Completed — green tones */
+    .oh-status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    /* Voided — warm grey/brown tone aligned with brand */
+    .oh-status-voided {
+        background: rgba(61,28,2,.1);
+        color: var(--color-heading-text);
+    }
+
+    /* Refunded — muted rose aligned with brand accent */
+    .oh-status-refunded {
+        background: rgba(196,132,138,.2);
+        color: #7a3040;
+    }
+
+    /* View Button */
+    .oh-view-btn {
+        background: var(--color-button-primary);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: .35rem .8rem;
+        font-size: .75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .15s, transform .1s, box-shadow .15s;
+        letter-spacing: .2px;
+        white-space: nowrap;
+    }
+
+    .oh-view-btn:hover {
+        background: var(--color-button-hover);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(196,132,138,.3);
+    }
+
+    /* ── Pagination ── */
+    .oh-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .4rem;
+        padding: 1.25rem 1.5rem .75rem;
+        border-top: 1px solid rgba(61,28,2,.08);
+        flex-wrap: wrap;
+    }
+
+    .oh-page-btn {
+        background: var(--color-page-bg);
+        border: 1.5px solid rgba(61,28,2,.18);
+        color: var(--color-primary-text);
+        border-radius: 8px;
+        padding: .4rem .75rem;
+        font-size: .82rem;
+        font-weight: 600;
+        cursor: pointer;
+        min-width: 2.2rem;
+        text-align: center;
+        transition: background .14s, border-color .14s, color .14s;
+    }
+
+    .oh-page-btn:hover:not(:disabled) {
+        background: rgba(196,132,138,.14);
+        border-color: var(--color-border-accent);
+        color: var(--color-heading-text);
+    }
+
+    .oh-page-btn--active {
+        background: var(--color-button-primary);
+        border-color: var(--color-button-primary);
+        color: #fff;
+        font-weight: 800;
+    }
+
+    .oh-page-btn:disabled {
+        opacity: .35;
+        cursor: not-allowed;
+    }
+
+    .oh-row-count {
+        text-align: center;
+        font-size: .75rem;
+        color: var(--color-primary-text);
+        opacity: .45;
+        padding: 0 1.5rem .9rem;
+        margin: 0;
+    }
+
+    /* ── Loading Skeleton ── */
+    .oh-skeleton-wrapper { padding: .5rem 0; }
+
+    .oh-skeleton-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 0.6fr 0.8fr 0.7fr 0.65fr;
+        gap: 0;
+        padding: 1.1rem 1.25rem;
+        border-bottom: 1px solid rgba(61,28,2,.06);
+    }
+
+    .oh-skel {
+        height: 14px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, rgba(61,28,2,.07) 25%, rgba(61,28,2,.13) 50%, rgba(61,28,2,.07) 75%);
+        background-size: 200% 100%;
+        animation: oh-shimmer 1.4s infinite;
+        margin: auto .5rem;
+    }
+
+    .oh-skel-xs { width: 55%; }
+    .oh-skel-sm { width: 70%; }
+    .oh-skel-md { width: 85%; }
+
+    @@keyframes oh-shimmer {
+        0%   { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* ── Empty State ── */
+    .oh-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        gap: .85rem;
+    }
+
+    .oh-empty-icon {
+        font-size: 3.5rem;
+        line-height: 1;
+        opacity: .55;
+    }
+
+    .oh-empty-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        margin: 0;
+    }
+
+    .oh-empty-sub {
+        font-size: .875rem;
+        color: var(--color-primary-text);
+        opacity: .55;
+        margin: 0;
+        text-align: center;
+        max-width: 340px;
+        line-height: 1.55;
+    }
+
+    /* ════════════════════════════════════════════
+       ORDER DETAIL MODAL
+       ════════════════════════════════════════════ */
+    .oh-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(61,28,2,.45);
+        z-index: 900;
+        backdrop-filter: blur(3px);
+        animation: oh-fade-in .2s ease;
+    }
+
+    .oh-modal {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 910;
+        background: var(--color-card-bg);
+        border-radius: 20px;
+        width: min(680px, 96vw);
+        max-height: 88vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 64px rgba(61,28,2,.3);
+        animation: oh-slide-in .22s cubic-bezier(.34,1.26,.64,1);
+    }
+
+    @@keyframes oh-fade-in {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+
+    @@keyframes oh-slide-in {
+        from { opacity: 0; transform: translate(-50%, -46%); }
+        to   { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    .oh-modal-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 1.5rem 1.75rem 1.1rem;
+        border-bottom: 1.5px solid rgba(61,28,2,.1);
+        background: var(--color-navbar-bg);
+        border-radius: 20px 20px 0 0;
+    }
+
+    .oh-modal-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--color-page-bg);
+        margin: 0 0 .2rem;
+        letter-spacing: -.3px;
+    }
+
+    .oh-modal-receipt {
+        font-size: .75rem;
+        color: var(--color-page-bg);
+        opacity: .6;
+        margin: 0;
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+    }
+
+    .oh-modal-close {
+        background: rgba(255,248,220,.15);
+        border: 1px solid rgba(255,248,220,.3);
+        color: var(--color-page-bg);
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        font-size: .9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: background .15s;
+    }
+
+    .oh-modal-close:hover { background: rgba(255,248,220,.3); }
+
+    /* Meta Strip */
+    .oh-modal-meta-strip {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        padding: 1rem 1.75rem;
+        background: rgba(61,28,2,.03);
+        border-bottom: 1px solid rgba(61,28,2,.08);
+    }
+
+    .oh-modal-meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: .2rem;
+    }
+
+    .oh-modal-meta-label {
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: .7px;
+        text-transform: uppercase;
+        color: var(--color-primary-text);
+        opacity: .5;
+    }
+
+    .oh-modal-meta-value {
+        font-size: .88rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+    }
+
+    /* Items Grid */
+    .oh-modal-items-grid {
+        display: grid;
+        grid-template-columns: 1fr 0.3fr 0.55fr 0.55fr;
+        gap: 0;
+    }
+
+    .oh-modal-items-header {
+        padding: .7rem 1.75rem;
+        background: rgba(61,28,2,.05);
+        border-bottom: 1px solid rgba(61,28,2,.08);
+    }
+
+    .oh-mth {
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: var(--color-heading-text);
+        opacity: .55;
+        padding: 0 .4rem;
+    }
+
+    .oh-mth-center { text-align: center; }
+    .oh-mth-right  { text-align: right; }
+
+    .oh-modal-items-body { padding: .4rem 0; }
+
+    .oh-modal-item-row {
+        padding: .75rem 1.75rem;
+        border-bottom: 1px solid rgba(61,28,2,.06);
+        transition: background .14s;
+    }
+
+    .oh-modal-item-row:last-child { border-bottom: none; }
+    .oh-modal-item-row:hover { background: rgba(196,132,138,.07); }
+
+    .oh-item-name {
+        font-size: .875rem;
+        font-weight: 600;
+        color: var(--color-heading-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 0 .4rem;
+    }
+
+    .oh-item-qty {
+        font-size: .85rem;
+        font-weight: 500;
+        color: var(--color-primary-text);
+        opacity: .7;
+        text-align: center;
+        padding: 0 .4rem;
+    }
+
+    .oh-item-price {
+        font-size: .875rem;
+        color: var(--color-primary-text);
+        opacity: .7;
+        text-align: right;
+        padding: 0 .4rem;
+    }
+
+    .oh-item-total {
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--color-heading-text);
+        text-align: right;
+        padding: 0 .4rem;
+    }
+
+    /* Totals Breakdown */
+    .oh-modal-totals {
+        border-top: 2px solid rgba(61,28,2,.1);
+        padding: 1rem 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: .55rem;
+    }
+
+    .oh-totals-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: .875rem;
+        color: var(--color-primary-text);
+        font-weight: 500;
+    }
+
+    .oh-totals-discount { color: #3d7a4c; }
+
+    .oh-totals-grand {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--color-heading-text);
+        border-top: 1.5px solid rgba(61,28,2,.12);
+        padding-top: .55rem;
+        margin-top: .2rem;
+    }
+
+    /* Modal Footer */
+    .oh-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: .9rem 1.75rem 1.25rem;
+        border-top: 1px solid rgba(61,28,2,.08);
+    }
+
+    /* ════════════════════════════════════════════
+       RESPONSIVE
+       ════════════════════════════════════════════ */
+    @@media (max-width: 900px) {
+        .oh-root { padding: 1.25rem 1rem 3rem; }
+        .oh-page-header { flex-direction: column; align-items: flex-start; }
+        .oh-table-grid,
+        .oh-skeleton-row {
+            grid-template-columns: 1fr 1fr 0.5fr 0.7fr;
+        }
+        /* Hide items count and action on small screens — show only receipt, date, total, status */
+        .oh-table-grid > *:nth-child(3),
+        .oh-table-grid > *:nth-child(6) { display: none; }
+        .oh-skeleton-row > *:nth-child(3),
+        .oh-skeleton-row > *:nth-child(6) { display: none; }
+    }
+
+    @@media (max-width: 600px) {
+        .oh-filter-bar { flex-direction: column; }
+        .oh-filter-group { min-width: 100%; }
+        .oh-filter-actions { width: 100%; }
+        .oh-btn-apply, .oh-btn-reset { flex: 1; justify-content: center; }
+        .oh-summary-chips { width: 100%; }
+        .oh-chip { flex: 1; }
+    }
+</style>
+
+
+@code {
+    // ──────────────────────────────────────────────────────────────
+    //  AUTHENTICATION PLACEHOLDER
+    //  TODO: Replace _placeholderCustomerId with the real logged-in
+    //  customer's UserId once MaryamJ's authentication branch is
+    //  merged. Wire this up via an injected IAuthService or a
+    //  cascading AuthenticationState parameter.
+    // ──────────────────────────────────────────────────────────────
+    private const int _placeholderCustomerId = 1;
+
+    // ── State ──────────────────────────────────────────────────────
+    private List<SaleResultDto> _orders        = new();
+    private List<SaleResultDto> _pagedOrders   = new();
+    private SaleFilterDto       _filter        = new();
+    private bool                _isLoading     = true;
+    private string?             _errorMessage;
+
+    // ── Modal ──────────────────────────────────────────────────────
+    private bool          _showModal     = false;
+    private SaleResultDto? _selectedOrder;
+
+    // ── Pagination ─────────────────────────────────────────────────
+    private int _currentPage  = 1;
+    private int _pageSize     = 10;
+    private int _totalPages   = 1;
+
+    // ──────────────────────────────────────────────────────────────
+    //  Lifecycle
+    // ──────────────────────────────────────────────────────────────
+    protected override async Task OnInitializedAsync()
+    {
+        // Seed the filter with the placeholder customer ID.
+        // TODO: Replace with authenticated user ID once MaryamJ's
+        //       auth service is available and merged.
+        _filter = new SaleFilterDto
+        {
+            UserId = _placeholderCustomerId
+        };
+
+        await LoadOrders();
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Data Loading
+    // ──────────────────────────────────────────────────────────────
+    private async Task LoadOrders()
+    {
+        _isLoading    = true;
+        _errorMessage = null;
+        StateHasChanged();
+
+        var result = await SaleService.GetAll(_filter);
+
+        if (result.Success && result.Data is not null)
+        {
+            _orders = result.Data;
+        }
+        else
+        {
+            _orders       = new();
+            _errorMessage = result.Message;
+        }
+
+        _currentPage = 1;
+        UpdatePage();
+        _isLoading = false;
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Filter Handlers
+    // ──────────────────────────────────────────────────────────────
+    private void OnFromDateChange(string? value)
+    {
+        _filter.From = DateTime.TryParse(value, out var dt) ? dt : null;
+    }
+
+    private void OnToDateChange(string? value)
+    {
+        _filter.To = DateTime.TryParse(value, out var dt) ? dt : null;
+    }
+
+    private void OnStatusChange(string? value)
+    {
+        _filter.Status = Enum.TryParse<SaleStatus>(value, out var s) ? s : null;
+    }
+
+    private void OnSaleTypeChange(string? value)
+    {
+        _filter.SaleType = Enum.TryParse<SaleType>(value, out var t) ? t : null;
+    }
+
+    private async Task ApplyFilters() => await LoadOrders();
+
+    private async Task ResetFilters()
+    {
+        _filter = new SaleFilterDto
+        {
+            // TODO: Replace with real authenticated user ID when MaryamJ's
+            //       auth branch is merged.
+            UserId = _placeholderCustomerId
+        };
+        await LoadOrders();
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Pagination
+    // ──────────────────────────────────────────────────────────────
+    private void UpdatePage()
+    {
+        _totalPages  = (int)Math.Ceiling(_orders.Count / (double)_pageSize);
+        if (_totalPages < 1) _totalPages = 1;
+        _pagedOrders = _orders
+            .Skip((_currentPage - 1) * _pageSize)
+            .Take(_pageSize)
+            .ToList();
+    }
+
+    private void GoToPage(int page)
+    {
+        if (page < 1 || page > _totalPages) return;
+        _currentPage = page;
+        UpdatePage();
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Modal
+    // ──────────────────────────────────────────────────────────────
+    private void OpenOrderModal(SaleResultDto order)
+    {
+        _selectedOrder = order;
+        _showModal     = true;
+    }
+
+    private void CloseModal()
+    {
+        _showModal     = false;
+        _selectedOrder = null;
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    //  Helpers
+    // ──────────────────────────────────────────────────────────────
+    private static string GetStatusIcon(SaleStatus status) => status switch
+    {
+        SaleStatus.Completed => "✅",
+        SaleStatus.Voided    => "🚫",
+        SaleStatus.Refunded  => "↩️",
+        _                    => "•"
+    };
+}

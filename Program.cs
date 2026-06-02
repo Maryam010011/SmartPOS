@@ -8,8 +8,35 @@ using SmartPOS.Web.Services.Shahzain;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ─── API Controllers ───────────────────────────────────────────
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// ─── HttpClient (required by FBRService and AIChatbotService) ──
+builder.Services.AddHttpClient();
+
+// ─── Shahzain's Service Registrations ─────────────────────────
+builder.Services.AddScoped<IProductService,     ProductService>();
+builder.Services.AddScoped<ICategoryService,    CategoryService>();
+builder.Services.AddScoped<ISupplierService,    SupplierService>();
+builder.Services.AddScoped<ISaleService,        SaleService>();
+builder.Services.AddScoped<IReviewService,      ReviewService>();
+builder.Services.AddScoped<IAIChatbotService,   AIChatbotService>();
+builder.Services.AddScoped<IFBRService,         FBRService>();
+builder.Services.AddScoped<IBERTService,        BERTService>();
+//builder.Services.AddScoped<IInventoryService,   InventoryServiceStub>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IWeatherService,     WeatherService>();
+
+// ─── Shared Cart State (Scoped = per Blazor Server circuit / user session) ───
+builder.Services.AddScoped<CartStateService>();
+
+// ─── MaryamY's Service Registrations ──────────────────────────
+builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 
 // ─── API Controllers ───────────────────────────────────────────
 builder.Services.AddControllers();
@@ -58,6 +85,7 @@ builder.Services.AddScoped<IWeatherService,     WeatherService>();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -85,9 +113,5 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-//await DatabaseSeeder.SeedAsync(app.Services);
-using (var scope = app.Services.CreateScope())
-{
-     await DatabaseSeeder.SeedAsync(scope.ServiceProvider);
-}
+await DatabaseSeeder.SeedAsync(app.Services);
 await app.RunAsync();

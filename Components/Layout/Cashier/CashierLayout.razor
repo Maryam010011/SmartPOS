@@ -1,0 +1,55 @@
+@namespace SmartPOS.Components.Layout
+@inherits LayoutComponentBase
+
+<div class="cashier-layout-shell">
+
+    <CashierNavbar OnAvatarClick="OpenDrawer" />
+
+    <ProfileDrawer IsOpen="@_drawerOpen"
+                   OnClose="CloseDrawer"
+                   DisplayName="Cashier"
+                   RoleName="Cashier"
+                   RoleColor="var(--role-cashier-accent, #7EB89A)"
+                   DashboardRoute="/cashier/pos"
+                   SettingsRoute="" />
+
+    <main class="cashier-main" id="cashier-content">
+        <div class="cashier-content-wrap">
+            @Body
+        </div>
+    </main>
+
+    <Footer />
+
+</div>
+
+@code {
+    private bool _drawerOpen = false;
+
+    private void OpenDrawer()  => _drawerOpen = true;
+    private void CloseDrawer() => _drawerOpen = false;
+}
+
+<style>
+    .cashier-layout-shell {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background: var(--surface-0, #FFF8DC);
+        font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+    }
+
+    .cashier-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cashier-content-wrap {
+        flex: 1;
+        width: 100%;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0;
+    }
+</style>
