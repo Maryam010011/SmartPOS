@@ -1,0 +1,7 @@
+@page "/manager/inventory"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Manager,Admin")]
+@layout SmartPOS.Components.Layout.ManagerLayout
+
+<h3>Manager Inventory</h3>
+<p>Only Managers (and Admins) can see this page.</p>

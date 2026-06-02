@@ -1,0 +1,7 @@
+@page "/cashier/pos"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Cashier,Admin")]
+@layout SmartPOS.Components.Layout.CashierLayout
+
+<h3>POS Terminal</h3>
+<p>Only Cashiers can access this page.</p>

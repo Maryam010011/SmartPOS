@@ -1,0 +1,34 @@
+@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@using SmartPOS.Providers
+@using Blazored.LocalStorage
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+
+<div class="page" style="display: flex; flex-direction: column; min-height: 100vh; background-color: #f4ecd8;">
+    <header style="background-color: #593626; color: #f4ecd8; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="color: #e9cac9; margin: 0;">SmartPOS+ <span style="font-size: 0.6em; color: white;">Customer Portal</span></h2>
+        
+        <nav style="display: flex; gap: 20px;">
+            <a class="nav-link text-white" href="customer/shop">Shop</a>
+            <a class="nav-link text-white" href="customer/profile">My Profile</a>
+            <button @onclick="Logout" class="btn btn-sm btn-outline-light" style="color: #e9cac9; border-color: #e9cac9;">Logout</button>
+        </nav>
+    </header>
+
+    <main style="flex-grow: 1; padding: 30px;">
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private async Task Logout()
+    {
+        await LocalStorage.RemoveItemAsync("authToken");
+        ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("/login");
+    }
+}

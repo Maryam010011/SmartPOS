@@ -1,0 +1,194 @@
+@page "/register"
+@using SmartPOS.Services
+@using SmartPOS.Providers
+@using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.EntityFrameworkCore
+@using SmartPOS.Data
+@using SmartPOS.Models
+@inject AppDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject ILogger<Register> Logger
+
+<PageTitle>Register - SmartPOS+</PageTitle>
+
+<link href="css/auth.css" rel="stylesheet" />
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header" style="height: 150px;">
+            <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=400&q=80" alt="POS System" />
+        </div>
+        <div class="auth-body">
+            <div class="auth-tabs">
+                <a href="/login" class="auth-tab">Sign In</a>
+                <a class="auth-tab active">Sign Up</a>
+            </div>
+
+            <EditForm Model="@registerModel" OnValidSubmit="HandleRegister" FormName="registerForm">
+                <DataAnnotationsValidator />
+
+                <div class="auth-form-group">
+                    <span class="auth-icon">👤</span>
+                    <InputText @bind-Value="registerModel.Name" class="auth-input" placeholder="Full Name:" />
+                    <ValidationMessage For="@(() => registerModel.Name)" class="text-danger" />
+                </div>
+
+                <div class="auth-form-group">
+                    <span class="auth-icon">✉</span>
+                    <InputText @bind-Value="registerModel.Email" class="auth-input" placeholder="Email Address:" />
+                    <ValidationMessage For="@(() => registerModel.Email)" class="text-danger" />
+                </div>
+
+                <div class="auth-form-group">
+                    <span class="auth-icon">🔒</span>
+                    <InputText @bind-Value="registerModel.Password" type="password" class="auth-input" placeholder="Password:" />
+                    <ValidationMessage For="@(() => registerModel.Password)" class="text-danger" />
+                </div>
+
+                <div class="auth-form-group">
+                    <span class="auth-icon">🔒</span>
+                    <InputText @bind-Value="registerModel.ConfirmPassword" type="password" class="auth-input" placeholder="Confirm Password:" />
+                    <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="text-danger" />
+                </div>
+
+                <div class="auth-form-group">
+                    <span class="auth-icon">👔</span>
+                    <InputSelect @bind-Value="registerModel.SelectedRoleId" class="auth-input">
+                        <option value="0">Select your role...</option>
+                        @foreach (var role in availableRoles)
+                        {
+                            <option value="@role.Id">@role.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => registerModel.SelectedRoleId)" class="text-danger" />
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="text-danger" style="margin-bottom: 10px; text-align: center;">@errorMessage</div>
+                }
+
+                @if (isSuccess)
+                {
+                    <div style="color: #4CAF50; margin-bottom: 10px; text-align: center;">Registration successful! Redirecting to login...</div>
+                }
+
+                <button type="submit" class="auth-btn" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span>Loading...</span>
+                    }
+                    else
+                    {
+                        <span>Sign Up</span>
+                    }
+                </button>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private RegisterModel registerModel = new();
+    private List<Role> availableRoles = new();
+    private string? errorMessage;
+    private bool isLoading;
+    private bool isSuccess;
+
+    protected override async Task OnInitializedAsync()
+    {
+        availableRoles = await DbContext.Roles
+            .Where(r => r.Name != "Admin")
+            .ToListAsync();
+    }
+
+    private async Task HandleRegister()
+    {
+        if (isLoading) return;
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            var existingUser = await DbContext.Users.FirstOrDefaultAsync(u => u.Email == registerModel.Email);
+            if (existingUser != null)
+            {
+                errorMessage = "Email is already registered.";
+                return;
+            }
+
+            if (registerModel.SelectedRoleId == 0)
+            {
+                errorMessage = "Please select a role.";
+                return;
+            }
+
+            var selectedRole = await DbContext.Roles.FirstOrDefaultAsync(r => r.Id == registerModel.SelectedRoleId);
+            if (selectedRole == null)
+            {
+                errorMessage = "Invalid role selected.";
+                return;
+            }
+
+            var newUser = new User
+            {
+                Name = registerModel.Name,
+                Email = registerModel.Email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerModel.Password),
+                RoleId = selectedRole.Id,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            DbContext.Users.Add(newUser);
+            await DbContext.SaveChangesAsync();
+
+            if (selectedRole.Name == "Customer")
+            {
+                var customerProfile = new Customer
+                {
+                    UserId = newUser.Id
+                };
+                DbContext.Customers.Add(customerProfile);
+                await DbContext.SaveChangesAsync();
+            }
+
+            isSuccess = true;
+            await Task.Delay(2000);
+            NavigationManager.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Registration failed for email {Email}", registerModel.Email);
+            errorMessage = ex.Message.Contains("role")
+                ? ex.Message
+                : "An error occurred during registration. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    public class RegisterModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Name is required.")]
+        public string Name { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email is required.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Invalid email format.")]
+        public string Email { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Password is required.")]
+        [System.ComponentModel.DataAnnotations.MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
+        public string Password { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Confirm Password is required.")]
+        [System.ComponentModel.DataAnnotations.Compare("Password", ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Range(1, int.MaxValue, ErrorMessage = "Please select a role.")]
+        public int SelectedRoleId { get; set; }
+    }
+}
