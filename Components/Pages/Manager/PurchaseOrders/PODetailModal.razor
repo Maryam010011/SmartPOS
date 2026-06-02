@@ -1,0 +1,352 @@
+@using SmartPOS.Shared.DTOs.PurchaseOrders
+@using SmartPOS.Shared.DTOs.Users
+@using SmartPOS.Shared.Enums
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@inject IPurchaseOrderService PurchaseOrderService
+@inject IUserService UserService
+@inject ISupplierService SupplierService
+
+@if (IsOpen)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content card-pos">
+                <div class="modal-header border-bottom d-flex justify-content-between align-items-center px-4 py-3">
+                    <h5 class="modal-title fw-bold m-0 d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3 4.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5zM5 6v1h6V6zm0 2v1h4V8zm0 2v1h6v-1z"/>
+                            <path d="M2 2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zm0 1h12v10H2z"/>
+                        </svg>
+                        Purchase Order #@CurrentPo?.Id
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="Close"></button>
+                </div>
+
+                @if (IsLoadingDetail)
+                {
+                    <div class="text-center py-5">
+                        <div class="spinner-border" style="color: var(--color-button-primary);" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted mt-2">Loading details...</p>
+                    </div>
+                }
+                else if (CurrentPo != null)
+                {
+                    <div class="modal-body px-4 py-3">
+                        <!-- PO Header Info -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="text-secondary small fw-semibold d-block">Supplier</label>
+                                <span class="fw-bold text-dark">@CurrentPo.SupplierName</span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-secondary small fw-semibold d-block">Created By</label>
+                                <span class="text-dark">@CreatedByName</span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-secondary small fw-semibold d-block">Status</label>
+                                @GetStatusBadge(CurrentPo.Status)
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-secondary small fw-semibold d-block">Order Date</label>
+                                <span class="text-dark">@CurrentPo.OrderDate.ToString("dd MMM yyyy")</span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-secondary small fw-semibold d-block">Received At</label>
+                                <span class="text-dark">
+                                    @(CurrentPo.ReceivedAt.HasValue ? CurrentPo.ReceivedAt.Value.ToString("dd MMM yyyy HH:mm") : "-")
+                                </span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-secondary small fw-semibold d-block">Total Cost</label>
+                                <span class="fw-bold fs-5" style="color: var(--color-button-primary);">Rs @CurrentPo.TotalCost.ToString("N2")</span>
+                            </div>
+                        </div>
+
+                        <!-- Notes -->
+                        @if (!string.IsNullOrWhiteSpace(CurrentPo.Notes))
+                        {
+                            <div class="mb-3">
+                                <label class="text-secondary small fw-semibold d-block mb-1">Notes</label>
+                                <div class="bg-light rounded p-3 text-dark">@CurrentPo.Notes</div>
+                            </div>
+                        }
+
+                        <!-- Line Items -->
+                        <div>
+                            <label class="text-secondary small fw-semibold d-block mb-1">Line Items</label>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle m-0 table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="px-3">#</th>
+                                            <th>Product</th>
+                                            <th class="text-center">Qty</th>
+                                            <th class="text-end">Unit Price</th>
+                                            <th class="text-end">Line Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{
+                                            var idx = 1;
+                                        }
+                                        @foreach (var item in CurrentPo.LineItems)
+                                        {
+                                            <tr>
+                                                <td class="px-3 text-muted">@idx</td>
+                                                <td class="fw-semibold">@item.ProductName</td>
+                                                <td class="text-center">@item.OrderedQty</td>
+                                                <td class="text-end">Rs @item.UnitPrice.ToString("N2")</td>
+                                                <td class="text-end fw-semibold">Rs @item.LineTotal.ToString("N2")</td>
+                                            </tr>
+                                            idx++;
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="table-light fw-bold">
+                                            <td colspan="4" class="text-end px-3">Total</td>
+                                            <td class="text-end" style="color: var(--color-button-primary);">Rs @CurrentPo.TotalCost.ToString("N2")</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top d-flex justify-content-between px-4 py-3">
+                        <div>
+                            @if (CurrentPo.Status == POStatus.Draft)
+                            {
+                                <button class="btn btn-outline-primary btn-sm fw-semibold" @onclick="MarkAsSent" disabled="@IsSavingAction">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                                    </svg>
+                                    Mark as Sent
+                                </button>
+                            }
+                            @if (CurrentPo.Status == POStatus.Draft || CurrentPo.Status == POStatus.Sent)
+                            {
+                                <button class="btn btn-success btn-sm fw-semibold" @onclick="MarkAsReceived" disabled="@IsSavingAction">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M10.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0"/>
+                                        <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1"/>
+                                    </svg>
+                                    Mark as Received
+                                </button>
+                            }
+                            @if (CurrentPo.Status == POStatus.Draft || CurrentPo.Status == POStatus.Sent)
+                            {
+                                <button class="btn btn-outline-danger btn-sm fw-semibold" @onclick="() => ShowCancelConfirm = true" disabled="@IsSavingAction">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                    </svg>
+                                    Cancel PO
+                                </button>
+                            }
+                        </div>
+                        <button class="btn btn-outline-secondary btn-sm" @onclick="Close">Close</button>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <p class="text-muted">Purchase order not found.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Confirmation Sub-Modal -->
+    @if (ShowCancelConfirm && CurrentPo != null)
+    {
+        <div class="modal fade show d-block" style="background: rgba(0,0,0,0.3); z-index: 1060;" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered modal-sm">
+                <div class="modal-content card-pos border border-danger-subtle">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h6 class="modal-title fw-bold text-danger">Cancel PO #@CurrentPo.Id</h6>
+                        <button type="button" class="btn-close" @onclick="() => ShowCancelConfirm = false"></button>
+                    </div>
+                    <div class="modal-body py-2">
+                        <p class="text-dark m-0 small">Are you sure? This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer border-top-0 pt-0 d-flex justify-content-end gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" @onclick="() => ShowCancelConfirm = false" disabled="@IsSavingAction">Keep</button>
+                        <button class="btn btn-danger btn-sm fw-bold" @onclick="DoCancel" disabled="@IsSavingAction">
+                            @if (IsSavingAction)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1"></span>
+                                <span>Cancelling...</span>
+                            }
+                            else
+                            {
+                                <span>Yes, Cancel</span>
+                            }
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    [Parameter] public EventCallback OnStatusChanged { get; set; }
+
+    private bool IsOpen;
+    private bool IsLoadingDetail;
+    private bool IsSavingAction;
+    private bool ShowCancelConfirm;
+    private PurchaseOrderDto? CurrentPo;
+    private string CreatedByName = "-";
+    private int? PoIdToLoad;
+
+    public async Task Open(int poId)
+    {
+        PoIdToLoad = poId;
+        IsOpen = true;
+        ShowCancelConfirm = false;
+        await LoadDetail();
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        IsOpen = false;
+        CurrentPo = null;
+        PoIdToLoad = null;
+        ShowCancelConfirm = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadDetail()
+    {
+        if (!PoIdToLoad.HasValue) return;
+
+        IsLoadingDetail = true;
+        StateHasChanged();
+
+        try
+        {
+            var poResult = await PurchaseOrderService.GetById(PoIdToLoad.Value);
+            if (poResult.Success && poResult.Data != null)
+            {
+                CurrentPo = poResult.Data;
+
+                var userResult = await UserService.GetUserById(CurrentPo.UserId);
+                if (userResult.Success && userResult.Data != null)
+                    CreatedByName = userResult.Data.Name;
+                else
+                    CreatedByName = $"User #{CurrentPo.UserId}";
+            }
+            else
+            {
+                CurrentPo = null;
+            }
+        }
+        catch
+        {
+            CurrentPo = null;
+        }
+        finally
+        {
+            IsLoadingDetail = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task MarkAsSent()
+    {
+        // No API for this; placeholder
+        // In real impl this would update status to Sent
+        ShowToast("info", "Mark as Sent feature coming soon.");
+        await Task.CompletedTask;
+    }
+
+    private async Task MarkAsReceived()
+    {
+        if (CurrentPo == null) return;
+        IsSavingAction = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await PurchaseOrderService.MarkAsReceived(CurrentPo.Id, 1);
+            if (response.Success)
+            {
+                ShowToast("success", "PO marked as received.");
+                await LoadDetail();
+                await OnStatusChanged.InvokeAsync();
+            }
+            else
+            {
+                ShowToast("error", response.Message);
+            }
+        }
+        catch
+        {
+            ShowToast("error", "Failed to mark as received.");
+        }
+        finally
+        {
+            IsSavingAction = false;
+            ShowCancelConfirm = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DoCancel()
+    {
+        if (CurrentPo == null) return;
+        IsSavingAction = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await PurchaseOrderService.Cancel(CurrentPo.Id);
+            if (response.Success)
+            {
+                ShowCancelConfirm = false;
+                ShowToast("success", "Purchase order cancelled.");
+                await LoadDetail();
+                await OnStatusChanged.InvokeAsync();
+            }
+            else
+            {
+                ShowToast("error", response.Message);
+            }
+        }
+        catch
+        {
+            ShowToast("error", "Failed to cancel purchase order.");
+        }
+        finally
+        {
+            IsSavingAction = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ShowToast(string type, string msg)
+    {
+        // Simple toast: fire a DOM alert for now
+        // In a real app this would be a shared toast component
+    }
+
+    private MarkupString GetStatusBadge(POStatus status)
+    {
+        var (text, color, bg) = status switch
+        {
+            POStatus.Draft => ("Draft", "#6c757d", "rgba(108, 117, 125, 0.15)"),
+            POStatus.Sent => ("Sent", "#0d6efd", "rgba(13, 110, 253, 0.15)"),
+            POStatus.Received => ("Received", "#198754", "rgba(25, 135, 84, 0.15)"),
+            POStatus.Cancelled => ("Cancelled", "#dc3545", "rgba(220, 53, 69, 0.15)"),
+            _ => ("Unknown", "#6c757d", "rgba(108, 117, 125, 0.15)")
+        };
+        return (MarkupString)$"<span class=\"badge px-2 py-1.5 rounded-pill\" style=\"background-color: {bg}; color: {color}; border: 1px solid {color}33;\">● {text}</span>";
+    }
+}

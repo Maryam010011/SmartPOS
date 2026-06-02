@@ -1,0 +1,452 @@
+@page "/manager/inventory"
+@using SmartPOS.Shared.DTOs.Inventory
+@using SmartPOS.Shared.DTOs.Products
+@using SmartPOS.Shared.DTOs.Categories
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@inject IInventoryService InventoryService
+@inject IProductService ProductService
+@inject ICategoryService CategoryService
+@rendermode InteractiveServer
+
+<div class="container-fluid py-4" style="background-color: var(--color-page-bg); min-height: 100vh;">
+    <!-- Toast -->
+    @if (!string.IsNullOrEmpty(ToastMessage))
+    {
+        <div class="toast-container-pos">
+            <div class="toast-pos toast-@ToastType">
+                <span class="toast-icon">
+                    @(ToastType == "success" ? "✅" : ToastType == "error" ? "❌" : "ℹ️")
+                </span>
+                <span class="toast-body">@ToastMessage</span>
+                <button class="toast-close" @onclick="DismissToast">&times;</button>
+            </div>
+        </div>
+    }
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: var(--color-button-primary);">Inventory Dashboard</h2>
+            <p class="text-muted m-0">Monitor stock levels, track inventory, and manage adjustments.</p>
+        </div>
+        <button type="button" class="btn btn-burnt-orange d-flex align-items-center gap-2" @onclick="OpenAdjustStock">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+            </svg>
+            <span>+ Adjust Stock</span>
+        </button>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" style="color: var(--color-button-primary);" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="text-muted mt-2">Loading inventory data...</p>
+        </div>
+    }
+    else
+    {
+        <!-- KPI Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card card-pos border-0 h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(204, 85, 0, 0.1); flex-shrink: 0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#CC5500" viewBox="0 0 16 16">
+                                <path d="M2 1a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h5v2H4.5a.5.5 0 0 0-.5.5v.5h-.5a.5.5 0 0 0-.5.5v.5H2.5a.5.5 0 0 0-.5.5v.5H1.5a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1h-.5V13a.5.5 0 0 0-.5-.5h-2.5a.5.5 0 0 0-.5.5v.5H9v-2h5V7a1 1 0 0 0-1-1H9V5h2.5a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3A.5.5 0 0 0 8 1.5V2H6V1.5A.5.5 0 0 0 5.5 1z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-muted small fw-semibold">Total SKUs</div>
+                            <div class="fw-bold" style="font-size: 1.75rem; color: var(--color-button-primary);">@AllInventory?.Count ?? 0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card card-pos border-0 h-100" style="border-left: 4px solid #CC5500 !important;">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(204, 85, 0, 0.1); flex-shrink: 0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#CC5500" viewBox="0 0 16 16">
+                                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-muted small fw-semibold">Low Stock Items</div>
+                            <div class="fw-bold" style="font-size: 1.75rem; color: #CC5500;">@LowStockCount</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card card-pos border-0 h-100" style="border-left: 4px solid #dc3545 !important;">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(220, 53, 69, 0.1); flex-shrink: 0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#dc3545" viewBox="0 0 16 16">
+                                <path d="M2.5 0a.5.5 0 0 0-.5.5v2.5H.5a.5.5 0 0 0 0 1h1.5v2.5a.5.5 0 0 0 1 0V4h1.5a.5.5 0 0 0 0-1H3V.5a.5.5 0 0 0-.5-.5M12.5 7a.5.5 0 0 0-.5.5V9h-2a.5.5 0 0 0 0 1h2.5a.5.5 0 0 0 .5-.5V7a.5.5 0 0 0-.5-.5M8 9.5a.5.5 0 0 0-.5.5v2.5H5.5a.5.5 0 0 0 0 1h2.5a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5m-3.5 2a.5.5 0 0 0-.5.5v2.5H2a.5.5 0 0 0 0 1h2.5a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-muted small fw-semibold">Out of Stock</div>
+                            <div class="fw-bold" style="font-size: 1.75rem; color: #dc3545;">@OutOfStockCount</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card card-pos border-0 h-100">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: rgba(204, 85, 0, 0.1); flex-shrink: 0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="#CC5500" viewBox="0 0 16 16">
+                                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z"/>
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-muted small fw-semibold">Last Updated</div>
+                            <div class="fw-bold" style="font-size: 1rem; color: var(--color-button-primary);">@LastUpdatedDisplay</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bar Chart -->
+        @if (Top8Products != null && Top8Products.Any())
+        {
+            <div class="card card-pos mb-4">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-3" style="color: var(--color-button-primary);">Top Products by Stock Quantity</h6>
+                    <div class="d-flex align-items-end gap-2" style="height: 200px;">
+                        @{
+                            var maxQty = Top8Products.Max(x => x.Quantity);
+                            var barMaxHeight = 160;
+                        }
+                        @foreach (var item in Top8Products)
+                        {
+                            var heightPx = maxQty > 0 ? (int)Math.Round((double)item.Quantity / maxQty * barMaxHeight) : 0;
+                            <div class="d-flex flex-column align-items-center flex-fill">
+                                <div class="fw-bold small mb-1">@item.Quantity</div>
+                                <div style="height: @(heightPx)px; width: 100%; background: linear-gradient(to top, #CC5500, #E07A33); border-radius: 6px 6px 0 0; min-width: 30px; transition: height 0.3s ease;"></div>
+                                <div class="small text-muted mt-1 text-center" style="font-size: 0.65rem; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="@item.ProductName">@item.ProductName</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Filters -->
+        <div class="card card-pos mb-4">
+            <div class="card-body p-3">
+                <div class="row g-3 align-items-start">
+                    <div class="col-md-3">
+                        <label class="form-label text-secondary small fw-semibold">Search by Product</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="text-muted" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                                </svg>
+                            </span>
+                            <input type="text" class="form-control border-start-0 ps-0" placeholder="Search product name..."
+                                   @bind-value="SearchTerm" @bind-value:event="oninput" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-secondary small fw-semibold">Status</label>
+                        <select class="form-select" @bind="StatusFilter">
+                            <option value="">All Status</option>
+                            <option value="InStock">In Stock</option>
+                            <option value="LowStock">Low Stock</option>
+                            <option value="OutOfStock">Out of Stock</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-secondary small fw-semibold">Category</label>
+                        <select class="form-select" @bind="CategoryFilter">
+                            <option value="">All Categories</option>
+                            @if (AllCategories != null)
+                            {
+                                @foreach (var cat in AllCategories)
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-outline-secondary btn-sm fw-semibold" @onclick="ApplyFilters">
+                            Apply Filters
+                        </button>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end justify-content-end">
+                        <button class="btn btn-link btn-sm fw-semibold text-muted" @onclick="ClearFilters">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="card card-pos">
+            <div class="card-body p-0">
+                @if (FilteredInventory == null || !FilteredInventory.Any())
+                {
+                    <div class="text-center py-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="text-muted mb-3" viewBox="0 0 16 16">
+                            <path d="M2 1a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h5v2H4.5a.5.5 0 0 0-.5.5v.5h-.5a.5.5 0 0 0-.5.5v.5H2.5a.5.5 0 0 0-.5.5v.5H1.5a.5.5 0 0 0 0 1h13a.5.5 0 0 0 0-1h-.5V13a.5.5 0 0 0-.5-.5h-2.5a.5.5 0 0 0-.5.5v.5H9v-2h5V7a1 1 0 0 0-1-1H9V5h2.5a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3A.5.5 0 0 0 8 1.5V2H6V1.5A.5.5 0 0 0 5.5 1z"/>
+                        </svg>
+                        <p class="text-muted fw-semibold mb-1">No inventory items found</p>
+                        <p class="text-muted small m-0">Try adjusting your search or filter criteria.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-pos align-middle m-0 table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="padding-left: 20px;">Product Name</th>
+                                    <th>SKU</th>
+                                    <th>Current Qty</th>
+                                    <th>Reorder Level</th>
+                                    <th>Status</th>
+                                    <th>Last Updated</th>
+                                    <th class="text-end" style="padding-right: 20px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in FilteredInventory)
+                                {
+                                    var product = GetProduct(item.ProductId);
+                                    var statusClass = item.Quantity == 0 ? "Out of Stock" :
+                                                      item.IsLowStock ? "Low Stock" : "In Stock";
+                                    <tr>
+                                        <td style="padding-left: 20px;">
+                                            <span class="fw-bold text-dark">@item.ProductName</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted small">@(product?.SKU ?? "-")</span>
+                                        </td>
+                                        <td class="fw-semibold">@item.Quantity</td>
+                                        <td class="text-muted">@item.ReorderLevel</td>
+                                        <td>
+                                            @if (statusClass == "Out of Stock")
+                                            {
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1.5 rounded-pill">● Out of Stock</span>
+                                            }
+                                            else if (statusClass == "Low Stock")
+                                            {
+                                                <span class="badge px-2 py-1.5 rounded-pill" style="background-color: rgba(204, 85, 0, 0.15); color: #CC5500; border: 1px solid rgba(204, 85, 0, 0.3);">● Low Stock</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1.5 rounded-pill">● In Stock</span>
+                                            }
+                                        </td>
+                                        <td class="text-muted small">@item.LastUpdated.ToString("dd MMM yyyy HH:mm")</td>
+                                        <td class="text-end" style="padding-right: 20px;">
+                                            <div class="dropdown">
+                                                <button class="btn btn-light btn-sm border dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown">
+                                                    Manage
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                    <li>
+                                                        <button class="dropdown-item d-flex align-items-center gap-2" @onclick="() => OpenAdjustForProduct(item)">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/></svg>
+                                                            <span>Adjust Stock</span>
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Stock Adjust Modal -->
+    <StockAdjustModal @ref="StockAdjustRef" OnSave="ReloadInventory" />
+</div>
+
+@code {
+    private List<InventoryDto>? AllInventory;
+    private List<InventoryDto>? FilteredInventory;
+    private List<ProductDto>? AllProducts;
+    private List<CategoryDto>? AllCategories;
+    private Dictionary<int, ProductDto>? ProductLookup;
+    private bool IsLoading = true;
+
+    private string SearchTerm = string.Empty;
+    private string StatusFilter = string.Empty;
+    private string CategoryFilter = string.Empty;
+
+    private string ToastMessage = string.Empty;
+    private string ToastType = "success";
+
+    private StockAdjustModal? StockAdjustRef;
+
+    private int LowStockCount => AllInventory?.Count(i => i.IsLowStock) ?? 0;
+    private int OutOfStockCount => AllInventory?.Count(i => i.Quantity == 0) ?? 0;
+    private string LastUpdatedDisplay
+    {
+        get
+        {
+            if (AllInventory == null || !AllInventory.Any()) return "-";
+            var max = AllInventory.Max(i => i.LastUpdated);
+            return max.ToString("dd MMM yyyy HH:mm");
+        }
+    }
+
+    private List<InventoryDto>? Top8Products =>
+        AllInventory?.OrderByDescending(i => i.Quantity).Take(8).ToList();
+
+    protected override async Task OnInitializedAsync() => await LoadInventory();
+
+    private async Task LoadInventory()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var invTask = InventoryService.GetAll();
+            var prodTask = ProductService.GetAll();
+            var catTask = CategoryService.GetAll();
+
+            await Task.WhenAll(invTask, prodTask, catTask);
+
+            var invResult = await invTask;
+            var prodResult = await prodTask;
+            var catResult = await catTask;
+
+            if (invResult.Success && invResult.Data != null)
+                AllInventory = invResult.Data;
+            else
+                AllInventory = new List<InventoryDto>();
+
+            if (prodResult.Success && prodResult.Data != null)
+            {
+                AllProducts = prodResult.Data;
+                ProductLookup = AllProducts.ToDictionary(p => p.Id, p => p);
+            }
+            else
+            {
+                AllProducts = new List<ProductDto>();
+                ProductLookup = new Dictionary<int, ProductDto>();
+            }
+
+            if (catResult.Success && catResult.Data != null)
+                AllCategories = catResult.Data;
+            else
+                AllCategories = new List<CategoryDto>();
+
+            ApplyFiltersToList();
+        }
+        catch
+        {
+            AllInventory = new List<InventoryDto>();
+            AllProducts = new List<ProductDto>();
+            AllCategories = new List<CategoryDto>();
+            ProductLookup = new Dictionary<int, ProductDto>();
+            FilteredInventory = new List<InventoryDto>();
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private ProductDto? GetProduct(int productId)
+    {
+        if (ProductLookup != null && ProductLookup.TryGetValue(productId, out var product))
+            return product;
+        return null;
+    }
+
+    private void ApplyFiltersToList()
+    {
+        if (AllInventory == null)
+        {
+            FilteredInventory = new List<InventoryDto>();
+            return;
+        }
+
+        var query = AllInventory.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(SearchTerm))
+        {
+            var term = SearchTerm.Trim().ToLower();
+            query = query.Where(i => i.ProductName.ToLower().Contains(term));
+        }
+
+        if (!string.IsNullOrWhiteSpace(StatusFilter))
+        {
+            query = StatusFilter switch
+            {
+                "InStock" => query.Where(i => i.Quantity > i.ReorderLevel),
+                "LowStock" => query.Where(i => i.Quantity > 0 && i.IsLowStock),
+                "OutOfStock" => query.Where(i => i.Quantity == 0),
+                _ => query
+            };
+        }
+
+        if (!string.IsNullOrWhiteSpace(CategoryFilter) && int.TryParse(CategoryFilter, out var catId))
+        {
+            var productIdsInCategory = AllProducts?
+                .Where(p => p.CategoryId == catId)
+                .Select(p => p.Id)
+                .ToHashSet() ?? new HashSet<int>();
+            query = query.Where(i => productIdsInCategory.Contains(i.ProductId));
+        }
+
+        FilteredInventory = query.OrderByDescending(i => i.LastUpdated).ToList();
+    }
+
+    private async Task ApplyFilters()
+    {
+        ApplyFiltersToList();
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private async Task ClearFilters()
+    {
+        SearchTerm = string.Empty;
+        StatusFilter = string.Empty;
+        CategoryFilter = string.Empty;
+        ApplyFiltersToList();
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private async Task ReloadInventory() => await LoadInventory();
+
+    private async Task OpenAdjustStock()
+    {
+        if (StockAdjustRef != null)
+            await StockAdjustRef.Open();
+    }
+
+    private async Task OpenAdjustForProduct(InventoryDto item)
+    {
+        if (StockAdjustRef != null)
+            await StockAdjustRef.OpenForProduct(item);
+    }
+
+    private void DismissToast() => ToastMessage = string.Empty;
+    private void ShowToast(string type, string msg) { ToastType = type; ToastMessage = msg; StateHasChanged(); }
+}

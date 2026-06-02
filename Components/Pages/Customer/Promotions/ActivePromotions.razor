@@ -1,0 +1,330 @@
+@page "/customer/promotions"
+@layout CustomerLayout
+@using SmartPOS.Shared.DTOs.Promotions
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Enums
+@inject IPromotionService PromotionService
+@rendermode InteractiveServer
+
+<div class="promotions-page" style="background-color: var(--color-page-bg); min-height: 100vh;">
+    <!-- Header -->
+    <div class="promo-header">
+        <div class="container">
+            <div class="d-flex align-items-center gap-3">
+                <NavLink class="btn btn-outline-light btn-sm" href="/">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146ZM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4H2.5Z"/>
+                    </svg>
+                </NavLink>
+                <div>
+                    <h1 class="m-0 text-white fw-bold">Active Promotions</h1>
+                    <p class="text-white-50 m-0">Grab the best deals before they expire!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        @if (IsLoading)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border" style="color: var(--color-button-primary);" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-3">Loading active promotions...</p>
+            </div>
+        }
+        else if (PromotionsList == null || !PromotionsList.Any())
+        {
+            <div class="text-center py-5">
+                <div class="no-promos-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="text-muted" viewBox="0 0 16 16">
+                        <path d="M3.604 7.197c.412-.81.628-1.721.628-2.693C9.232.75 6.61.5 4.5.5 2.39.5 0 2.39 0 4.5c0 3.303 2.206 5.732 4.854 7.854.26.21.535.404.814.593.278-.189.554-.383.814-.593C9.794 10.232 12 7.803 12 4.5c0-.972.216-1.883.628-2.693C11.39.75 8.768.5 6.646.5c-2.122 0-4.744.25-6.86 2.604.412-.81 1.122-1.522 2.122-2.004a9.265 9.265 0 0 0-2.302 1.848C1.025 4.025 1 4.262 1 4.5c0 2.687 1.813 4.747 4.268 6.518a10.56 10.56 0 0 0-1.995-1.426c.846.31 1.75.508 2.727.508.977 0 1.88-.198 2.727-.508a10.56 10.56 0 0 0-1.995 1.426C13.187 9.247 15 7.187 15 4.5c0-.238-.025-.475-.073-.704a9.265 9.265 0 0 0-2.302-1.848c1 .482 1.71 1.194 2.122 2.004-2.116-2.354-4.738-2.604-6.86-2.604z"/>
+                    </svg>
+                </div>
+                <h4 class="text-muted fw-semibold mt-3">No Active Promotions</h4>
+                <p class="text-muted">Check back soon for exciting deals and discounts!</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var promo in PromotionsList)
+                {
+                    <div class="col-lg-4 col-md-6">
+                        <div class="promo-card">
+                            <div class="promo-card-badge @(promo.DiscountType == DiscountType.Percentage ? "percentage" : "flat")">
+                                @if (promo.DiscountType == DiscountType.Percentage)
+                                {
+                                    <span class="fw-bold">@promo.Value%</span>
+                                    <span class="small">OFF</span>
+                                }
+                                else
+                                {
+                                    <span class="fw-bold">Rs @promo.Value.ToString("N0")</span>
+                                    <span class="small">OFF</span>
+                                }
+                            </div>
+
+                            <div class="promo-card-body">
+                                <h5 class="fw-bold mb-2" style="color: var(--color-button-primary);">@promo.Code</h5>
+                                
+                                @if (!string.IsNullOrEmpty(promo.Description))
+                                {
+                                    <p class="text-muted small mb-3">@promo.Description</p>
+                                }
+                                else
+                                {
+                                    <p class="text-muted small mb-3">
+                                        @if (promo.DiscountType == DiscountType.Percentage)
+                                        {
+                                            <span>Get @promo.Value% off on your orders!</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Get Rs @promo.Value.ToString("N0") off on your orders!</span>
+                                        }
+                                    </p>
+                                }
+
+                                <div class="promo-details">
+                                    @if (promo.MinOrderValue > 0)
+                                    {
+                                        <div class="detail-item">
+                                            <span class="detail-label">Min Order:</span>
+                                            <span class="detail-value">Rs @promo.MinOrderValue.ToString("N0")</span>
+                                        </div>
+                                    }
+                                    <div class="detail-item">
+                                        <span class="detail-label">Valid Until:</span>
+                                        <span class="detail-value">@promo.ValidTo.ToString("dd MMM yyyy")</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Remaining:</span>
+                                        <span class="detail-value @(promo.UsageCount >= promo.MaxUsageLimit ? "text-danger" : "")">
+                                            @(promo.MaxUsageLimit - promo.UsageCount) uses
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="promo-code-box">
+                                    <div class="code-text">@promo.Code</div>
+                                    <button class="copy-btn" @onclick="() => CopyToClipboard(promo.Code)">
+                                        @if (CopiedCode == promo.Code)
+                                        {
+                                            <span class="copied">Copied!</span>
+                                        }
+                                        else
+                                        {
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+                                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+                                            </svg>
+                                        }
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center py-4 text-muted small">
+        <p class="m-0">Promotions are subject to availability. Please read the terms and conditions.</p>
+    </div>
+</div>
+
+<style>
+    .promo-header {
+        background: linear-gradient(135deg, var(--color-button-primary) 0%, #E86A00 100%);
+        padding: 2rem 0;
+        box-shadow: 0 4px 20px rgba(204, 85, 0, 0.2);
+    }
+
+    .promo-card {
+        background: #fff;
+        border-radius: 16px;
+        border: 2px solid rgba(204, 85, 0, 0.1);
+        overflow: hidden;
+        position: relative;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(204, 85, 0, 0.08);
+    }
+
+    .promo-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(204, 85, 0, 0.15);
+        border-color: rgba(204, 85, 0, 0.3);
+    }
+
+    .promo-card-badge {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .promo-card-badge.percentage {
+        background: linear-gradient(135deg, var(--color-button-primary) 0%, #E86A00 100%);
+    }
+
+    .promo-card-badge.flat {
+        background: linear-gradient(135deg, #198754 0%, #28a745 100%);
+    }
+
+    .promo-card-badge .small {
+        font-size: 0.65rem;
+        opacity: 0.9;
+    }
+
+    .promo-card-body {
+        padding: 1.5rem;
+        padding-top: 2rem;
+    }
+
+    .promo-details {
+        background: var(--color-page-bg);
+        border-radius: 10px;
+        padding: 0.8rem 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.25rem 0;
+    }
+
+    .detail-label {
+        font-size: 0.75rem;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--color-primary-text);
+    }
+
+    .promo-code-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: linear-gradient(135deg, rgba(204, 85, 0, 0.08) 0%, rgba(204, 85, 0, 0.03) 100%);
+        border: 2px dashed rgba(204, 85, 0, 0.3);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+    }
+
+    .code-text {
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: var(--color-button-primary);
+        letter-spacing: 1px;
+    }
+
+    .copy-btn {
+        background: var(--color-button-primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 0.4rem 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .copy-btn:hover {
+        background: var(--color-button-hover);
+    }
+
+    .copy-btn .copied {
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .no-promos-icon {
+        width: 120px;
+        height: 120px;
+        background: rgba(204, 85, 0, 0.08);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+</style>
+
+@code {
+    private List<PromotionDto>? PromotionsList;
+    private bool IsLoading = true;
+    private string? CopiedCode;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadActivePromotions();
+    }
+
+    private async Task LoadActivePromotions()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await PromotionService.GetActivePromotions();
+            if (result.Success && result.Data != null)
+            {
+                var now = DateTime.UtcNow;
+                PromotionsList = result.Data
+                    .Where(p => p.IsActive && now <= p.ValidTo && p.UsageCount < p.MaxUsageLimit)
+                    .OrderBy(p => p.ValidTo)
+                    .ToList();
+            }
+            else
+            {
+                PromotionsList = new List<PromotionDto>();
+            }
+        }
+        catch
+        {
+            PromotionsList = new List<PromotionDto>();
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CopyToClipboard(string code)
+    {
+        CopiedCode = code;
+        StateHasChanged();
+        
+        await Task.Delay(2000);
+        
+        if (CopiedCode == code)
+        {
+            CopiedCode = null;
+            StateHasChanged();
+        }
+    }
+}

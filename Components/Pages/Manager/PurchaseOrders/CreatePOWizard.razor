@@ -1,0 +1,591 @@
+@using SmartPOS.Shared.DTOs.PurchaseOrders
+@using SmartPOS.Shared.DTOs.Products
+@using SmartPOS.Shared.DTOs.Suppliers
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@inject IPurchaseOrderService PurchaseOrderService
+@inject ISupplierService SupplierService
+@inject IProductService ProductService
+
+@if (IsOpen)
+{
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content card-pos">
+                <!-- Header -->
+                <div class="modal-header border-bottom px-4 py-3">
+                    <h5 class="modal-title fw-bold m-0 d-flex align-items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                        </svg>
+                        Create Purchase Order
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="Close" disabled="@IsSubmitting"></button>
+                </div>
+
+                <!-- Steps Indicator -->
+                <div class="px-4 pt-3 pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        @for (int i = 0; i < Steps.Length; i++)
+                        {
+                            var stepIdx = i;
+                            <div class="d-flex align-items-center @(i < Steps.Length - 1 ? "flex-fill" : "")">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                                          style="width: 28px; height: 28px; font-size: 13px;
+                                                 @(CurrentStep == stepIdx ? "background-color: var(--color-button-primary); color: white;" :
+                                                   stepIdx < CurrentStep ? "background-color: #198754; color: white;" :
+                                                   "background-color: #e9ecef; color: #6c757d;")">
+                                        @(stepIdx < CurrentStep ? "✓" : (stepIdx + 1).ToString())
+                                    </span>
+                                    <span class="small fw-semibold @(CurrentStep == stepIdx ? "text-dark" : "text-muted")">@Steps[stepIdx]</span>
+                                </div>
+                                @if (i < Steps.Length - 1)
+                                {
+                                    <div class="flex-fill mx-3" style="height: 2px; background-color: @(stepIdx < CurrentStep ? "#198754" : "#e9ecef");"></div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="modal-body px-4 py-3">
+                    @if (IsLoadingWizard)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border" style="color: var(--color-button-primary);" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mt-2">Loading...</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Step 1: Supplier & Notes -->
+                        @if (CurrentStep == 0)
+                        {
+                            <div>
+                                <h6 class="fw-bold mb-3">Select Supplier</h6>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-secondary small">Supplier</label>
+                                    <select class="form-select @(SelectedSupplierId == 0 ? "is-invalid" : "")" @bind="SelectedSupplierId">
+                                        <option value="0" disabled>-- Select Supplier --</option>
+                                        @foreach (var s in Suppliers.OrderBy(x => x.Name))
+                                        {
+                                            <option value="@s.Id">@s.Name</option>
+                                        }
+                                    </select>
+                                    @if (SelectedSupplierId == 0)
+                                    {
+                                        <div class="invalid-feedback d-block">Please select a supplier.</div>
+                                    }
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold text-secondary small">Notes (optional)</label>
+                                    <textarea class="form-control" rows="2" @bind="Notes" placeholder="Enter any notes for this purchase order..."></textarea>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Step 2: Line Items -->
+                        @if (CurrentStep == 1)
+                        {
+                            <div>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="fw-bold m-0">Add Line Items</h6>
+                                    <span class="small text-muted">Total: <strong style="color: var(--color-button-primary);">Rs @LineItemsTotal.ToString("N2")</strong></span>
+                                </div>
+
+                                <!-- Add Item Form -->
+                                <div class="card bg-light mb-3 p-3">
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-md-5">
+                                            <label class="form-label fw-semibold text-secondary small">Product</label>
+                                            <div class="position-relative">
+                                                <input type="text" class="form-control form-control-sm" placeholder="Search product..."
+                                                       @bind="ProductSearchTerm" @bind:after="FilterProducts" />
+                                                @if (FilteredProducts != null && FilteredProducts.Any() && !string.IsNullOrWhiteSpace(ProductSearchTerm))
+                                                {
+                                                    <div class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm" style="z-index: 10; max-height: 200px; overflow-y: auto;">
+                                                        @foreach (var p in FilteredProducts.Take(10))
+                                                        {
+                                                            <button type="button" class="dropdown-item w-100 text-start small px-3 py-2 border-bottom"
+                                                                    @onclick="() => SelectProduct(p)">
+                                                                <span class="fw-semibold">@p.Name</span>
+                                                                <span class="text-muted small ms-2">(@p.SKU)</span>
+                                                            </button>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-semibold text-secondary small">Qty</label>
+                                            <input type="number" class="form-control form-control-sm" min="1" @bind="NewItemQty" />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-semibold text-secondary small">Unit Price</label>
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text">Rs</span>
+                                                <input type="number" class="form-control" step="0.01" min="0" @bind="NewItemPrice" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <button class="btn btn-burnt-orange btn-sm w-100 fw-semibold"
+                                                    @onclick="AddLineItem" disabled="@string.IsNullOrWhiteSpace(SelectedProductName)">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                                                    <path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+                                                </svg>
+                                                Add
+                                            </button>
+                                        </div>
+                                    </div>
+                                    @if (SelectedProductId > 0)
+                                    {
+                                        <div class="mt-2">
+                                            <span class="badge bg-light text-dark border px-2 py-1">
+                                                <span class="fw-semibold">@SelectedProductName</span>
+                                                <button type="button" class="btn-close btn-close-sm ms-2" style="font-size: 10px;" @onclick="ClearProductSelection"></button>
+                                            </span>
+                                        </div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(ProductError))
+                                    {
+                                        <div class="invalid-feedback d-block mt-1">@ProductError</div>
+                                    }
+                                </div>
+
+                                <!-- Line Items Table -->
+                                @if (LineItems.Count == 0)
+                                {
+                                    <div class="text-center py-4">
+                                        <p class="text-muted small m-0">No items added yet. Search and add products above.</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle m-0 table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th class="px-3">#</th>
+                                                    <th>Product</th>
+                                                    <th class="text-center">Qty</th>
+                                                    <th class="text-end">Unit Price</th>
+                                                    <th class="text-end">Line Total</th>
+                                                    <th class="text-center" style="width: 40px;"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (int i = 0; i < LineItems.Count; i++)
+                                                {
+                                                    var item = LineItems[i];
+                                                    <tr>
+                                                        <td class="px-3 text-muted">@(i + 1)</td>
+                                                        <td class="fw-semibold">@item.ProductName</td>
+                                                        <td class="text-center">@item.OrderedQty</td>
+                                                        <td class="text-end">Rs @item.UnitPrice.ToString("N2")</td>
+                                                        <td class="text-end fw-semibold">Rs @item.LineTotal.ToString("N2")</td>
+                                                        <td class="text-center">
+                                                            <button class="btn btn-outline-danger btn-sm py-0 px-1" @onclick="() => RemoveLineItem(i)">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                                                </svg>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                            <tfoot>
+                                                <tr class="table-light fw-bold">
+                                                    <td colspan="4" class="text-end px-3">Total</td>
+                                                    <td class="text-end" style="color: var(--color-button-primary);">Rs @LineItemsTotal.ToString("N2")</td>
+                                                    <td></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <!-- Step 3: Review & Submit -->
+                        @if (CurrentStep == 2)
+                        {
+                            <div>
+                                <h6 class="fw-bold mb-3">Review & Submit</h6>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="text-secondary small fw-semibold d-block">Supplier</label>
+                                        <span class="fw-bold text-dark">@SelectedSupplierName</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="text-secondary small fw-semibold d-block">Total Cost</label>
+                                        <span class="fw-bold fs-5" style="color: var(--color-button-primary);">Rs @LineItemsTotal.ToString("N2")</span>
+                                    </div>
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(Notes))
+                                {
+                                    <div class="mb-3">
+                                        <label class="text-secondary small fw-semibold d-block mb-1">Notes</label>
+                                        <div class="bg-light rounded p-3 text-dark">@Notes</div>
+                                    </div>
+                                }
+
+                                <div>
+                                    <label class="text-secondary small fw-semibold d-block mb-1">Line Items (@LineItems.Count)</label>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm align-middle m-0 table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th class="px-3">#</th>
+                                                    <th>Product</th>
+                                                    <th class="text-center">Qty</th>
+                                                    <th class="text-end">Unit Price</th>
+                                                    <th class="text-end">Line Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @for (int i = 0; i < LineItems.Count; i++)
+                                                {
+                                                    var item = LineItems[i];
+                                                    <tr>
+                                                        <td class="px-3 text-muted">@(i + 1)</td>
+                                                        <td class="fw-semibold">@item.ProductName</td>
+                                                        <td class="text-center">@item.OrderedQty</td>
+                                                        <td class="text-end">Rs @item.UnitPrice.ToString("N2")</td>
+                                                        <td class="text-end fw-semibold">Rs @item.LineTotal.ToString("N2")</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                            <tfoot>
+                                                <tr class="table-light fw-bold">
+                                                    <td colspan="4" class="text-end px-3">Total</td>
+                                                    <td class="text-end" style="color: var(--color-button-primary);">Rs @LineItemsTotal.ToString("N2")</td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <!-- Footer -->
+                <div class="modal-footer border-top d-flex justify-content-between px-4 py-3">
+                    <div>
+                        @if (CurrentStep > 0)
+                        {
+                            <button class="btn btn-outline-secondary btn-sm fw-semibold" @onclick="PreviousStep" disabled="@IsSubmitting">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                                </svg>
+                                Back
+                            </button>
+                        }
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-dark btn-sm fw-semibold" @onclick="Close" disabled="@IsSubmitting">Cancel</button>
+                        @if (CurrentStep < Steps.Length - 1)
+                        {
+                            <button class="btn btn-burnt-orange btn-sm fw-semibold" @onclick="NextStep" disabled="@IsSubmitting">
+                                Next
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="ms-1" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                                </svg>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-burnt-orange btn-sm fw-bold px-4" @onclick="Submit" disabled="@IsSubmitting">
+                                @if (IsSubmitting)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1"></span>
+                                    <span>Submitting...</span>
+                                }
+                                else
+                                {
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"/>
+                                    </svg>
+                                    <span>Create PO</span>
+                                }
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    @if (!string.IsNullOrEmpty(ToastMessage))
+    {
+        <div class="toast-container-pos" style="z-index: 1070;">
+            <div class="toast-pos toast-@ToastType">
+                <span class="toast-icon">
+                    @(ToastType == "success" ? "✅" : ToastType == "error" ? "❌" : "ℹ️")
+                </span>
+                <span class="toast-body">@ToastMessage</span>
+                <button class="toast-close" @onclick="DismissToast">&times;</button>
+            </div>
+        </div>
+    }
+
+    <div class="modal-backdrop fade show" style="z-index: 1040;"></div>
+}
+
+@code {
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private readonly string[] Steps = { "Supplier", "Line Items", "Review" };
+    private int CurrentStep;
+
+    private bool IsOpen;
+    private bool IsLoadingWizard;
+    private bool IsSubmitting;
+
+    private List<SupplierDto> Suppliers = new();
+    private List<ProductDto> AllProducts = new();
+
+    private int SelectedSupplierId;
+    private string SelectedSupplierName = string.Empty;
+    private string Notes = string.Empty;
+
+    private string ProductSearchTerm = string.Empty;
+    private List<ProductDto>? FilteredProducts = null;
+    private int SelectedProductId;
+    private string SelectedProductName = string.Empty;
+    private int NewItemQty = 1;
+    private decimal NewItemPrice;
+    private string ProductError = string.Empty;
+
+    private List<POLineItemDto> LineItems = new();
+    private decimal LineItemsTotal => LineItems.Sum(li => li.LineTotal);
+
+    private string ToastMessage = string.Empty;
+    private string ToastType = "success";
+
+    public async Task Open()
+    {
+        CurrentStep = 0;
+        SelectedSupplierId = 0;
+        SelectedSupplierName = string.Empty;
+        Notes = string.Empty;
+        LineItems = new();
+        ClearProductSelection();
+        ProductSearchTerm = string.Empty;
+        IsOpen = true;
+        IsSubmitting = false;
+        ToastMessage = string.Empty;
+        await LoadData();
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        IsOpen = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadData()
+    {
+        IsLoadingWizard = true;
+        StateHasChanged();
+
+        try
+        {
+            var supTask = SupplierService.GetAll();
+            var prodTask = ProductService.GetAll();
+            await Task.WhenAll(supTask, prodTask);
+
+            var supResult = await supTask;
+            Suppliers = supResult.Success ? supResult.Data! : new List<SupplierDto>();
+
+            var prodResult = await prodTask;
+            AllProducts = prodResult.Success ? prodResult.Data! : new List<ProductDto>();
+        }
+        catch
+        {
+            Suppliers = new List<SupplierDto>();
+            AllProducts = new List<ProductDto>();
+        }
+        finally
+        {
+            IsLoadingWizard = false;
+            StateHasChanged();
+        }
+    }
+
+    private void FilterProducts()
+    {
+        if (string.IsNullOrWhiteSpace(ProductSearchTerm))
+        {
+            FilteredProducts = null;
+            return;
+        }
+        var term = ProductSearchTerm.Trim().ToLower();
+        FilteredProducts = AllProducts
+            .Where(p => p.IsActive && (
+                p.Name.ToLower().Contains(term) ||
+                p.SKU.ToLower().Contains(term)))
+            .ToList();
+    }
+
+    private void SelectProduct(ProductDto product)
+    {
+        SelectedProductId = product.Id;
+        SelectedProductName = product.Name;
+        NewItemPrice = product.CostPrice;
+        ProductSearchTerm = product.Name;
+        FilteredProducts = null;
+        ProductError = string.Empty;
+    }
+
+    private void ClearProductSelection()
+    {
+        SelectedProductId = 0;
+        SelectedProductName = string.Empty;
+        ProductSearchTerm = string.Empty;
+        NewItemQty = 1;
+        NewItemPrice = 0;
+        FilteredProducts = null;
+        ProductError = string.Empty;
+    }
+
+    private void AddLineItem()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedProductName))
+        {
+            ProductError = "Please select a product.";
+            return;
+        }
+        if (NewItemQty < 1)
+        {
+            ProductError = "Quantity must be at least 1.";
+            return;
+        }
+        if (NewItemPrice <= 0)
+        {
+            ProductError = "Unit price must be greater than 0.";
+            return;
+        }
+
+        var existing = LineItems.FirstOrDefault(li => li.ProductId == SelectedProductId);
+        if (existing != null)
+        {
+            existing.OrderedQty += NewItemQty;
+        }
+        else
+        {
+            LineItems.Add(new POLineItemDto
+            {
+                ProductId = SelectedProductId,
+                ProductName = SelectedProductName,
+                OrderedQty = NewItemQty,
+                UnitPrice = NewItemPrice
+            });
+        }
+
+        ClearProductSelection();
+        ProductError = string.Empty;
+    }
+
+    private void RemoveLineItem(int index)
+    {
+        if (index >= 0 && index < LineItems.Count)
+            LineItems.RemoveAt(index);
+    }
+
+    private async Task NextStep()
+    {
+        if (CurrentStep == 0)
+        {
+            if (SelectedSupplierId == 0)
+            {
+                ShowToast("error", "Please select a supplier.");
+                return;
+            }
+            SelectedSupplierName = Suppliers?.FirstOrDefault(s => s.Id == SelectedSupplierId)?.Name ?? $"Supplier #{SelectedSupplierId}";
+        }
+        if (CurrentStep == 1 && LineItems.Count == 0)
+        {
+            ShowToast("error", "Please add at least one line item.");
+            return;
+        }
+        CurrentStep++;
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private void PreviousStep()
+    {
+        if (CurrentStep > 0)
+        {
+            CurrentStep--;
+            StateHasChanged();
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (SelectedSupplierId == 0)
+        {
+            ShowToast("error", "Supplier is required.");
+            return;
+        }
+        if (LineItems.Count == 0)
+        {
+            ShowToast("error", "At least one line item is required.");
+            return;
+        }
+
+        IsSubmitting = true;
+        StateHasChanged();
+
+        try
+        {
+            var dto = new CreatePODto
+            {
+                SupplierId = SelectedSupplierId,
+                UserId = 1,
+                Notes = Notes,
+                LineItems = LineItems.Select(li => new POLineItemDto
+                {
+                    ProductId = li.ProductId,
+                    ProductName = li.ProductName,
+                    OrderedQty = li.OrderedQty,
+                    UnitPrice = li.UnitPrice
+                }).ToList()
+            };
+
+            var response = await PurchaseOrderService.Create(dto);
+            if (response.Success)
+            {
+                ShowToast("success", "Purchase Order created successfully!");
+                await Task.Delay(800);
+                await OnSave.InvokeAsync();
+                Close();
+            }
+            else
+            {
+                ShowToast("error", response.Message);
+            }
+        }
+        catch
+        {
+            ShowToast("error", "Failed to create purchase order.");
+        }
+        finally
+        {
+            IsSubmitting = false;
+            StateHasChanged();
+        }
+    }
+
+    private void DismissToast() => ToastMessage = string.Empty;
+    private void ShowToast(string type, string msg) { ToastType = type; ToastMessage = msg; StateHasChanged(); }
+}

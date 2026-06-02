@@ -1,7 +1,10 @@
 @page "/customer/shop"
-@using Microsoft.AspNetCore.Authorization
-@attribute [Authorize(Roles = "Customer")]
-@layout SmartPOS.Components.Layout.CustomerLayout
+@layout CustomerLayout
+@attribute [Authorize]
+@rendermode InteractiveServer
 
-<h3>Customer Shop</h3>
-<p>Welcome to the shop! This is the customer portal.</p>
+<div class="container py-4">
+    <h2>Customer Store</h2>
+    <p class="text-muted">Browse and purchase our bakery products.</p>
+    <div class="alert alert-info">Store front functionality coming soon.</div>
+</div>

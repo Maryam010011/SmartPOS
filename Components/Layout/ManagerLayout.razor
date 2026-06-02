@@ -1,59 +1,100 @@
 @inherits LayoutComponentBase
-@using Microsoft.AspNetCore.Components.Authorization
-@using SmartPOS.Providers
-@using Blazored.LocalStorage
 @inject AuthenticationStateProvider AuthStateProvider
-@inject ILocalStorageService LocalStorage
 @inject NavigationManager NavigationManager
+@inject IInventoryService InventoryService
+@using SmartPOS.Shared.Interfaces
 
-<div class="page" style="display: flex; height: 100vh; background-color: #f4ecd8;">
-    <div class="sidebar" style="width: 250px; background-color: #593626; color: #f4ecd8; padding: 20px;">
-        <h2 style="color: #e9cac9; text-align: center; border-bottom: 1px solid #704735; padding-bottom: 10px;">SmartPOS+</h2>
-        <h4 style="text-align: center; margin-bottom: 30px;">Manager Panel</h4>
-        
-        <nav class="flex-column">
-            <div class="nav-item px-3 mb-2">
-                <a class="nav-link text-white" href="manager/inventory">
-                    <span class="oi oi-box" aria-hidden="true"></span> Inventory
-                </a>
-            </div>
-            <div class="nav-item px-3 mb-2">
-                <a class="nav-link text-white" href="manager/suppliers">
-                    <span class="oi oi-truck" aria-hidden="true"></span> Suppliers
-                </a>
-            </div>
-            <div class="nav-item px-3 mb-2">
-                <a class="nav-link text-white" href="manager/promotions">
-                    <span class="oi oi-tags" aria-hidden="true"></span> Promotions
-                </a>
-            </div>
-        </nav>
 
-        <div style="position: absolute; bottom: 20px; width: 210px;">
-            <button @onclick="Logout" class="btn btn-outline-light w-100" style="color: #e9cac9; border-color: #e9cac9;">Logout</button>
-        </div>
-    </div>
+<NavBar />
 
-    <main style="flex-grow: 1; padding: 20px; overflow-y: auto;">
-        <div class="top-row px-4" style="background-color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: flex-end;">
-            <AuthorizeView>
-                <Authorized>
-                    <span>Welcome, @context.User.Identity?.Name!</span>
-                </Authorized>
-            </AuthorizeView>
-        </div>
-
-        <article class="content px-4">
+@if (IsAuthorized)
+{
+    <div class="layout-wrapper">
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <NavLink class="nav-item" href="/manager/inventory" Match="NavLinkMatch.Prefix">
+                    📦 <span>Inventory</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/manager/inventory/low-stock" Match="NavLinkMatch.Prefix">
+                    ⚠ <span>Low Stock</span>
+                    @if (LowStockBadgeCount > 0)
+                    {
+                        <span class="badge bg-danger ms-auto">@LowStockBadgeCount</span>
+                    }
+                </NavLink>
+                <NavLink class="nav-item" href="/manager/purchase-orders" Match="NavLinkMatch.Prefix">
+                    🛒 <span>Purchase Orders</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/manager/promotions" Match="NavLinkMatch.Prefix">
+                    🏷 <span>Promotions</span>
+                </NavLink>
+                <NavLink class="nav-item" href="/manager/analytics" Match="NavLinkMatch.Prefix">
+                    📈 <span>Analytics</span>
+                </NavLink>
+            </nav>
+        </aside>
+        <main class="main-content">
             @Body
-        </article>
-    </main>
-</div>
+        </main>
+    </div>
+    <Footer />
+}
+else
+{
+    <div class="container py-5 text-center">
+        <h2 class="text-danger">Access Denied</h2>
+        <p>You need Manager or Admin privileges to view this page.</p>
+        <a href="/login" class="btn btn-burnt-orange">Sign In</a>
+    </div>
+}
 
 @code {
-    private async Task Logout()
+    private bool IsAuthorized;
+    private bool _authChecked;
+    private int LowStockBadgeCount;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await LocalStorage.RemoveItemAsync("authToken");
-        ((CustomAuthStateProvider)AuthStateProvider).MarkUserAsLoggedOut();
-        NavigationManager.NavigateTo("/login");
+        if (firstRender && !_authChecked)
+        {
+            _authChecked = true;
+            await CheckAuthAsync();
+            if (IsAuthorized)
+            {
+                await LoadLowStockCount();
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckAuthAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (!user.Identity?.IsAuthenticated ?? true)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        if (!user.IsInRole("Manager") && !user.IsInRole("Admin"))
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+        IsAuthorized = true;
+    }
+
+    private async Task LoadLowStockCount()
+    {
+        try
+        {
+            var result = await InventoryService.GetLowStock();
+            if (result.Success && result.Data != null)
+                LowStockBadgeCount = result.Data.Count;
+        }
+        catch
+        {
+            LowStockBadgeCount = 0;
+        }
     }
 }

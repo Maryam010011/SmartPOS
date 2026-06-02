@@ -1,0 +1,340 @@
+@using SmartPOS.Shared.DTOs.Promotions
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@using SmartPOS.Shared.Enums
+@inject IPromotionService PromotionService
+
+@if (IsVisible)
+{
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content card-pos">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold" style="color: var(--color-button-primary);">
+                        @(IsEditMode ? "Edit Promotion" : "Create Promotion")
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger p-2 small mb-3">@ErrorMessage</div>
+                    }
+
+                    <!-- Promo Code + Auto-Generate -->
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Promo Code</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control text-uppercase" placeholder="e.g. SUMMER2024"
+                                           @bind-value="Code" @bind-value:event="oninput" />
+                                    <button type="button" class="btn btn-outline-secondary" @onclick="GenerateRandomCode">
+                                        Auto-Generate
+                                    </button>
+                                </div>
+                                @if (ShowErrors && string.IsNullOrWhiteSpace(Code))
+                                {
+                                    <div class="text-danger small mt-1">Promo code is required.</div>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="promoActiveSwitch" @bind="IsActive" />
+                                    <label class="form-check-label fw-semibold small @(IsActive ? "text-success" : "text-muted")" for="promoActiveSwitch">
+                                        @(IsActive ? "Active" : "Inactive")
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Description</label>
+                        <textarea class="form-control" rows="2" placeholder="Optional description for internal reference..."
+                                  @bind-value="Description" @bind-value:event="oninput"></textarea>
+                    </div>
+
+                    <!-- Discount Type & Value -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Discount Type</label>
+                                <div class="d-flex gap-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="discountType" id="typePercentage"
+                                               checked="@(DiscountType == DiscountType.Percentage)"
+                                               @onchange="() => DiscountType = DiscountType.Percentage" />
+                                        <label class="form-check-label" for="typePercentage">
+                                            Percentage (%)
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="discountType" id="typeFlat"
+                                               checked="@(DiscountType == DiscountType.Flat)"
+                                               @onchange="() => DiscountType = DiscountType.Flat" />
+                                        <label class="form-check-label" for="typeFlat">
+                                            Flat Amount (Rs)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">
+                                    Discount Value
+                                    @if (DiscountType == DiscountType.Percentage)
+                                    {
+                                        <span class="text-muted">(%)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">(Rs)</span>
+                                    }
+                                </label>
+                                <input type="number" min="0" step="0.01" class="form-control"
+                                       placeholder="@(DiscountType == DiscountType.Percentage ? "e.g. 10" : "e.g. 50")"
+                                       @bind-value="Value" @bind-value:event="oninput" />
+                                @if (ShowErrors)
+                                {
+                                    @if (Value <= 0)
+                                    {
+                                        <div class="text-danger small mt-1">Discount value must be greater than 0.</div>
+                                    }
+                                    else if (DiscountType == DiscountType.Percentage && Value > 100)
+                                    {
+                                        <div class="text-danger small mt-1">Percentage discount cannot exceed 100%.</div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Min Order & Max Usage -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Minimum Order Value (Rs)</label>
+                                <input type="number" min="0" step="0.01" class="form-control"
+                                       placeholder="0" @bind-value="MinOrderValue" @bind-value:event="oninput" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Max Usage Limit</label>
+                                <input type="number" min="1" class="form-control"
+                                       placeholder="e.g. 100" @bind-value="MaxUsageLimit" @bind-value:event="oninput" />
+                                @if (ShowErrors && MaxUsageLimit <= 0)
+                                {
+                                    <div class="text-danger small mt-1">Max usage limit must be at least 1.</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Valid From & Valid To -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Valid From</label>
+                                <input type="date" class="form-control" @bind="ValidFrom" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-0">
+                                <label class="form-label fw-semibold small text-secondary">Valid To</label>
+                                <input type="date" class="form-control" @bind="ValidTo" />
+                                @if (ShowErrors && ValidTo <= ValidFrom)
+                                {
+                                    <div class="text-danger small mt-1">Valid To must be after Valid From.</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer border-top-0 d-flex justify-content-end gap-2">
+                    <button class="btn btn-outline-secondary" @onclick="CloseModal" disabled="@IsLoading">Cancel</button>
+                    <button class="btn btn-burnt-orange d-flex align-items-center gap-2" @onclick="HandleSubmit" disabled="@IsLoading">
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm"></span>
+                            <span>Saving...</span>
+                        }
+                        else
+                        {
+                            <span>@(IsEditMode ? "Save Changes" : "Create Promotion")</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show modal-backdrop-pos"></div>
+}
+
+@code {
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private bool IsVisible;
+    private bool IsEditMode;
+    private bool IsLoading;
+    private bool ShowErrors;
+    private string ErrorMessage = "";
+
+    private int EditId;
+
+    private string Code = "";
+    private string? Description;
+    private DiscountType DiscountType = DiscountType.Percentage;
+    private decimal Value;
+    private decimal MinOrderValue;
+    private int MaxUsageLimit = 100;
+    private bool IsActive = true;
+    private DateTime ValidFrom;
+    private DateTime ValidTo;
+
+    public void OpenCreate()
+    {
+        IsEditMode = false;
+        EditId = 0;
+        ResetForm();
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    public void OpenEdit(PromotionDto p)
+    {
+        IsEditMode = true;
+        EditId = p.Id;
+        Code = p.Code;
+        Description = p.Description;
+        DiscountType = p.DiscountType;
+        Value = p.Value;
+        MinOrderValue = p.MinOrderValue;
+        MaxUsageLimit = p.MaxUsageLimit;
+        IsActive = p.IsActive;
+        ValidFrom = p.ValidFrom.Date;
+        ValidTo = p.ValidTo.Date;
+        ShowErrors = false;
+        ErrorMessage = "";
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    private void ResetForm()
+    {
+        Code = "";
+        Description = "";
+        DiscountType = DiscountType.Percentage;
+        Value = 0;
+        MinOrderValue = 0;
+        MaxUsageLimit = 100;
+        IsActive = true;
+        var now = DateTime.UtcNow.Date;
+        ValidFrom = now;
+        ValidTo = now.AddDays(30);
+        ShowErrors = false;
+        ErrorMessage = "";
+    }
+
+    private void GenerateRandomCode()
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        var random = new Random();
+        var randomPart = new string(Enumerable.Repeat(chars, 6)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
+        Code = $"PROMO-{randomPart}";
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        ShowErrors = true;
+        ErrorMessage = "";
+
+        // Validation
+        if (string.IsNullOrWhiteSpace(Code)) return;
+        if (Value <= 0) return;
+        if (MaxUsageLimit <= 0) return;
+        if (ValidTo <= ValidFrom) return;
+        if (DiscountType == DiscountType.Percentage && Value > 100) return;
+
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            if (IsEditMode)
+            {
+                var dto = new UpdatePromotionDto
+                {
+                    Code = Code.Trim().ToUpper(),
+                    Description = Description?.Trim(),
+                    DiscountType = DiscountType,
+                    Value = Value,
+                    MinOrderValue = MinOrderValue,
+                    MaxUsageLimit = MaxUsageLimit,
+                    ValidFrom = ValidFrom,
+                    ValidTo = ValidTo,
+                    IsActive = IsActive
+                };
+
+                var response = await PromotionService.UpdatePromotion(EditId, dto);
+                if (response.Success)
+                {
+                    CloseModal();
+                    await OnSave.InvokeAsync();
+                }
+                else
+                {
+                    ErrorMessage = response.Message;
+                }
+            }
+            else
+            {
+                var dto = new CreatePromotionDto
+                {
+                    Code = string.IsNullOrWhiteSpace(Code) ? null : Code.Trim().ToUpper(),
+                    Description = Description?.Trim(),
+                    DiscountType = DiscountType,
+                    Value = Value,
+                    MinOrderValue = MinOrderValue,
+                    MaxUsageLimit = MaxUsageLimit,
+                    ValidFrom = ValidFrom,
+                    ValidTo = ValidTo,
+                    IsActive = IsActive
+                };
+
+                var response = await PromotionService.CreatePromotion(dto);
+                if (response.Success)
+                {
+                    CloseModal();
+                    await OnSave.InvokeAsync();
+                }
+                else
+                {
+                    ErrorMessage = response.Message;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+}

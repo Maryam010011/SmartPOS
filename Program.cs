@@ -1,8 +1,17 @@
+using System.Text;
+using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SmartPOS.Components;
+using SmartPOS.Services.MaryamJ;
+using SmartPOS.Shared.Common;
+using SmartPOS.Shared.DTOs.Auth;
+using SmartPOS.Shared.Interfaces;
+using SmartPOS.Web.Data;
 using SmartPOS.Data;
 using Blazored.LocalStorage;
 using System.Text;
@@ -12,42 +21,99 @@ using SmartPOS.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null)
+    ));
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// 1. Setup EF Core with Local SQL Server
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// 2. Add Custom LocalStorage
-builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
-
-// 3. Configure JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "FallbackSecretKeyForSmartPOSApplication";
-var key = Encoding.ASCII.GetBytes(jwtKey);
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+// ── JWT Authentication ──
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(key),
-            ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidateAudience = true,
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero
-        };
-    });
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+    };
+});
 
-// 4. Authorization (use AddAuthorization, not AddAuthorizationCore, for server-side Blazor)
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    options.AddPolicy("ManagerOrAbove", p => p.RequireRole("Admin", "Manager"));
+    options.AddPolicy("CashierOrAbove", p => p.RequireRole("Admin", "Manager", "Cashier"));
+});
+
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddAuthorizationCore();
+
+// Blazored LocalStorage
+builder.Services.AddBlazoredLocalStorage();
+
+// Register Auth State & Services
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
-builder.Services.AddScoped<SmartPOS.Services.AuthService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<IAuthService, ServerAuthService>();
+
+// HttpClient for client-side services
+builder.Services.AddScoped(sp =>
+{
+    var nav = sp.GetRequiredService<NavigationManager>();
+    return new HttpClient { BaseAddress = new Uri(nav.BaseUri) };
+});
+
+// Register User Management Service
+builder.Services.AddScoped<IUserService, SmartPOS.Services.MaryamJ.UserService>();
+
+// Register Role Management Service
+builder.Services.AddScoped<IRoleService, SmartPOS.Services.MaryamJ.RoleService>();
+
+// Register Customer Management Service
+builder.Services.AddScoped<ICustomerService, SmartPOS.Services.MaryamJ.CustomerService>();
+
+// Register Audit Log Service
+builder.Services.AddScoped<IAuditLogService, SmartPOS.Services.MaryamJ.AuditLogService>();
+
+// Register Promotion Management Service
+builder.Services.AddScoped<IPromotionService, SmartPOS.Services.MaryamJ.PromotionService>();
+
+// Register Product Management Service
+builder.Services.AddScoped<IProductService, SmartPOS.Services.MaryamJ.ProductService>();
+
+// Register Category Management Service
+builder.Services.AddScoped<ICategoryService, SmartPOS.Services.MaryamJ.CategoryService>();
+
+// Register Inventory Management Service
+builder.Services.AddScoped<IInventoryService, SmartPOS.Services.MaryamJ.InventoryService>();
+
+// Register Supplier Service
+builder.Services.AddScoped<ISupplierService, SmartPOS.Services.MaryamJ.SupplierService>();
+
+// Register Purchase Order Service
+builder.Services.AddScoped<IPurchaseOrderService, SmartPOS.Services.MaryamJ.PurchaseOrderService>();
+
+// Register Weather Service
+builder.Services.AddScoped<IWeatherService, SmartPOS.Services.MaryamJ.WeatherService>();
+
+// Enable Web API Controllers
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -104,13 +170,15 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
-
+app.UseStatusCodePagesWithReExecute("/not-found");
 app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

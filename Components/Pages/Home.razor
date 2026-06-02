@@ -1,11 +1,44 @@
 @page "/"
-@inject NavigationManager NavigationManager
+@attribute [AllowAnonymous]
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@using System.Security.Claims
 
-<PageTitle>SmartPOS+ | Redirecting...</PageTitle>
+<div class="home-container">
+    <div class="decorative deco1"></div>
+    <div class="decorative deco2"></div>
+    <div class="decorative deco3"></div>
+
+    <div class="content text-center">
+        <div class="logo mx-auto mb-4">SP+</div>
+        <h1 class="title mb-3">SmartPOS+</h1>
+        <p class="subtitle mb-4 text-muted">Unified POS &amp; E‑Commerce System — Bakery Edition</p>
+        <hr class="divider mx-auto mb-4" />
+
+        <div class="buttons d-flex justify-content-center gap-3 flex-wrap">
+            <a class="btn btn-burnt-orange btn-lg" href="/login">Sign In</a>
+        </div>
+    </div>
+    <footer class="footer mt-auto"></footer>
+</div>
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        NavigationManager.NavigateTo("/login", replace: true);
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            var role = user.FindFirst(ClaimTypes.Role)?.Value ?? "";
+            var redirect = role switch
+            {
+                "Admin" => "/admin/dashboard",
+                "Manager" => "/manager/dashboard",
+                "Cashier" => "/cashier/dashboard",
+                _ => "/customer/dashboard"
+            };
+            Navigation.NavigateTo(redirect);
+        }
     }
 }

@@ -1,0 +1,343 @@
+@page "/admin/customers/profile/{Id:int}"
+@layout AdminLayout
+@using SmartPOS.Shared.DTOs.Customers
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@inject ICustomerService CustomerService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<div class="container-fluid py-4" style="background-color: var(--color-page-bg); min-height: 100vh;">
+    <!-- Toast -->
+    @if (!string.IsNullOrEmpty(ToastMessage))
+    {
+        <div class="toast-container-pos">
+            <div class="toast-pos toast-@ToastType">
+                <span class="toast-icon">@(ToastType == "success" ? "✅" : ToastType == "warning" ? "⚠️" : "❌")</span>
+                <span class="toast-body">@ToastMessage</span>
+                <button class="toast-close" @onclick="DismissToast">&times;</button>
+            </div>
+        </div>
+    }
+
+    @if (IsLoading)
+    {
+        <div class="d-flex justify-content-center align-items-center py-5 my-5">
+            <div class="spinner-border" style="width: 3rem; height: 3rem; color: var(--color-button-primary) !important;" role="status"></div>
+        </div>
+    }
+    else if (Customer == null)
+    {
+        <div class="text-center py-5">
+            <h5 class="fw-bold text-dark">Customer Not Found</h5>
+            <a href="/admin/customers" class="btn btn-burnt-orange btn-sm mt-2 px-4">Back to Customers</a>
+        </div>
+    }
+    else
+    {
+        <!-- Back link -->
+        <a href="/admin/customers" class="btn btn-sm btn-outline-secondary rounded-circle p-1 d-inline-flex align-items-center justify-content-center mb-3"
+           style="width: 32px; height: 32px;" title="Back to Customers">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
+            </svg>
+        </a>
+
+        <!-- Top Section -->
+        <div class="card card-pos mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="avatar-circle" style="width: 64px; height: 64px; border-radius: 50%; background-color: var(--color-button-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; flex-shrink: 0;">
+                            @GetInitials(Customer.Name)
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-1 text-dark">@Customer.Name</h3>
+                            <div class="d-flex flex-wrap gap-3 text-muted small">
+                                <span>✉️ @Customer.Email</span>
+                                <span>📞 @Customer.Phone</span>
+                                <span>📅 Member since @Customer.CreatedAt.ToString("MMM yyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-burnt-orange btn-sm fw-semibold" @onclick="OpenEditProfile">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.5-.5V9h-.5a.5.5 0 0 1-.5-.5v-.5a.5.5 0 0 1 .146-.354l6-6a.5.5 0 0 1 .708 0l3.75 3.75a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.354.146z"/></svg>
+                            Edit Profile
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm fw-semibold" @onclick="OpenLoyaltyFromProfile">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16"><path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4z"/></svg>
+                            Adjust Points
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm fw-semibold" @onclick="SendPromoEmail">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16"><path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414zM0 4.697v7.104l5.803-3.558zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586zm3.436-.586L16 11.801V4.697z"/></svg>
+                            Send Promo Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card card-pos text-center p-3">
+                    <div class="text-muted small fw-semibold text-uppercase">Total Orders</div>
+                    <div class="fw-bold fs-3" style="color: var(--color-button-primary);">@Customer.RecentOrders.Count</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-pos text-center p-3">
+                    <div class="text-muted small fw-semibold text-uppercase">Lifetime Spend</div>
+                    <div class="fw-bold fs-3" style="color: var(--color-button-primary);">Rs @Customer.TotalSpent.ToString("N0")</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-pos text-center p-3">
+                    <div class="text-muted small fw-semibold text-uppercase">Loyalty Points</div>
+                    <div class="fw-bold fs-3" style="color: var(--color-button-primary);">@Customer.LoyaltyPoints</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-pos text-center p-3">
+                    <div class="text-muted small fw-semibold text-uppercase">Last Purchase</div>
+                    <div class="fw-bold fs-5" style="color: var(--color-button-primary);">
+                        @(Customer.RecentOrders.Any()
+                            ? Customer.RecentOrders.Max(o => o.SaleDate).ToString("MMM dd, yyyy")
+                            : "N/A")
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="card card-pos">
+            <div class="card-header bg-transparent border-bottom-0 pt-3 px-0">
+                <ul class="nav nav-tabs card-header-tabs px-3" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold @(ActiveTab == "orders" ? "active" : "")"
+                                style="color: var(--color-button-primary);"
+                                @onclick='() => ActiveTab = "orders"'>Order History</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold @(ActiveTab == "loyalty" ? "active" : "")"
+                                style="color: var(--color-button-primary);"
+                                @onclick='() => ActiveTab = "loyalty"'>Loyalty Points History</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-semibold @(ActiveTab == "details" ? "active" : "")"
+                                style="color: var(--color-button-primary);"
+                                @onclick='() => ActiveTab = "details"'>Personal Details</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-0">
+                @if (ActiveTab == "orders")
+                {
+                    <div class="table-responsive">
+                        <table class="table table-pos align-middle m-0 table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="padding-left: 20px;">Order #</th>
+                                    <th>Date</th>
+                                    <th class="text-center">Items</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Customer.RecentOrders.Any())
+                                {
+                                    @foreach (var order in Customer.RecentOrders)
+                                    {
+                                        <tr>
+                                            <td style="padding-left: 20px; font-weight: 600;">#@order.Id</td>
+                                            <td>@order.SaleDate.ToString("MMM dd, yyyy h:mm tt")</td>
+                                            <td class="text-center">@order.ItemCount</td>
+                                            <td class="text-end fw-semibold">Rs @order.TotalAmount.ToString("N0")</td>
+                                            <td class="text-center">
+                                                <span class="badge rounded-pill @(order.Status == SmartPOS.Shared.Enums.SaleStatus.Completed ? "bg-success" : order.Status == SmartPOS.Shared.Enums.SaleStatus.Voided ? "bg-secondary" : "bg-warning text-dark") px-3 py-2">
+                                                    @order.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted small">No orders yet.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else if (ActiveTab == "loyalty")
+                {
+                    <div class="table-responsive">
+                        <table class="table table-pos align-middle m-0 table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="padding-left: 20px;">Date</th>
+                                    <th>Action</th>
+                                    <th class="text-end" style="padding-right: 20px;">Points</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Customer.LoyaltyHistory.Any())
+                                {
+                                    @foreach (var entry in Customer.LoyaltyHistory)
+                                    {
+                                        <tr>
+                                            <td style="padding-left: 20px;">@entry.CreatedAt.ToString("MMM dd, yyyy h:mm tt")</td>
+                                            <td>
+                                                <span class="badge rounded-pill @(entry.Type == "Earned" ? "bg-success" : "bg-warning text-dark") px-3 py-2">
+                                                    @entry.Type
+                                                </span>
+                                            </td>
+                                            <td class="text-end fw-bold" style="padding-right: 20px;">
+                                                <span class="@(entry.Points >= 0 ? "text-success" : "text-danger")">
+                                                    @(entry.Points >= 0 ? "+" : "")@entry.Points
+                                                </span>
+                                            </td>
+                                            <td class="small text-muted">@entry.Reason</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4 text-muted small">No loyalty transactions yet.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else if (ActiveTab == "details")
+                {
+                    <div class="p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-semibold text-uppercase">Full Name</label>
+                                <p class="fw-bold text-dark mb-0">@Customer.Name</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-semibold text-uppercase">Email</label>
+                                <p class="fw-bold text-dark mb-0">@Customer.Email</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-semibold text-uppercase">Phone</label>
+                                <p class="fw-bold text-dark mb-0">@Customer.Phone</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-semibold text-uppercase">Date of Birth</label>
+                                <p class="fw-bold text-dark mb-0">@(Customer.DateOfBirth?.ToString("MMM dd, yyyy") ?? "—")</p>
+                            </div>
+                            <div class="col-12">
+                                <label class="text-muted small fw-semibold text-uppercase">Address</label>
+                                <p class="fw-bold text-dark mb-0">@(!string.IsNullOrEmpty(Customer.Address) ? Customer.Address : "—")</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-semibold text-uppercase">Account Status</label>
+                                <p class="mb-0">
+                                    @if (Customer.IsActive)
+                                    {
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">● Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 rounded-pill">● Inactive</span>
+                                    }
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-semibold text-uppercase">Member Since</label>
+                                <p class="fw-bold text-dark mb-0">@Customer.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modals -->
+<CustomerFormModal @ref="FormModal" OnSave="ReloadProfile" />
+<LoyaltyModal @ref="LoyaltyModalRef" OnSave="ReloadProfile" />
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private CustomerDetailDto? Customer;
+    private bool IsLoading = true;
+    private string ActiveTab = "orders";
+
+    // Toast
+    private string ToastMessage = string.Empty;
+    private string ToastType = "success";
+
+    // Modal refs
+    private CustomerFormModal? FormModal;
+    private LoyaltyModal? LoyaltyModalRef;
+
+    protected override async Task OnInitializedAsync() => await LoadProfile();
+
+    private async Task LoadProfile()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var response = await CustomerService.GetCustomerById(Id);
+            if (response.Success)
+                Customer = response.Data;
+            else
+                Customer = null;
+        }
+        catch
+        {
+            Customer = null;
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ReloadProfile() => await LoadProfile();
+
+    private async Task OpenEditProfile()
+    {
+        if (FormModal != null)
+            await FormModal.OpenEditFromDetail(Id);
+    }
+
+    private void OpenLoyaltyFromProfile()
+    {
+        if (Customer != null)
+            LoyaltyModalRef?.Open(Id, Customer.Name, Customer.LoyaltyPoints);
+    }
+
+    private void SendPromoEmail()
+    {
+        ShowToast("success", "Email feature coming soon!");
+    }
+
+    private void DismissToast() => ToastMessage = string.Empty;
+    private void ShowToast(string type, string msg) { ToastType = type; ToastMessage = msg; StateHasChanged(); }
+
+    private static string GetInitials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][0].ToString().ToUpper();
+        return (parts[0][0].ToString() + parts[^1][0].ToString()).ToUpper();
+    }
+}

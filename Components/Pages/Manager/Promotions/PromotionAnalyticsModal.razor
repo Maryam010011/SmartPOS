@@ -1,0 +1,277 @@
+@using SmartPOS.Shared.DTOs.Promotions
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@inject IPromotionService PromotionService
+
+@if (IsVisible)
+{
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content card-pos">
+                <div class="modal-header border-bottom-0">
+                    <div>
+                        <h5 class="modal-title fw-bold" style="color: var(--color-button-primary);">
+                            Promotion Analytics
+                        </h5>
+                        <p class="text-muted small m-0">Code: <strong>@PromoCode</strong></p>
+                    </div>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    @if (IsLoading)
+                    {
+                        <div class="text-center py-5">
+                            <div class="spinner-border" style="color: var(--color-button-primary);" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mt-2">Loading analytics...</p>
+                        </div>
+                    }
+                    else if (Analytics == null)
+                    {
+                        <div class="text-center py-5">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="text-muted mb-3" viewBox="0 0 16 16">
+                                <path d="M0 0h1v1H0V0zm2 0h1v1H2V0zm2 0h1v1H4V0zm2 0h1v1H6V0zM2 2h1v1H2V2zm2 0h1v1H4V2zm2 0h1v1H6V2zm2 0h1v1H8V2zM0 4h1v1H0V4zm2 0h1v1H2V4zm2 0h1v1H4V4zm2 0h1v1H6V4zm4 0h1v1h-1V4zm-4 2h1v1H6V6zM0 6h1v1H0V6zm2 0h1v1H2V6zm6 0h1v1H8V6zM0 8h1v1H0V8zm2 0h1v1H2V8zm2 0h1v1H4V8zm2 0h1v1H6V8zm4 0h1v1h-1V8zM2 10h1v1H2v-1zm2 0h1v1H4v-1zm2 0h1v1H6v-1zm2 0h1v1H8v-1zM0 12h1v1H0v-1zm2 0h1v1H2v-1zm2 0h1v1H4v-1zm2 0h1v1H6v-1zm4 0h1v1h-1v-1z"/>
+                                <path d="M15.817.113A.5.5 0 0 1 16 .5v15a.5.5 0 0 1-.459.499l-3.542.002-3.5.001A.5.5 0 0 1 8 15.5v-.5L4.5 15l-4 .001a.5.5 0 0 1-.459-.5V.5a.5.5 0 0 1 .541-.5l1.958-.002L4 0l4 .002 3.5.001L13.5 0l2.317.113zM4.5 1.999L1 2v12h1.5l1 3.5h.002l.5-3.5h.998l.501 3.5h1v-3.5h1v3.5h1V9.5h.5v3.5h1V8V2l-3 .001-3.5-.001L8 2v3.5l.5 0h.5v-.002h.498V2l-1-.001-4-.002L4.5 2zm3 .001V7l-1 .002L5.5 7v3H5V5.5L4.5 5.5V7H4V4l.5l.5 0h.002V1.999zm4-.001h.5L9 2v1.5h.5V5.5h-.5V7H9v1.5h.5v3h-1V9H8v-3.5h-.5V9h.5l.5 0h1v1.5zm4.5.001l3.001.002L15 3.5v3l.5 0V7h-.5V9v2.5h.5v3.5h-2l-4-.001v-3.5h.5v-3H13l-.5 0V9h-.5V5.5h.5V4h.5V3.5l-.5 0V2l.5.001Z"/>
+                            </svg>
+                            <p class="text-muted fw-semibold mb-1">No usage data yet</p>
+                            <p class="text-muted small m-0">This promotion hasn't been applied to any orders.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Stats Cards -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="card card-pos h-100">
+                                    <div class="card-body p-3 text-center">
+                                        <div class="text-muted small fw-semibold text-uppercase mb-1">Times Applied</div>
+                                        <div class="fw-bold display-5" style="color: var(--color-button-primary);">
+                                            @Analytics.TotalTimesUsed
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card card-pos h-100">
+                                    <div class="card-body p-3 text-center">
+                                        <div class="text-muted small fw-semibold text-uppercase mb-1">Total Discount Given</div>
+                                        <div class="fw-bold display-5" style="color: #dc3545;">
+                                            Rs @Analytics.TotalDiscountGiven.ToString("N0")
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card card-pos h-100">
+                                    <div class="card-body p-3 text-center">
+                                        <div class="text-muted small fw-semibold text-uppercase mb-1">Revenue from Promo Orders</div>
+                                        <div class="fw-bold display-5" style="color: #198754;">
+                                            Rs @Analytics.RevenueFromPromoOrders.ToString("N0")
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Usage Chart -->
+                        @if (Analytics.DailyUsageList != null && Analytics.DailyUsageList.Any())
+                        {
+                            <div class="card card-pos mb-4">
+                                <div class="card-body p-3">
+                                    <h6 class="fw-semibold mb-3" style="color: var(--color-button-primary);">Daily Usage (Last 30 Days)</h6>
+
+                                    @if (MaxUsageCount > 0)
+                                    {
+                                        <div class="usage-chart-container" style="height: 200px; display: flex; align-items: flex-end; gap: 2px; padding: 0 10px; border-bottom: 1px solid #ddd; position: relative;">
+                                            @foreach (var day in ChartData)
+                                            {
+                                                var heightPercent = MaxUsageCount > 0 ? (double)day.UsageCount / MaxUsageCount * 100 : 0;
+                                                <div class="d-flex flex-column align-items-center" style="flex: 1; min-width: 0;">
+                                                    <div class="usage-bar rounded-top"
+                                                         style="width: 100%; height: @(heightPercent)%; min-height: @(day.UsageCount > 0 ? 4 : 0)px; background-color: var(--color-button-primary); opacity: 0.8;"
+                                                         title="@day.Date.ToString("dd MMM"): @day.UsageCount uses">
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <!-- X axis labels - show every Nth day -->
+                                        <div class="d-flex justify-content-between mt-2 px-2">
+                                            @foreach (var label in ChartLabels)
+                                            {
+                                                <span class="text-muted small" style="font-size: 0.65rem;">@label</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-center py-4 text-muted">
+                                            No usage data in the last 30 days.
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Recent Usage Table -->
+                        @if (RecentSales != null && RecentSales.Any())
+                        {
+                            <div class="card card-pos">
+                                <div class="card-body p-0">
+                                    <div class="p-3 border-bottom">
+                                        <h6 class="fw-semibold mb-0" style="color: var(--color-button-primary);">Recent Usage</h6>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-pos align-middle m-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th style="padding-left: 20px;">Date</th>
+                                                    <th>Order #</th>
+                                                    <th>Discount</th>
+                                                    <th class="text-end" style="padding-right: 20px;">Order Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var sale in RecentSales)
+                                                {
+                                                    <tr>
+                                                        <td style="padding-left: 20px;">
+                                                            @sale.Date.ToString("dd MMM yyyy HH:mm")
+                                                        </td>
+                                                        <td>
+                                                            <span class="fw-semibold">#@sale.OrderId</span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="text-danger fw-semibold">-Rs @sale.Discount.ToString("N0")</span>
+                                                        </td>
+                                                        <td class="text-end" style="padding-right: 20px;">
+                                                            <span class="fw-semibold">Rs @sale.Total.ToString("N0")</span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="modal-footer border-top-0">
+                    <button class="btn btn-outline-secondary" @onclick="CloseModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show modal-backdrop-pos"></div>
+}
+
+@code {
+    private bool IsVisible;
+    private bool IsLoading;
+
+    private int PromoId;
+    private string PromoCode = "";
+
+    private PromoAnalyticsDto? Analytics;
+    private List<DailyUsageStat> ChartData = new();
+    private List<string> ChartLabels = new();
+    private int MaxUsageCount;
+
+    private List<RecentSaleEntry> RecentSales = new();
+
+    public async void Open(int id, string code)
+    {
+        PromoId = id;
+        PromoCode = code;
+        IsVisible = true;
+        IsLoading = true;
+        Analytics = null;
+        ChartData = new();
+        ChartLabels = new();
+        RecentSales = new();
+        StateHasChanged();
+
+        try
+        {
+            var response = await PromotionService.GetPromoAnalytics(id);
+            if (response.Success && response.Data != null)
+            {
+                Analytics = response.Data;
+                PrepareChartData();
+            }
+        }
+        catch { }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void PrepareChartData()
+    {
+        if (Analytics?.DailyUsageList == null || !Analytics.DailyUsageList.Any())
+        {
+            ChartData = new();
+            ChartLabels = new();
+            MaxUsageCount = 0;
+            return;
+        }
+
+        // Get last 30 days of data
+        var last30Days = Enumerable.Range(0, 30)
+            .Select(i => DateTime.Today.AddDays(-29 + i).Date)
+            .ToList();
+
+        // Create a dictionary for lookup
+        var usageDict = Analytics.DailyUsageList
+            .GroupBy(d => d.Date.Date)
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.UsageCount));
+
+        // Build chart data
+        ChartData = last30Days
+            .Select(date => new DailyUsageStat
+            {
+                Date = date,
+                UsageCount = usageDict.TryGetValue(date, out var count) ? count : 0
+            })
+            .ToList();
+
+        MaxUsageCount = ChartData.Max(d => d.UsageCount);
+
+        // Build labels - show every 5th day
+        var step = 5;
+        ChartLabels = ChartData
+            .Where((_, i) => i % step == 0 || i == ChartData.Count - 1)
+            .Select(d => d.Date.ToString("dd MMM"))
+            .ToList();
+
+        // Prepare recent sales data from analytics
+        RecentSales = Analytics.DailyUsageList
+            .OrderByDescending(d => d.Date)
+            .Take(10)
+            .Select(d => new RecentSaleEntry
+            {
+                Date = d.Date,
+                OrderId = d.UsageCount,
+                Discount = d.TotalDiscount,
+                Total = d.TotalRevenue
+            })
+            .ToList();
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+    }
+
+    private class RecentSaleEntry
+    {
+        public DateTime Date { get; set; }
+        public int OrderId { get; set; }
+        public decimal Discount { get; set; }
+        public decimal Total { get; set; }
+    }
+}

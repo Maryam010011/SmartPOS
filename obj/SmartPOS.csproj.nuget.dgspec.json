@@ -1,30 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Maryam Yaqoob\\Pictures\\New folder\\SmartPOS\\SmartPOS.csproj": {}
+    "E:\\4th semester\\VP theory\\VP Project\\pro1\\SmartPOS\\SmartPOS.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Maryam Yaqoob\\Pictures\\New folder\\SmartPOS\\SmartPOS.csproj": {
+    "E:\\4th semester\\VP theory\\VP Project\\pro1\\SmartPOS\\SmartPOS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Maryam Yaqoob\\Pictures\\New folder\\SmartPOS\\SmartPOS.csproj",
+        "projectUniqueName": "E:\\4th semester\\VP theory\\VP Project\\pro1\\SmartPOS\\SmartPOS.csproj",
         "projectName": "SmartPOS",
-        "projectPath": "C:\\Users\\Maryam Yaqoob\\Pictures\\New folder\\SmartPOS\\SmartPOS.csproj",
-        "packagesPath": "C:\\Users\\Maryam Yaqoob\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Maryam Yaqoob\\Pictures\\New folder\\SmartPOS\\obj\\",
+        "projectPath": "E:\\4th semester\\VP theory\\VP Project\\pro1\\SmartPOS\\SmartPOS.csproj",
+        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+        "outputPath": "E:\\4th semester\\VP theory\\VP Project\\pro1\\SmartPOS\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Maryam Yaqoob\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
-            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -39,42 +40,49 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.300"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net10.0": {
-          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "BCrypt.Net-Next": {
               "target": "Package",
-              "version": "[4.1.0, )"
+              "version": "[4.2.0, )"
+            },
+            "Blazored.LocalStorage": {
+              "target": "Package",
+              "version": "[4.5.0, )"
             },
             "Microsoft.AspNetCore.App.Internal.Assets": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.8, )",
+              "version": "[10.0.7, )",
               "autoReferenced": true
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[10.0.8, )"
+              "version": "[9.*, )"
+            },
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.*, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.8, )"
+              "version": "[9.*, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
-              "version": "[10.0.8, )"
+              "version": "[9.*, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.8, )"
+              "version": "[9.*, )"
             }
           },
           "imports": [
@@ -96,7 +104,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

@@ -1,0 +1,330 @@
+@using SmartPOS.Shared.DTOs.Inventory
+@using SmartPOS.Shared.DTOs.Products
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@inject IInventoryService InventoryService
+@inject IProductService ProductService
+
+@if (IsVisible)
+{
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content card-pos">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold" style="color: var(--color-button-primary);">Adjust Stock</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger p-2 small mb-3">@ErrorMessage</div>
+                    }
+
+                    @if (IsLoadingProducts)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border" style="color: var(--color-button-primary);" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mt-2">Loading products...</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Product Selection -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-secondary">Product</label>
+                            <select class="form-select" value="@SelectedProductId" @onchange="OnProductChanged">
+                                <option value="">-- Select Product --</option>
+                                @if (AllProducts != null)
+                                {
+                                    @foreach (var p in AllProducts.OrderBy(x => x.Name))
+                                    {
+                                        <option value="@p.Id">@p.Name (SKU: @p.SKU)</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        @if (SelectedProductId.HasValue)
+                        {
+                            <!-- Current Quantity Display -->
+                            <div class="text-center mb-3 p-3 rounded" style="background-color: rgba(204, 85, 0, 0.04);">
+                                <span class="text-muted small">Current Quantity</span>
+                                <div class="display-4 fw-bold" style="color: var(--color-button-primary);">@CurrentQuantity</div>
+                            </div>
+
+                            <!-- Product Name -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Product Name</label>
+                                <input type="text" class="form-control" readonly value="@ProductName" />
+                            </div>
+
+                            <!-- Adjustment Type -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Adjustment Type</label>
+                            <div class="d-flex gap-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="adjType" id="adjAdd"
+                                           checked="@(AdjustmentType == AdjustmentTypeEnum.Add)"
+                                           @onchange="() => AdjustmentType = AdjustmentTypeEnum.Add" />
+                                    <label class="form-check-label" for="adjAdd">Add Stock</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="adjType" id="adjDeduct"
+                                           checked="@(AdjustmentType == AdjustmentTypeEnum.Deduct)"
+                                           @onchange="() => AdjustmentType = AdjustmentTypeEnum.Deduct" />
+                                    <label class="form-check-label" for="adjDeduct">Deduct Stock</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="adjType" id="adjWriteoff"
+                                           checked="@(AdjustmentType == AdjustmentTypeEnum.WriteOff)"
+                                           @onchange="() => AdjustmentType = AdjustmentTypeEnum.WriteOff" />
+                                    <label class="form-check-label" for="adjWriteoff">Write-off</label>
+                                </div>
+                            </div>
+                            </div>
+
+                            <!-- Quantity -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Quantity</label>
+                                <input type="number" class="form-control" min="1"
+                                       @bind-value="Quantity" @bind-value:event="oninput" />
+                                @if (Quantity < 0)
+                                {
+                                    <div class="text-danger small mt-1">Quantity must be a positive number.</div>
+                                }
+                            </div>
+
+                            <!-- Reason -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Reason *</label>
+                                <input type="text" class="form-control" placeholder="Enter reason for adjustment"
+                                       @bind-value="Reason" @bind-value:event="oninput" />
+                                @if (ShowErrors && string.IsNullOrWhiteSpace(Reason))
+                                {
+                                    <div class="text-danger small mt-1">Reason is required.</div>
+                                }
+                            </div>
+
+                            <!-- Timestamp -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold small text-secondary">Timestamp</label>
+                                <input type="text" class="form-control" readonly
+                                       value="@Timestamp.ToString("dd MMM yyyy HH:mm:ss")" />
+                            </div>
+
+                            <!-- Preview -->
+                            @if (Quantity > 0)
+                            {
+                                var isValidAdjustment = AdjustmentType == AdjustmentTypeEnum.Add || Quantity <= CurrentQuantity;
+                                <div class="alert @(isValidAdjustment ? "alert-info" : "alert-danger") mb-0">
+                                    <strong>Preview:</strong> New quantity will be:
+                                    <span class="fw-bold">@NewQuantity</span>
+                                    @if (!isValidAdjustment)
+                                    {
+                                        <div class="small mt-1">Cannot deduct more than current quantity (@CurrentQuantity).</div>
+                                    }
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+                <div class="modal-footer border-top-0 d-flex justify-content-end gap-2">
+                    <button class="btn btn-outline-secondary" @onclick="CloseModal" disabled="@IsLoading || @IsLoadingProducts">Cancel</button>
+                    <button class="btn btn-burnt-orange d-flex align-items-center gap-2" @onclick="HandleSubmit" disabled="@(!IsFormValid || IsLoading || IsLoadingProducts)">
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm"></span>
+                            <span>Saving...</span>
+                        }
+                        else
+                        {
+                            <span>Confirm Adjustment</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show modal-backdrop-pos"></div>
+}
+
+@code {
+    private enum AdjustmentTypeEnum { Add, Deduct, WriteOff }
+
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private bool IsVisible;
+    private bool IsLoading;
+    private bool IsLoadingProducts;
+    private bool ShowErrors;
+    private string ErrorMessage = "";
+    private List<ProductDto>? AllProducts;
+
+    private int? SelectedProductId;
+    private AdjustmentTypeEnum AdjustmentType = AdjustmentTypeEnum.Add;
+    private int Quantity;
+    private string Reason = "";
+    private DateTime Timestamp = DateTime.Now;
+
+    private int CurrentQuantity;
+    private string ProductName = "";
+
+    private bool IsFormValid
+    {
+        get
+        {
+            if (!SelectedProductId.HasValue) return false;
+            if (Quantity <= 0) return false;
+            if (string.IsNullOrWhiteSpace(Reason)) return false;
+            if (AdjustmentType != AdjustmentTypeEnum.Add && Quantity > CurrentQuantity) return false;
+            return true;
+        }
+    }
+
+    private int NewQuantity
+    {
+        get
+        {
+            if (AdjustmentType == AdjustmentTypeEnum.Add) return CurrentQuantity + Quantity;
+            return CurrentQuantity - Quantity;
+        }
+    }
+
+    public async Task Open()
+    {
+        ResetForm();
+        await LoadProducts();
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    public async Task OpenForProduct(InventoryDto item)
+    {
+        ResetForm();
+        await LoadProducts();
+        SelectedProductId = item.ProductId;
+        ProductName = item.ProductName;
+        CurrentQuantity = item.Quantity;
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    private async Task LoadProducts()
+    {
+        IsLoadingProducts = true;
+        StateHasChanged();
+        try
+        {
+            var result = await ProductService.GetAll();
+            if (result.Success && result.Data != null)
+            {
+                AllProducts = result.Data.Where(p => p.IsActive).ToList();
+            }
+        }
+        catch
+        {
+            AllProducts = new List<ProductDto>();
+        }
+        finally
+        {
+            IsLoadingProducts = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnProductChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var id))
+        {
+            SelectedProductId = id;
+            await LoadCurrentQuantity();
+        }
+        else
+        {
+            SelectedProductId = null;
+            CurrentQuantity = 0;
+            ProductName = "";
+        }
+        StateHasChanged();
+    }
+
+    private async Task LoadCurrentQuantity()
+    {
+        if (!SelectedProductId.HasValue) return;
+        try
+        {
+            var invResult = await InventoryService.GetByProduct(SelectedProductId.Value);
+            if (invResult.Success && invResult.Data != null)
+            {
+                CurrentQuantity = invResult.Data.Quantity;
+                ProductName = invResult.Data.ProductName;
+            }
+        }
+        catch
+        {
+            CurrentQuantity = 0;
+            ProductName = "";
+        }
+    }
+
+    private void ResetForm()
+    {
+        SelectedProductId = null;
+        AdjustmentType = AdjustmentTypeEnum.Add;
+        Quantity = 0;
+        Reason = "";
+        Timestamp = DateTime.Now;
+        CurrentQuantity = 0;
+        ProductName = "";
+        ErrorMessage = "";
+        ShowErrors = false;
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        ShowErrors = true;
+        if (!IsFormValid) return;
+
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var adjQuantity = AdjustmentType == AdjustmentTypeEnum.Add ? Quantity : -Quantity;
+            var reasonPrefix = AdjustmentType == AdjustmentTypeEnum.WriteOff ? "Write-off: " : "";
+            var dto = new AdjustStockDto
+            {
+                ProductId = SelectedProductId!.Value,
+                Quantity = adjQuantity,
+                Reason = reasonPrefix + Reason.Trim()
+            };
+
+            var response = await InventoryService.AdjustStock(dto);
+            if (response.Success)
+            {
+                CloseModal();
+                await OnSave.InvokeAsync();
+            }
+            else
+            {
+                ErrorMessage = response.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,204 @@
+@page "/register"
+@attribute [AllowAnonymous]
+@rendermode InteractiveServer
+@inject AppDbContext DbContext
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+@using SmartPOS.Web.Data
+@using SmartPOS.Web.Models
+
+<div class="register-page">
+    <div class="register-card">
+        <div class="register-header">
+            <div class="register-logo">🧁</div>
+            <h2>Create Account</h2>
+            <p class="text-muted">Join the SmartPOS+ bakery customer family</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Error))
+        {
+            <div class="alert alert-danger py-2 small">@Error</div>
+        }
+
+        @if (SuccessMessage)
+        {
+            <div class="alert alert-success py-2 small">Account created successfully! Redirecting to login...</div>
+        }
+
+        <EditForm Model="@Model" OnValidSubmit="HandleRegister" FormName="registerForm">
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Full Name</label>
+                <InputText @bind-Value="Model.Name" class="form-control" placeholder="John Doe" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Email Address</label>
+                <InputText @bind-Value="Model.Email" class="form-control" placeholder="john@example.com" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Password</label>
+                <div class="input-group">
+                    <InputText @bind-Value="Model.Password" type="@(ShowPassword ? "text" : "password")" class="form-control" placeholder="••••••••" required />
+                    <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
+                        @(ShowPassword ? "🙈" : "👁")
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Confirm Password</label>
+                <InputText @bind-Value="Model.ConfirmPassword" type="password" class="form-control" placeholder="••••••••" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold small">Role</label>
+                <select @bind="Model.RoleId" class="form-select" required>
+                    <option value="">-- Select Role --</option>
+                    @foreach (var role in Roles)
+                    {
+                        <option value="@role.Id">@role.RoleName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="small text-muted">Already have an account?</span>
+                <a href="/login" class="text-burnt-orange small fw-semibold text-decoration-none">Sign In</a>
+            </div>
+
+            <button type="submit" class="btn btn-burnt-orange w-100 py-2 fw-semibold" disabled="@IsLoading">
+                @if (IsLoading)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                Register
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+<style>
+    .register-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f0e8 0%, #e8dcc8 100%); padding: 1rem; font-family: 'Inter', sans-serif; }
+    .register-card { background: white; border-radius: 20px; box-shadow: 0 10px 45px rgba(0,0,0,0.08); padding: 2.5rem; width: 100%; max-width: 440px; border: 1px solid rgba(204, 85, 0, 0.1); }
+    .register-header { text-align: center; margin-bottom: 2rem; }
+    .register-logo { display: inline-flex; align-items: center; justify-content: center; width: 72px; height: 72px; border-radius: 50%; background: #FFE8D6; font-size: 2.5rem; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(204, 85, 0, 0.15); }
+    .register-header h2 { font-weight: 800; color: #4A2C2A; margin: 0; font-size: 1.8rem; }
+    .register-header p { font-size: 0.9rem; margin-top: 0.5rem; }
+    .form-control:focus { border-color: #CC5500; box-shadow: 0 0 0 0.25rem rgba(204, 85, 0, 0.25); }
+    .btn-burnt-orange { background-color: #CC5500; color: white; border: none; transition: background-color 0.2s; }
+    .btn-burnt-orange:hover { background-color: #A34400; color: white; }
+    .text-burnt-orange { color: #CC5500; }
+    .text-burnt-orange:hover { color: #A34400; }
+</style>
+
+@code {
+    private RegisterModel Model = new();
+    private List<Role> Roles = new();
+    private bool IsLoading;
+    private bool ShowPassword;
+    private bool SuccessMessage;
+    private string? Error;
+
+    private class RegisterModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+        public int RoleId { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Roles = await DbContext.Roles
+            .Where(r => r.RoleName != "Admin")
+            .ToListAsync();
+    }
+
+    private void TogglePasswordVisibility() => ShowPassword = !ShowPassword;
+
+    private async Task HandleRegister()
+    {
+        Error = null;
+
+        if (Model.Password != Model.ConfirmPassword)
+        {
+            Error = "Passwords do not match.";
+            return;
+        }
+
+        if (Model.Password.Length < 6)
+        {
+            Error = "Password must be at least 6 characters long.";
+            return;
+        }
+
+        if (Model.RoleId == 0)
+        {
+            Error = "Please select a role.";
+            return;
+        }
+
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var emailNormalized = Model.Email.Trim().ToLower();
+            var exists = await DbContext.Users.AnyAsync(u => u.Email.ToLower() == emailNormalized);
+            if (exists)
+            {
+                Error = "Email is already registered.";
+                return;
+            }
+
+            var hash = BCrypt.Net.BCrypt.HashPassword(Model.Password);
+            var user = new User
+            {
+                Name = Model.Name.Trim(),
+                Email = Model.Email.Trim(),
+                PasswordHash = hash,
+                RoleId = Model.RoleId,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            DbContext.Users.Add(user);
+            await DbContext.SaveChangesAsync();
+
+            var roleName = Model.RoleId switch
+            {
+                4 => "Customer",
+                _ => ""
+            };
+
+            if (roleName == "Customer")
+            {
+                var customerProfile = new SmartPOS.Web.Models.Customer
+                {
+                    Name = user.Name,
+                    Email = user.Email,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+                DbContext.Customers.Add(customerProfile);
+                await DbContext.SaveChangesAsync();
+            }
+
+            SuccessMessage = true;
+            StateHasChanged();
+            await Task.Delay(2000);
+            NavigationManager.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            Error = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+}

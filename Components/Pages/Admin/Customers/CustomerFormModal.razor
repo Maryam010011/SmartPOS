@@ -1,0 +1,328 @@
+@using SmartPOS.Shared.DTOs.Customers
+@using SmartPOS.Shared.Interfaces
+@using SmartPOS.Shared.Common
+@using System.Text.RegularExpressions
+@inject ICustomerService CustomerService
+
+@if (IsVisible)
+{
+    <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card-pos">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold" style="color: var(--color-button-primary);">
+                        @(IsEditMode ? "Edit Customer" : "Add New Customer")
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body py-3">
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert alert-danger p-2 small mb-3">@ErrorMessage</div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" @bind-value="Name" @bind-value:event="oninput" placeholder="e.g. Ayesha Tariq" />
+                        @if (ShowErrors && string.IsNullOrWhiteSpace(Name))
+                        {
+                            <div class="text-danger small mt-1">Full Name is required.</div>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" @bind-value="Email" @bind-value:event="oninput"
+                               @onchange="CheckEmailUniqueness" placeholder="e.g. ayesha@bakery.com" />
+                        @if (ShowErrors)
+                        {
+                            @if (string.IsNullOrWhiteSpace(Email))
+                            {
+                                <div class="text-danger small mt-1">Email is required.</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Email) && !IsValidEmail(Email))
+                            {
+                                <div class="text-danger small mt-1">Please enter a valid email format.</div>
+                            }
+                        }
+                        @if (!string.IsNullOrEmpty(EmailError))
+                        {
+                            <div class="text-danger small mt-1 d-flex align-items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/><path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/></svg>
+                                <span>@EmailError</span>
+                            </div>
+                        }
+                        @if (EmailChecked && string.IsNullOrEmpty(EmailError) && !string.IsNullOrWhiteSpace(Email))
+                        {
+                            <div class="text-success small mt-1 d-flex align-items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/></svg>
+                                <span>Email available</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Phone</label>
+                        <input type="text" class="form-control" @bind-value="Phone" @bind-value:event="oninput" placeholder="e.g. 0300-1234567" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Date of Birth</label>
+                        <input type="date" class="form-control" @bind="DateOfBirth" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Address</label>
+                        <textarea class="form-control" rows="2" @bind-value="Address" @bind-value:event="oninput" placeholder="Optional street address"></textarea>
+                    </div>
+
+                    @if (IsEditMode)
+                    {
+                        <div class="mb-0">
+                            <label class="form-label fw-semibold small text-secondary d-block">Account Status</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" role="switch" id="custStatusSwitch" @bind="IsActive" />
+                                <label class="form-check-label fw-semibold small @(IsActive ? "text-success" : "text-muted")" for="custStatusSwitch">
+                                    @(IsActive ? "Active" : "Inactive / Suspended")
+                                </label>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer border-top-0 d-flex justify-content-end gap-2">
+                    <button class="btn btn-outline-secondary" @onclick="CloseModal" disabled="@IsLoading">Cancel</button>
+                    <button class="btn btn-burnt-orange d-flex align-items-center gap-2" @onclick="HandleSubmit" disabled="@IsLoading">
+                        @if (IsLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm"></span>
+                            <span>Saving...</span>
+                        }
+                        else
+                        {
+                            <span>@(IsEditMode ? "Save Changes" : "Create Customer")</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show modal-backdrop-pos"></div>
+}
+
+@code {
+    [Parameter] public EventCallback OnSave { get; set; }
+
+    private bool IsVisible;
+    private bool IsEditMode;
+    private bool IsLoading;
+    private bool ShowErrors;
+    private string ErrorMessage = "";
+
+    // Form fields
+    private int EditId;
+    private string Name = "";
+    private string Email = "";
+    private string Phone = "";
+    private DateTime? DateOfBirth;
+    private string Address = "";
+    private bool IsActive = true;
+
+    // Email uniqueness check
+    private string EmailError = "";
+    private bool EmailChecked;
+    private string OriginalEmail = "";
+
+    public void OpenAdd()
+    {
+        IsEditMode = false;
+        EditId = 0;
+        ResetForm();
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    public void OpenEdit(CustomerDto c)
+    {
+        IsEditMode = true;
+        EditId = c.Id;
+        Name = c.Name;
+        Email = c.Email;
+        OriginalEmail = c.Email;
+        Phone = c.Phone;
+        Address = "";
+        DateOfBirth = null;
+        IsActive = c.IsActive;
+        ShowErrors = false;
+        ErrorMessage = "";
+        EmailError = "";
+        EmailChecked = true;
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    // For receiving a CustomerDetailDto from profile page (richer data)
+    public async Task OpenEditFromDetail(int customerId)
+    {
+        IsEditMode = true;
+        EditId = customerId;
+
+        try
+        {
+            var response = await CustomerService.GetCustomerById(customerId);
+            if (response.Success && response.Data != null)
+            {
+                var d = response.Data;
+                Name = d.Name;
+                Email = d.Email;
+                OriginalEmail = d.Email;
+                Phone = d.Phone;
+                Address = d.Address ?? "";
+                DateOfBirth = d.DateOfBirth;
+                IsActive = d.IsActive;
+            }
+        }
+        catch { }
+
+        ShowErrors = false;
+        ErrorMessage = "";
+        EmailError = "";
+        EmailChecked = true;
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    private void ResetForm()
+    {
+        Name = "";
+        Email = "";
+        OriginalEmail = "";
+        Phone = "";
+        Address = "";
+        DateOfBirth = null;
+        IsActive = true;
+        ShowErrors = false;
+        ErrorMessage = "";
+        EmailError = "";
+        EmailChecked = false;
+    }
+
+    private async Task CheckEmailUniqueness()
+    {
+        if (string.IsNullOrWhiteSpace(Email) || !IsValidEmail(Email))
+        {
+            EmailError = "";
+            EmailChecked = false;
+            return;
+        }
+
+        if (IsEditMode && Email.Trim().ToLower() == OriginalEmail.Trim().ToLower())
+        {
+            EmailError = "";
+            EmailChecked = true;
+            return;
+        }
+
+        try
+        {
+            var existing = await CustomerService.GetByEmail(Email.Trim());
+            if (existing.Success && existing.Data != null)
+                EmailError = "This email is already registered.";
+            else
+                EmailError = "";
+        }
+        catch
+        {
+            EmailError = "";
+        }
+        EmailChecked = true;
+    }
+
+    private void CloseModal()
+    {
+        IsVisible = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        ShowErrors = true;
+        ErrorMessage = "";
+
+        if (string.IsNullOrWhiteSpace(Name) || string.IsNullOrWhiteSpace(Email) || !IsValidEmail(Email))
+            return;
+
+        if (!string.IsNullOrEmpty(EmailError))
+            return;
+
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            if (IsEditMode)
+            {
+                var dto = new UpdateCustomerDto
+                {
+                    Name = Name.Trim(),
+                    Email = Email.Trim(),
+                    Phone = string.IsNullOrWhiteSpace(Phone) ? null : Phone.Trim(),
+                    DateOfBirth = DateOfBirth,
+                    Address = string.IsNullOrWhiteSpace(Address) ? null : Address.Trim(),
+                    IsActive = IsActive
+                };
+
+                var response = await CustomerService.UpdateCustomer(EditId, dto);
+                if (response.Success)
+                {
+                    CloseModal();
+                    await OnSave.InvokeAsync();
+                }
+                else
+                {
+                    ErrorMessage = response.Message;
+                }
+            }
+            else
+            {
+                var dto = new CreateCustomerDto
+                {
+                    Name = Name.Trim(),
+                    Email = Email.Trim(),
+                    Phone = string.IsNullOrWhiteSpace(Phone) ? null : Phone.Trim(),
+                    DateOfBirth = DateOfBirth,
+                    Address = string.IsNullOrWhiteSpace(Address) ? null : Address.Trim()
+                };
+
+                var response = await CustomerService.CreateCustomer(dto);
+                if (response.Success)
+                {
+                    CloseModal();
+                    await OnSave.InvokeAsync();
+                }
+                else
+                {
+                    ErrorMessage = response.Message;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return false;
+        try
+        {
+            return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(250));
+        }
+        catch { return false; }
+    }
+
+}

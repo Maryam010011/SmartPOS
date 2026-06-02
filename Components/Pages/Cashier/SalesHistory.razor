@@ -1,0 +1,10 @@
+@page "/cashier/sales-history"
+@layout CashierLayout
+@attribute [Authorize(Roles = "Admin,Manager,Cashier")]
+@rendermode InteractiveServer
+
+<div class="container py-4">
+    <h2>Sales History</h2>
+    <p class="text-muted">View past sales transactions.</p>
+    <div class="alert alert-info">Sales history functionality coming soon.</div>
+</div>
