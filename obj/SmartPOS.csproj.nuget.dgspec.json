@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "E:\\4th semester\\VP theory\\VP Project\\pro1\\SmartPOS\\SmartPOS.csproj": {}
+    "C:\\Users\\jahan\\Desktop\\proj\\SmartPOS\\SmartPOS.csproj": {}
   },
   "projects": {
-    "E:\\4th semester\\VP theory\\VP Project\\pro1\\SmartPOS\\SmartPOS.csproj": {
+    "C:\\Users\\jahan\\Desktop\\proj\\SmartPOS\\SmartPOS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\4th semester\\VP theory\\VP Project\\pro1\\SmartPOS\\SmartPOS.csproj",
+        "projectUniqueName": "C:\\Users\\jahan\\Desktop\\proj\\SmartPOS\\SmartPOS.csproj",
         "projectName": "SmartPOS",
-        "projectPath": "E:\\4th semester\\VP theory\\VP Project\\pro1\\SmartPOS\\SmartPOS.csproj",
-        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "E:\\4th semester\\VP theory\\VP Project\\pro1\\SmartPOS\\obj\\",
+        "projectPath": "C:\\Users\\jahan\\Desktop\\proj\\SmartPOS\\SmartPOS.csproj",
+        "packagesPath": "C:\\Users\\jahan\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\jahan\\Desktop\\proj\\SmartPOS\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\jahan\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -22,10 +26,12 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -40,10 +46,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "BCrypt.Net-Next": {
@@ -57,32 +64,36 @@
             "Microsoft.AspNetCore.App.Internal.Assets": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.7, )",
+              "version": "[10.0.8, )",
               "autoReferenced": true
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[9.*, )"
+              "version": "[10.0.0, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[9.*, )"
+              "version": "[10.0.0, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.*, )"
+              "version": "[10.0.0, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
-              "version": "[9.*, )"
+              "version": "[10.0.0, )"
             },
             "Microsoft.EntityFrameworkCore.Tools": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.*, )"
+              "version": "[10.0.0, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[10.1.7, )"
             }
           },
           "imports": [
@@ -104,7 +115,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",

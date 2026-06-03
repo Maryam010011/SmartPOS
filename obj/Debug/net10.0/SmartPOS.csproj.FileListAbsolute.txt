@@ -165,3 +165,17 @@ E:\4th semester\VP theory\VP Project\pro1\SmartPOS\bin\Debug\net10.0\Microsoft.A
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\bin\Debug\net10.0\Blazored.LocalStorage.dll
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\yibno2f1mp-{0}-ut36m783y3-ut36m783y3.gz
 E:\4th semester\VP theory\VP Project\pro1\SmartPOS\obj\Debug\net10.0\compressed\zhvek4aj1u-{0}-feqt4kk3me-feqt4kk3me.gz
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\EmbeddedAttribute.cs
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\ValidatableTypeAttribute.cs
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\SmartPOS.csproj.AssemblyReference.cache
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\rpswa.dswa.cache.json
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\SmartPOS.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\SmartPOS.AssemblyInfoInputs.cache
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\SmartPOS.AssemblyInfo.cs
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\SmartPOS.csproj.CoreCompileInputs.cache
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\SmartPOS.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\SmartPOS.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\SmartPOS.sourcelink.json
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\SmartPOS.dll
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\refint\SmartPOS.dll
+C:\Users\jahan\Desktop\proj\SmartPOS\obj\Debug\net10.0\SmartPOS.pdb

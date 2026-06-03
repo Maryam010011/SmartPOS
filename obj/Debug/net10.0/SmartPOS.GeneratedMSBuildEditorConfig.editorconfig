@@ -17,231 +17,284 @@ build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.TargetFrameworkIdentifier = .NETCoreApp
 build_property.TargetFrameworkVersion = v10.0
+build_property.EntryPointFilePath = 
 build_property.RootNamespace = SmartPOS
 build_property.RootNamespace = SmartPOS
-build_property.ProjectDir = E:\4th semester\VP theory\VP Project\pro1\SmartPOS\
+build_property.ProjectDir = C:\Users\jahan\Desktop\proj\SmartPOS\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
-build_property.RazorLangVersion = 9.0
+build_property.RazorLangVersion = 10.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = E:\4th semester\VP theory\VP Project\pro1\SmartPOS
+build_property.MSBuildProjectDirectory = C:\Users\jahan\Desktop\proj\SmartPOS
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/App.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/App.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/AdminLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQWRtaW5MYXlvdXQucmF6b3I=
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/Admin/AdminLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQWRtaW5cQWRtaW5MYXlvdXQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/CashierLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQ2FzaGllckxheW91dC5yYXpvcg==
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/Admin/AdminNavbar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQWRtaW5cQWRtaW5OYXZiYXIucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/CustomerLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQ3VzdG9tZXJMYXlvdXQucmF6b3I=
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/Cashier/CashierLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQ2FzaGllclxDYXNoaWVyTGF5b3V0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/MainLayout.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/Cashier/CashierNavbar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQ2FzaGllclxDYXNoaWVyTmF2YmFyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/Customer/CustomerLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQ3VzdG9tZXJcQ3VzdG9tZXJMYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/Customer/CustomerNavbar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcQ3VzdG9tZXJcQ3VzdG9tZXJOYXZiYXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/MainLayout.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/ManagerLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFuYWdlckxheW91dC5yYXpvcg==
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/Manager/ManagerLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFuYWdlclxNYW5hZ2VyTGF5b3V0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/AuditLogs/AuditLogPage.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/Manager/ManagerNavbar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFuYWdlclxNYW5hZ2VyTmF2YmFyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/Shared/Footer.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcU2hhcmVkXEZvb3Rlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Layout/Shared/ProfileDrawer.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcU2hhcmVkXFByb2ZpbGVEcmF3ZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Analytics.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxBbmFseXRpY3MucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/AuditLogs/AuditLogPage.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxBdWRpdExvZ3NcQXVkaXRMb2dQYWdlLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Customers/CustomerFormModal.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Categories.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxDYXRlZ29yaWVzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Customers/CustomerFormModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxDdXN0b21lcnNcQ3VzdG9tZXJGb3JtTW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Customers/CustomerList.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Customers/CustomerList.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxDdXN0b21lcnNcQ3VzdG9tZXJMaXN0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Customers/LoyaltyModal.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Customers/LoyaltyModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxDdXN0b21lcnNcTG95YWx0eU1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Customers/Profile.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Customers/Profile.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxDdXN0b21lcnNcUHJvZmlsZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Dashboard.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Dashboard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxEYXNoYm9hcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Roles/RoleList.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Products.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxQcm9kdWN0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Roles/RoleList.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxSb2xlc1xSb2xlTGlzdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Roles/RolePermissionsEditor.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Roles/RolePermissionsEditor.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxSb2xlc1xSb2xlUGVybWlzc2lvbnNFZGl0b3IucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Users/UserFormModal.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/SentimentCharts.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxTZW50aW1lbnRDaGFydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Suppliers.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxTdXBwbGllcnMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Users/UserFormModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxVc2Vyc1xVc2VyRm9ybU1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Users/UserList.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Users/UserList.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxVc2Vyc1xVc2VyTGlzdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Admin/Users/UserProfileModal.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Admin/Users/UserProfileModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxVc2Vyc1xVc2VyUHJvZmlsZU1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Auth/Login.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Auth/Login.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBdXRoXExvZ2luLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Auth/Register.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Auth/Register.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBdXRoXFJlZ2lzdGVyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Cashier/CustomerLookup.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Cashier/CustomerLookup.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDYXNoaWVyXEN1c3RvbWVyTG9va3VwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Cashier/Dashboard.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Cashier/Dashboard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDYXNoaWVyXERhc2hib2FyZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Cashier/Pos.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDYXNoaWVyXFBvcy5yYXpvcg==
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Cashier/POS.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDYXNoaWVyXFBPUy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Cashier/SalesHistory.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Cashier/SalesHistory.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDYXNoaWVyXFNhbGVzSGlzdG9yeS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Customer/Cart.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Customer/Cart.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDdXN0b21lclxDYXJ0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Customer/Dashboard.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Customer/Checkout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDdXN0b21lclxDaGVja291dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Customer/Dashboard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDdXN0b21lclxEYXNoYm9hcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Customer/Orders.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Customer/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDdXN0b21lclxIb21lLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Customer/OrderHistory.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDdXN0b21lclxPcmRlckhpc3RvcnkucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Customer/Orders.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDdXN0b21lclxPcmRlcnMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Customer/Profile.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Customer/Profile.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDdXN0b21lclxQcm9maWxlLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Customer/Promotions/ActivePromotions.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Customer/Promotions/ActivePromotions.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDdXN0b21lclxQcm9tb3Rpb25zXEFjdGl2ZVByb21vdGlvbnMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Customer/Shop.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Customer/Reviews.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDdXN0b21lclxSZXZpZXdzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Customer/Shop.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDdXN0b21lclxTaG9wLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Error.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xFcnJvci5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/ForgotPassword.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/ForgotPassword.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xGb3Jnb3RQYXNzd29yZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Home.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Login.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Login.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xMb2dpbi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Dashboard.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/Dashboard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXERhc2hib2FyZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Inventory.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/Inventory.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXEludmVudG9yeS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Inventory/InventoryDashboard.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/Inventory/InventoryDashboard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXEludmVudG9yeVxJbnZlbnRvcnlEYXNoYm9hcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Inventory/LowStockAlerts.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/Inventory/LowStockAlerts.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXEludmVudG9yeVxMb3dTdG9ja0FsZXJ0cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Inventory/StockAdjustModal.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/Inventory/StockAdjustModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXEludmVudG9yeVxTdG9ja0FkanVzdE1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Promotions/PromotionAnalyticsModal.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/Promotions/PromotionAnalyticsModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXFByb21vdGlvbnNcUHJvbW90aW9uQW5hbHl0aWNzTW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Promotions/PromotionFormModal.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/Promotions/PromotionFormModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXFByb21vdGlvbnNcUHJvbW90aW9uRm9ybU1vZGFsLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/Promotions/PromotionList.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/Promotions/PromotionList.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXFByb21vdGlvbnNcUHJvbW90aW9uTGlzdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/PurchaseOrders/CreatePOWizard.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/PurchaseOrders/CreatePOWizard.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXFB1cmNoYXNlT3JkZXJzXENyZWF0ZVBPV2l6YXJkLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/PurchaseOrders/PODetailModal.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/PurchaseOrders/PODetailModal.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXFB1cmNoYXNlT3JkZXJzXFBPRGV0YWlsTW9kYWwucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/PurchaseOrders/PurchaseOrderList.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/PurchaseOrders/PurchaseOrderList.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXFB1cmNoYXNlT3JkZXJzXFB1cmNoYXNlT3JkZXJMaXN0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Manager/_Imports.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Manager/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xNYW5hZ2VyXF9JbXBvcnRzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/NotFound.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/NotFound.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xOb3RGb3VuZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Pages/Register.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/Register.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xSZWdpc3Rlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/RedirectToLogin.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Pages/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xfSW1wb3J0cy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/RedirectToLogin.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSZWRpcmVjdFRvTG9naW4ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Routes.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Routes.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSb3V0ZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Shared/Footer.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcRm9vdGVyLnJhem9y
-build_metadata.AdditionalFiles.CssScope = 
-
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Shared/NavBar.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Shared/NavBar.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcTmF2QmFyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Shared/RedirectToLogin.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/Shared/RedirectToLogin.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcUmVkaXJlY3RUb0xvZ2luLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/_Imports.razor]
+[C:/Users/jahan/Desktop/proj/SmartPOS/Components/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xfSW1wb3J0cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
-
-[E:/4th semester/VP theory/VP Project/pro1/SmartPOS/Components/Layout/ReconnectModal.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcUmVjb25uZWN0TW9kYWwucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = b-3c9mfgvibn

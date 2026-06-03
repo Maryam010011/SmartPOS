@@ -15,7 +15,6 @@ namespace SmartPOS.Services
     {
         private readonly IDbContextFactory<AppDbContext> _factory;
 
-        public Task<ApiResponse<List<ProductDto>>> GetAll()
         public ProductService(IDbContextFactory<AppDbContext> factory)
         {
             _factory = factory;

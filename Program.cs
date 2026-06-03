@@ -31,7 +31,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null)
     ));
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // ─── API Controllers ───────────────────────────────────────────
 builder.Services.AddControllers();

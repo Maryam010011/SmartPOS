@@ -7,71 +7,73 @@ using SmartPOS.Web.Data;
 using SmartPOS.Web.Models;
 using SmartPOS.Shared.Enums;
 
-namespace SmartPOS.Web.Services
-
-/// <summary>
-/// Service for managing purchase orders in the SmartPOS system.
-/// Implements CRUD operations and purchase order status management with robust error handling.
-/// </summary>
 namespace SmartPOS.Services.MaryamJ
 {
-public class PurchaseOrderService : IPurchaseOrderService
-{
+    /// <summary>
+    /// Service for managing purchase orders in the SmartPOS system.
+    /// Implements CRUD operations and purchase order status management with robust error handling.
+    /// </summary>
+    public class PurchaseOrderService : IPurchaseOrderService
+    {
         private readonly AppDbContext _context;
         private readonly IInventoryService _inventoryService;
 
         public PurchaseOrderService(AppDbContext context, IInventoryService inventoryService)
-    {
+        {
             _context = context;
             _inventoryService = inventoryService;
-    }
+        }
 
         public async Task<ApiResponse<List<PurchaseOrderDto>>> GetAll()
-    {
-            var orders = await _context.PurchaseOrders
-                .AsNoTracking()
-                .Include(po => po.Supplier)
-                .Include(po => po.LineItems)
-                .ThenInclude(li => li.Product)
-                .OrderByDescending(po => po.OrderDate)
-                .ToListAsync();
-
-            var dtos = orders.Select(MapToDto).ToList();
-            return ApiResponse<List<PurchaseOrderDto>>.Ok(dtos);
-        }
-        catch (Exception ex)
         {
-            return ApiResponse<PurchaseOrderDto>.Fail($"Error retrieving purchase order: {ex.Message}");
+            try
+            {
+                var orders = await _context.PurchaseOrders
+                    .AsNoTracking()
+                    .Include(po => po.Supplier)
+                    .Include(po => po.LineItems)
+                    .ThenInclude(li => li.Product)
+                    .OrderByDescending(po => po.OrderDate)
+                    .ToListAsync();
+
+                var dtos = orders.Select(MapToDto).ToList();
+                return ApiResponse<List<PurchaseOrderDto>>.Ok(dtos);
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<List<PurchaseOrderDto>>.Fail($"Error retrieving purchase orders: {ex.Message}");
+            }
         }
-    }
 
         public async Task<ApiResponse<PurchaseOrderDto>> GetById(int id)
-    {
-            var order = await _context.PurchaseOrders
-                .AsNoTracking()
-                .Include(po => po.Supplier)
-                .Include(po => po.LineItems)
-                .ThenInclude(li => li.Product)
-                .FirstOrDefaultAsync(po => po.Id == id);
-
-            if (order == null)
-                return ApiResponse<PurchaseOrderDto>.Fail("Purchase order not found.");
-
-            return ApiResponse<PurchaseOrderDto>.Ok(MapToDto(order));
-        }
-        catch (Exception ex)
         {
-            return ApiResponse<List<PurchaseOrderDto>>.Fail($"Error retrieving purchase orders: {ex.Message}");
-        }
-    }
+            try
+            {
+                var order = await _context.PurchaseOrders
+                    .AsNoTracking()
+                    .Include(po => po.Supplier)
+                    .Include(po => po.LineItems)
+                    .ThenInclude(li => li.Product)
+                    .FirstOrDefaultAsync(po => po.Id == id);
 
-    /// <summary>
-    /// Creates a new purchase order in the system.
-    /// </summary>
-    /// <param name="dto">The purchase order creation data transfer object.</param>
-    /// <returns>An ApiResponse containing the created PurchaseOrderDto.</returns>
-    public async Task<ApiResponse<PurchaseOrderDto>> Create(CreatePODto dto)
-    {
+                if (order == null)
+                    return ApiResponse<PurchaseOrderDto>.Fail("Purchase order not found.");
+
+                return ApiResponse<PurchaseOrderDto>.Ok(MapToDto(order));
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse<PurchaseOrderDto>.Fail($"Error retrieving purchase order: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Creates a new purchase order in the system.
+        /// </summary>
+        /// <param name="dto">The purchase order creation data transfer object.</param>
+        /// <returns>An ApiResponse containing the created PurchaseOrderDto.</returns>
+        public async Task<ApiResponse<PurchaseOrderDto>> Create(CreatePODto dto)
+        {
             var supExists = await _context.Suppliers.AnyAsync(s => s.Id == dto.SupplierId);
             if (!supExists)
                 return ApiResponse<PurchaseOrderDto>.Fail("Supplier not found.");
@@ -101,16 +103,16 @@ public class PurchaseOrderService : IPurchaseOrderService
                     _context.PurchaseOrders.Remove(order);
                     await _context.SaveChangesAsync();
                     return ApiResponse<PurchaseOrderDto>.Fail($"Product with ID {li.ProductId} not found.");
-            }
+                }
 
                 order.LineItems.Add(new POLineItem
-        {
+                {
                     POID = order.Id,
                     ProductId = li.ProductId,
                     OrderedQty = li.OrderedQty,
                     UnitPrice = li.UnitPrice
                 });
-        }
+            }
 
             await _context.SaveChangesAsync();
 
@@ -122,52 +124,56 @@ public class PurchaseOrderService : IPurchaseOrderService
                 .FirstAsync(po => po.Id == order.Id);
 
             return ApiResponse<PurchaseOrderDto>.Ok(MapToDto(created));
-    }
-
-    /// <summary>
-    /// Marks a purchase order as received.
-    /// </summary>
-    /// <param name="poId">The purchase order ID.</param>
-    /// <param name="userId">The user ID performing the action.</param>
-    /// <returns>An ApiResponse indicating success or failure.</returns>
-    public async Task<ApiResponse> MarkAsReceived(int poId, int userId)
-    {
-            var order = await _context.PurchaseOrders
-                .Include(po => po.LineItems)
-                .FirstOrDefaultAsync(po => po.Id == poId);
-
-            if (order == null)
-                return ApiResponse.Fail("Purchase order not found.");
-
-            if (order.Status != POStatus.Sent)
-                return ApiResponse.Fail("Only orders with status 'Sent' can be marked as received.");
-
-            order.Status = POStatus.Received;
-            order.ReceivedAt = DateTime.UtcNow;
-
-            foreach (var li in order.LineItems)
-            {
-                var result = await _inventoryService.AddStock(li.ProductId, li.OrderedQty);
-                if (!result.Success)
-                {
-                    return ApiResponse.Fail($"Failed to update inventory for Product ID {li.ProductId}: {result.Message}");
         }
-        catch (Exception ex)
+
+        /// <summary>
+        /// Marks a purchase order as received.
+        /// </summary>
+        /// <param name="poId">The purchase order ID.</param>
+        /// <param name="userId">The user ID performing the action.</param>
+        /// <returns>An ApiResponse indicating success or failure.</returns>
+        public async Task<ApiResponse> MarkAsReceived(int poId, int userId)
         {
-            return ApiResponse.Fail($"Error marking purchase order as received: {ex.Message}");
+            try
+            {
+                var order = await _context.PurchaseOrders
+                    .Include(po => po.LineItems)
+                    .FirstOrDefaultAsync(po => po.Id == poId);
+
+                if (order == null)
+                    return ApiResponse.Fail("Purchase order not found.");
+
+                if (order.Status != POStatus.Sent)
+                    return ApiResponse.Fail("Only orders with status 'Sent' can be marked as received.");
+
+                order.Status = POStatus.Received;
+                order.ReceivedAt = DateTime.UtcNow;
+
+                foreach (var li in order.LineItems)
+                {
+                    var result = await _inventoryService.AddStock(li.ProductId, li.OrderedQty);
+                    if (!result.Success)
+                    {
+                        return ApiResponse.Fail($"Failed to update inventory for Product ID {li.ProductId}: {result.Message}");
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return ApiResponse.Ok("Purchase order marked as received. Inventory updated.");
+            }
+            catch (Exception ex)
+            {
+                return ApiResponse.Fail($"Error marking purchase order as received: {ex.Message}");
+            }
         }
 
-            await _context.SaveChangesAsync();
-            return ApiResponse.Ok("Purchase order marked as received. Inventory updated.");
-    }
-
-    /// <summary>
-    /// Cancels a purchase order.
-    /// </summary>
-    /// <param name="poId">The purchase order ID.</param>
-    /// <returns>An ApiResponse indicating success or failure.</returns>
-    public async Task<ApiResponse> Cancel(int poId)
-    {
+        /// <summary>
+        /// Cancels a purchase order.
+        /// </summary>
+        /// <param name="poId">The purchase order ID.</param>
+        /// <returns>An ApiResponse indicating success or failure.</returns>
+        public async Task<ApiResponse> Cancel(int poId)
+        {
             var order = await _context.PurchaseOrders.FindAsync(poId);
 
             if (order == null)
@@ -183,12 +189,12 @@ public class PurchaseOrderService : IPurchaseOrderService
             await _context.SaveChangesAsync();
 
             return ApiResponse.Ok("Purchase order cancelled.");
-    }
+        }
 
         private static PurchaseOrderDto MapToDto(PurchaseOrder order)
-    {
-        return new PurchaseOrderDto
         {
+            return new PurchaseOrderDto
+            {
                 Id = order.Id,
                 SupplierId = order.SupplierId,
                 SupplierName = order.Supplier?.Name ?? $"Supplier #{order.SupplierId}",
@@ -199,13 +205,13 @@ public class PurchaseOrderService : IPurchaseOrderService
                 ReceivedAt = order.ReceivedAt,
                 Notes = order.Notes,
                 LineItems = order.LineItems.Select(li => new POLineItemDto
-            {
-                ProductId = li.ProductId,
+                {
+                    ProductId = li.ProductId,
                     ProductName = li.Product?.Name ?? $"Product #{li.ProductId}",
-                OrderedQty = li.OrderedQty,
-                UnitPrice = li.UnitPrice
+                    OrderedQty = li.OrderedQty,
+                    UnitPrice = li.UnitPrice
                 }).ToList()
-        };
+            };
+        }
     }
-}
 }

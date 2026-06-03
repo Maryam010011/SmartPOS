@@ -29,10 +29,10 @@ namespace SmartPOS.Services
 
             var dtos = records.Select(MapToDto).ToList();
             return ApiResponse<List<InventoryDto>>.Ok(dtos);
-            }
+        }
 
         public async Task<ApiResponse<InventoryDto>> GetByProduct(int productId)
-            {
+        {
             var record = await _context.Inventory
                 .AsNoTracking()
                 .Include(i => i.Product)
@@ -42,20 +42,21 @@ namespace SmartPOS.Services
                 return ApiResponse<InventoryDto>.Fail("Inventory record not found for this product.");
 
             return ApiResponse<InventoryDto>.Ok(MapToDto(record));
-            }
         }
 
         public async Task<ApiResponse<List<InventoryDto>>> GetLowStock()
         {
-            var records = await _context.Inventory
-                .AsNoTracking()
-                .Include(i => i.Product)
-                .Where(i => i.Quantity <= i.ReorderLevel)
-                .OrderByDescending(i => i.ReorderLevel - i.Quantity)
-                .ToListAsync();
+            try
+            {
+                var records = await _context.Inventory
+                    .AsNoTracking()
+                    .Include(i => i.Product)
+                    .Where(i => i.Quantity <= i.ReorderLevel)
+                    .OrderByDescending(i => i.ReorderLevel - i.Quantity)
+                    .ToListAsync();
 
-            var dtos = records.Select(MapToDto).ToList();
-            return ApiResponse<List<InventoryDto>>.Ok(dtos);
+                var dtos = records.Select(MapToDto).ToList();
+                return ApiResponse<List<InventoryDto>>.Ok(dtos);
             }
             catch (Exception ex)
             {
@@ -83,10 +84,10 @@ namespace SmartPOS.Services
 
             await _context.SaveChangesAsync();
             return ApiResponse.Ok($"Stock adjusted successfully. New quantity: {newQty}");
-            }
+        }
 
         public async Task<ApiResponse> AddStock(int productId, int quantity)
-            {
+        {
             if (quantity <= 0)
                 return ApiResponse.Fail("Quantity must be positive.");
 
@@ -112,14 +113,14 @@ namespace SmartPOS.Services
             {
                 record.Quantity += quantity;
                 record.LastUpdated = DateTime.UtcNow;
-        }
+            }
 
             await _context.SaveChangesAsync();
             return ApiResponse.Ok($"Added {quantity} units. New quantity: {record.Quantity}");
-            }
+        }
 
         public async Task<ApiResponse> DeductStock(int productId, int quantity)
-            {
+        {
             if (quantity <= 0)
                 return ApiResponse.Fail("Quantity must be positive.");
 
@@ -140,7 +141,7 @@ namespace SmartPOS.Services
         }
 
         private static InventoryDto MapToDto(Inventory record)
-                {
+        {
             return new InventoryDto
             {
                 Id = record.Id,

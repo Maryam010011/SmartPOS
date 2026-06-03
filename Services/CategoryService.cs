@@ -16,9 +16,7 @@ namespace SmartPOS.Services
         private readonly IDbContextFactory<AppDbContext> _factory;
 
         public CategoryService(IDbContextFactory<AppDbContext> factory)
-        public Task<ApiResponse<CategoryDto>> Create(CreateCategoryDto dto)
         {
-            throw new NotImplementedException();
             _factory = factory;
         }
 
@@ -66,7 +64,6 @@ namespace SmartPOS.Services
 
                 return ApiResponse<List<CategoryDto>>.Ok(
                     categories.Select(MapToDto).ToList());
-            throw new NotImplementedException();
             }
             catch (Exception ex)
             {
@@ -103,7 +100,6 @@ namespace SmartPOS.Services
                     .ToList();
 
                 return ApiResponse<List<CategoryDto>>.Ok(roots);
-            throw new NotImplementedException();
             }
             catch (Exception ex)
             {
@@ -130,13 +126,10 @@ namespace SmartPOS.Services
 
                     if (!parentExists)
                         return ApiResponse<CategoryDto>.Fail("Parent category not found.");
-            throw new NotImplementedException();
                 }
 
                 var category = new Category
-        public Task<ApiResponse<CategoryDto>> Update(UpdateCategoryDto dto)
                 {
-            throw new NotImplementedException();
                     Name = dto.Name,
                     Description = dto.Description,
                     ImageURL = dto.ImageURL,
