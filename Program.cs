@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using SmartPOS.Components;
 using SmartPOS.Services.MaryamJ;
@@ -12,6 +13,8 @@ using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Auth;
 using SmartPOS.Shared.Interfaces;
 using SmartPOS.Web.Data;
+using SmartPOS.Shared.Interfaces;
+using SmartPOS.Web.Services.Shahzain;
 using SmartPOS.Data;
 using Blazored.LocalStorage;
 using System.Text;
@@ -20,7 +23,6 @@ using SmartPOS.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -29,10 +31,37 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null)
     ));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ─── API Controllers ───────────────────────────────────────────
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// ─── HttpClient (required by FBRService and AIChatbotService) ──
+builder.Services.AddHttpClient();
+
+// ─── Shahzain's Service Registrations ─────────────────────────
+builder.Services.AddScoped<IProductService,     ProductService>();
+builder.Services.AddScoped<ICategoryService,    CategoryService>();
+builder.Services.AddScoped<ISupplierService,    SupplierService>();
+builder.Services.AddScoped<ISaleService,        SaleService>();
+builder.Services.AddScoped<IReviewService,      ReviewService>();
+builder.Services.AddScoped<IAIChatbotService,   AIChatbotService>();
+builder.Services.AddScoped<IFBRService,         FBRService>();
+builder.Services.AddScoped<IBERTService,        BERTService>();
+//builder.Services.AddScoped<IInventoryService,   InventoryServiceStub>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
+builder.Services.AddScoped<IWeatherService,     WeatherService>();
+
+// ─── Shared Cart State (Scoped = per Blazor Server circuit / user session) ───
+builder.Services.AddScoped<CartStateService>();
+
+// ─── MaryamY's Service Registrations ──────────────────────────
+builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
 // ── JWT Authentication ──
 builder.Services.AddAuthentication(options =>
 {
@@ -115,6 +144,7 @@ builder.Services.AddScoped<IWeatherService, SmartPOS.Services.MaryamJ.WeatherSer
 // Enable Web API Controllers
 builder.Services.AddControllers();
 
+
 var app = builder.Build();
 
 // 5. Auto-create DB + tables + seed default data on startup
@@ -177,9 +207,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "SmartPOS.Web", "wwwroot")),
+    RequestPath = ""
+});
+app.UseSwagger();
+app.UseSwaggerUI();
 app.MapControllers();
+app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-app.Run();
+await DatabaseSeeder.SeedAsync(app.Services);
+await app.RunAsync();

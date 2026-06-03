@@ -18,7 +18,7 @@
 *,
 *::before,
 *::after {
-    box-sizing: border-box;
+     box-sizing: border-box;
 }
 
 html,
@@ -31,7 +31,9 @@ body {
 }
 
 body {
-    min-height: 100vh;
+     min-height: 100vh;
+     background-color: var(--color-page-bg);
+     color: var(--color-primary-text);
 }
 
 a {
@@ -678,4 +680,12 @@ body {
     position: absolute;
     right: 0.75rem;
     top: 0.5rem;
+}
+     
+.error-meta {
+     margin: 0;
+     padding: 1rem;
+     font-family: ui-monospace, monospace;
+     font-size: 0.75rem;
+     color: #333;
 }

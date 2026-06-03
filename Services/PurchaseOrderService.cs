@@ -5,41 +5,53 @@ using SmartPOS.Shared.Enums;
 using SmartPOS.Shared.Interfaces;
 using SmartPOS.Web.Data;
 using SmartPOS.Web.Models;
+using SmartPOS.Shared.Enums;
 
+namespace SmartPOS.Web.Services
+
+/// <summary>
+/// Service for managing purchase orders in the SmartPOS system.
+/// Implements CRUD operations and purchase order status management with robust error handling.
+/// </summary>
 namespace SmartPOS.Services.MaryamJ
 {
-    public class PurchaseOrderService : IPurchaseOrderService
-    {
+public class PurchaseOrderService : IPurchaseOrderService
+{
         private readonly AppDbContext _context;
         private readonly IInventoryService _inventoryService;
 
         public PurchaseOrderService(AppDbContext context, IInventoryService inventoryService)
-        {
+    {
             _context = context;
             _inventoryService = inventoryService;
-        }
+    }
 
         public async Task<ApiResponse<List<PurchaseOrderDto>>> GetAll()
-        {
+    {
             var orders = await _context.PurchaseOrders
                 .AsNoTracking()
                 .Include(po => po.Supplier)
                 .Include(po => po.LineItems)
-                    .ThenInclude(li => li.Product)
+                .ThenInclude(li => li.Product)
                 .OrderByDescending(po => po.OrderDate)
                 .ToListAsync();
 
             var dtos = orders.Select(MapToDto).ToList();
             return ApiResponse<List<PurchaseOrderDto>>.Ok(dtos);
         }
+        catch (Exception ex)
+        {
+            return ApiResponse<PurchaseOrderDto>.Fail($"Error retrieving purchase order: {ex.Message}");
+        }
+    }
 
         public async Task<ApiResponse<PurchaseOrderDto>> GetById(int id)
-        {
+    {
             var order = await _context.PurchaseOrders
                 .AsNoTracking()
                 .Include(po => po.Supplier)
                 .Include(po => po.LineItems)
-                    .ThenInclude(li => li.Product)
+                .ThenInclude(li => li.Product)
                 .FirstOrDefaultAsync(po => po.Id == id);
 
             if (order == null)
@@ -47,9 +59,19 @@ namespace SmartPOS.Services.MaryamJ
 
             return ApiResponse<PurchaseOrderDto>.Ok(MapToDto(order));
         }
-
-        public async Task<ApiResponse<PurchaseOrderDto>> Create(CreatePODto dto)
+        catch (Exception ex)
         {
+            return ApiResponse<List<PurchaseOrderDto>>.Fail($"Error retrieving purchase orders: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Creates a new purchase order in the system.
+    /// </summary>
+    /// <param name="dto">The purchase order creation data transfer object.</param>
+    /// <returns>An ApiResponse containing the created PurchaseOrderDto.</returns>
+    public async Task<ApiResponse<PurchaseOrderDto>> Create(CreatePODto dto)
+    {
             var supExists = await _context.Suppliers.AnyAsync(s => s.Id == dto.SupplierId);
             if (!supExists)
                 return ApiResponse<PurchaseOrderDto>.Fail("Supplier not found.");
@@ -79,16 +101,16 @@ namespace SmartPOS.Services.MaryamJ
                     _context.PurchaseOrders.Remove(order);
                     await _context.SaveChangesAsync();
                     return ApiResponse<PurchaseOrderDto>.Fail($"Product with ID {li.ProductId} not found.");
-                }
+            }
 
                 order.LineItems.Add(new POLineItem
-                {
+        {
                     POID = order.Id,
                     ProductId = li.ProductId,
                     OrderedQty = li.OrderedQty,
                     UnitPrice = li.UnitPrice
                 });
-            }
+        }
 
             await _context.SaveChangesAsync();
 
@@ -100,10 +122,16 @@ namespace SmartPOS.Services.MaryamJ
                 .FirstAsync(po => po.Id == order.Id);
 
             return ApiResponse<PurchaseOrderDto>.Ok(MapToDto(created));
-        }
+    }
 
-        public async Task<ApiResponse> MarkAsReceived(int poId, int userId)
-        {
+    /// <summary>
+    /// Marks a purchase order as received.
+    /// </summary>
+    /// <param name="poId">The purchase order ID.</param>
+    /// <param name="userId">The user ID performing the action.</param>
+    /// <returns>An ApiResponse indicating success or failure.</returns>
+    public async Task<ApiResponse> MarkAsReceived(int poId, int userId)
+    {
             var order = await _context.PurchaseOrders
                 .Include(po => po.LineItems)
                 .FirstOrDefaultAsync(po => po.Id == poId);
@@ -123,15 +151,23 @@ namespace SmartPOS.Services.MaryamJ
                 if (!result.Success)
                 {
                     return ApiResponse.Fail($"Failed to update inventory for Product ID {li.ProductId}: {result.Message}");
-                }
-            }
+        }
+        catch (Exception ex)
+        {
+            return ApiResponse.Fail($"Error marking purchase order as received: {ex.Message}");
+        }
 
             await _context.SaveChangesAsync();
             return ApiResponse.Ok("Purchase order marked as received. Inventory updated.");
-        }
+    }
 
-        public async Task<ApiResponse> Cancel(int poId)
-        {
+    /// <summary>
+    /// Cancels a purchase order.
+    /// </summary>
+    /// <param name="poId">The purchase order ID.</param>
+    /// <returns>An ApiResponse indicating success or failure.</returns>
+    public async Task<ApiResponse> Cancel(int poId)
+    {
             var order = await _context.PurchaseOrders.FindAsync(poId);
 
             if (order == null)
@@ -147,12 +183,12 @@ namespace SmartPOS.Services.MaryamJ
             await _context.SaveChangesAsync();
 
             return ApiResponse.Ok("Purchase order cancelled.");
-        }
+    }
 
         private static PurchaseOrderDto MapToDto(PurchaseOrder order)
+    {
+        return new PurchaseOrderDto
         {
-            return new PurchaseOrderDto
-            {
                 Id = order.Id,
                 SupplierId = order.SupplierId,
                 SupplierName = order.Supplier?.Name ?? $"Supplier #{order.SupplierId}",
@@ -163,13 +199,13 @@ namespace SmartPOS.Services.MaryamJ
                 ReceivedAt = order.ReceivedAt,
                 Notes = order.Notes,
                 LineItems = order.LineItems.Select(li => new POLineItemDto
-                {
-                    ProductId = li.ProductId,
+            {
+                ProductId = li.ProductId,
                     ProductName = li.Product?.Name ?? $"Product #{li.ProductId}",
-                    OrderedQty = li.OrderedQty,
-                    UnitPrice = li.UnitPrice
+                OrderedQty = li.OrderedQty,
+                UnitPrice = li.UnitPrice
                 }).ToList()
-            };
-        }
+        };
     }
+}
 }
