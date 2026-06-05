@@ -1,0 +1,48 @@
+Using launch settings from C:\Users\jahan\Desktop\proj\SmartPOS\Properties\launchSettings.json...
+Building...
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\App.razor(25,5): warning RZ10012: Found markup element with unexpected name 'ReconnectModal'. If this is intended to be a component, add a @using directive for its namespace. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Program.cs(17,7): warning CS0105: The using directive for 'Blazored.LocalStorage' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Program.cs(18,7): warning CS0105: The using directive for 'System.Text' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\PurchaseOrderService.cs(8,7): warning CS0105: The using directive for 'SmartPOS.Shared.Enums' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\_Imports.razor(15,8): warning CS0105: The using directive for 'Microsoft.AspNetCore.Components.Authorization' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\_Imports.razor(16,8): warning CS0105: The using directive for 'Microsoft.AspNetCore.Authorization' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\SaleService.cs(298,55): warning CS8604: Possible null reference argument for parameter 'period' in 'List<SaleChartPointDto> SaleService.BuildChartData(List<Sale> sales, string period)'. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AIChatbotService.cs(129,55): warning CS8604: Possible null reference argument for parameter 'period' in 'List<SaleChartPointDto> AIChatbotService.BuildChartData(List<Sale> sales, string period)'. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(94,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(113,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(132,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(151,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\Customers\CustomerFormModal.razor(151,17): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\Customers\CustomerFormModal.razor(178,25): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Manager\Promotions\PromotionFormModal.razor(307,28): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Manager\Promotions\PromotionFormModal.razor(308,35): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\Customers\CustomerList.razor(326,29): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\PromotionService.cs(176,31): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\PromotionService.cs(249,41): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Customer\Reviews.razor(302,82): warning CS8602: Dereference of a possibly null reference. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\SentimentCharts.razor(334,68): warning CS8604: Possible null reference argument for parameter 'sentiment' in 'string SentimentCharts.GetSentimentClass(string sentiment)'. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Login.razor(173,30): warning CS8602: Dereference of a possibly null reference. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\SentimentCharts.razor(431,34): warning CS8602: Dereference of a possibly null reference. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]
+      The foreign key property 'Permission.RoleId1' was created in shadow state because a conflicting property with the simple name 'RoleId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+fail: Program[0]
+      Database initialization failed. Check your SQL Server connection string in appsettings.json.
+      System.InvalidOperationException: The property or navigation 'Permissions' cannot be added to the 'SmartPOS.Web.Models.Role (Dictionary<string, object>)' type because a property or navigation with the same name already exists on the 'SmartPOS.Web.Models.Role (Dictionary<string, object>)' type.
+         at Microsoft.EntityFrameworkCore.Metadata.Internal.EntityType.AddNavigation(MemberIdentity navigationMember, ForeignKey foreignKey, Boolean pointsToPrincipal)
+         at Microsoft.EntityFrameworkCore.Metadata.Internal.ForeignKey.Navigation(Nullable`1 propertyIdentity, ConfigurationSource configurationSource, Boolean pointsToPrincipal)
+         at Microsoft.EntityFrameworkCore.Metadata.Internal.ForeignKey.SetPrincipalToDependent(Nullable`1 property, ConfigurationSource configurationSource)
+         at Microsoft.EntityFrameworkCore.Metadata.Internal.InternalForeignKeyBuilder.HasNavigations(Nullable`1 navigationToPrincipal, Nullable`1 navigationToDependent, EntityType principalEntityType, EntityType dependentEntityType, ConfigurationSource configurationSource)
+         at Microsoft.EntityFrameworkCore.Metadata.Internal.InternalForeignKeyBuilder.HasNavigations(String navigationToPrincipalName, String navigationToDependentName, EntityType principalEntityType, EntityType dependentEntityType, ConfigurationSource configurationSource)
+         at Microsoft.EntityFrameworkCore.Metadata.Builders.ReferenceNavigationBuilder.WithManyBuilder(MemberIdentity collection)
+         at Microsoft.EntityFrameworkCore.Metadata.Builders.ReferenceNavigationBuilder.WithManyBuilder(String navigationName)
+         at Microsoft.EntityFrameworkCore.Metadata.Builders.ReferenceNavigationBuilder.WithMany(String collection)
+         at SmartPOS.Migrations.AppDbContextModelSnapshot.<>c.<BuildModel>b__0_27(EntityTypeBuilder b) in C:\Users\jahan\Desktop\proj\SmartPOS\Migrations\AppDbContextModelSnapshot.cs:line 998
+         at Microsoft.EntityFrameworkCore.ModelBuilder.Entity(String name, Action`1 buildAction)
+         at SmartPOS.Migrations.AppDbContextModelSnapshot.BuildModel(ModelBuilder modelBuilder) in C:\Users\jahan\Desktop\proj\SmartPOS\Migrations\AppDbContextModelSnapshot.cs:line 996
+         at Microsoft.EntityFrameworkCore.Infrastructure.ModelSnapshot.CreateModel()
+         at Microsoft.EntityFrameworkCore.Infrastructure.ModelSnapshot.get_Model()
+         at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.HasPendingModelChanges()
+         at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.ValidateMigrations(Boolean useTransaction, String targetMigration)
+         at Microsoft.EntityFrameworkCore.Migrations.Internal.Migrator.Migrate(String targetMigration)
+         at Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(DatabaseFacade databaseFacade)
+         at Program.<Main>$(String[] args) in C:\Users\jahan\Desktop\proj\SmartPOS\Program.cs:line 147

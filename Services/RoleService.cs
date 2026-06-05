@@ -59,7 +59,7 @@ namespace SmartPOS.Services.MaryamJ
                 Id = role.Id,
                 RoleName = role.RoleName,
                 UserCount = role.Users != null ? role.Users.Count : 0,
-                Permissions = DeserializePermissions(role.Permissions)
+                Permissions = DeserializePermissions(role.PermissionsJson)
             };
 
             return ApiResponse<RoleDetailDto>.Ok(detail);
@@ -76,7 +76,7 @@ namespace SmartPOS.Services.MaryamJ
             var role = new Role
             {
                 RoleName = dto.RoleName,
-                Permissions = JsonSerializer.Serialize(dto.Permissions)
+                PermissionsJson = JsonSerializer.Serialize(dto.Permissions)
             };
 
             _dbContext.Roles.Add(role);
@@ -88,7 +88,7 @@ namespace SmartPOS.Services.MaryamJ
                 Action = "Created",
                 Module = "RoleManagement",
                 EntityId = role.Id,
-                NewValues = JsonSerializer.Serialize(new { role.RoleName, Permissions = role.Permissions })
+                NewValues = JsonSerializer.Serialize(new { role.RoleName, Permissions = role.PermissionsJson })
             });
 
             var result = new RoleDto { Id = role.Id, RoleName = role.RoleName, UserCount = 0 };
@@ -114,10 +114,10 @@ namespace SmartPOS.Services.MaryamJ
             }
 
             var oldRoleName = role.RoleName;
-            var oldPermissions = role.Permissions;
+            var oldPermissions = role.PermissionsJson;
 
             role.RoleName = dto.RoleName;
-            role.Permissions = JsonSerializer.Serialize(dto.Permissions);
+            role.PermissionsJson = JsonSerializer.Serialize(dto.Permissions);
             await _dbContext.SaveChangesAsync();
 
             await _auditLog.LogAction(new CreateAuditLogDto
@@ -127,7 +127,7 @@ namespace SmartPOS.Services.MaryamJ
                 Module = "RoleManagement",
                 EntityId = role.Id,
                 OldValues = JsonSerializer.Serialize(new { RoleName = oldRoleName, Permissions = oldPermissions }),
-                NewValues = JsonSerializer.Serialize(new { role.RoleName, Permissions = role.Permissions })
+                NewValues = JsonSerializer.Serialize(new { role.RoleName, Permissions = role.PermissionsJson })
             });
 
             var result = new RoleDto
@@ -163,7 +163,7 @@ namespace SmartPOS.Services.MaryamJ
                 Action = "Deleted",
                 Module = "RoleManagement",
                 EntityId = role.Id,
-                OldValues = JsonSerializer.Serialize(new { role.RoleName, Permissions = role.Permissions })
+                OldValues = JsonSerializer.Serialize(new { role.RoleName, Permissions = role.PermissionsJson })
             });
 
             return ApiResponse.Ok("Role deleted successfully.");
@@ -175,7 +175,7 @@ namespace SmartPOS.Services.MaryamJ
             if (role == null)
                 return ApiResponse<PermissionsDto>.Fail($"Role with Id {id} not found.");
 
-            var perms = DeserializePermissions(role.Permissions);
+            var perms = DeserializePermissions(role.PermissionsJson);
             return ApiResponse<PermissionsDto>.Ok(perms);
         }
 
@@ -185,9 +185,9 @@ namespace SmartPOS.Services.MaryamJ
             if (role == null)
                 return ApiResponse.Fail($"Role with Id {id} not found.");
 
-            var oldPermissions = role.Permissions;
+            var oldPermissions = role.PermissionsJson;
 
-            role.Permissions = JsonSerializer.Serialize(permissions);
+            role.PermissionsJson = JsonSerializer.Serialize(permissions);
             await _dbContext.SaveChangesAsync();
 
             await _auditLog.LogAction(new CreateAuditLogDto
@@ -197,7 +197,7 @@ namespace SmartPOS.Services.MaryamJ
                 Module = "RoleManagement",
                 EntityId = role.Id,
                 OldValues = JsonSerializer.Serialize(new { Permissions = oldPermissions }),
-                NewValues = JsonSerializer.Serialize(new { Permissions = role.Permissions })
+                NewValues = JsonSerializer.Serialize(new { Permissions = role.PermissionsJson })
             });
 
             return ApiResponse.Ok("Permissions updated successfully.");

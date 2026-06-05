@@ -33,15 +33,27 @@ public partial class AppDbContext : DbContext
 
      protected override void OnModelCreating(ModelBuilder modelBuilder)
      {
-        // â”€â”€ Role â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // â”€â”€ Role â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          //modelBuilder.Entity<Role>(entity =>
+          //{
+          //  entity.Property(e => e.Name)
+          //        .HasMaxLength(50)
+          //        .IsRequired();
+          //});
+
+          // ── Role ────────────────────────────────────────────────────────────
           modelBuilder.Entity<Role>(entity =>
           {
-            entity.Property(e => e.Name)
-                  .HasMaxLength(50)
-                  .IsRequired();
+               entity.Property(e => e.Name)
+                     .HasMaxLength(50)
+                     .IsRequired();
+
+               // Map the new property to the existing text column
+               entity.Property(e => e.PermissionsJson)
+                     .HasColumnName("Permissions");
           });
 
-        // â”€â”€ Permission â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // â”€â”€ Permission â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Permission>(entity =>
           {
                entity.HasIndex(e => e.RoleId, "IX_Permissions_RoleId");

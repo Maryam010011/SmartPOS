@@ -1,0 +1,409 @@
+Using launch settings from C:\Users\jahan\Desktop\proj\SmartPOS\Properties\launchSettings.json...
+Building...
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\App.razor(25,5): warning RZ10012: Found markup element with unexpected name 'ReconnectModal'. If this is intended to be a component, add a @using directive for its namespace. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Program.cs(17,7): warning CS0105: The using directive for 'Blazored.LocalStorage' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Program.cs(18,7): warning CS0105: The using directive for 'System.Text' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\PurchaseOrderService.cs(8,7): warning CS0105: The using directive for 'SmartPOS.Shared.Enums' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\_Imports.razor(15,8): warning CS0105: The using directive for 'Microsoft.AspNetCore.Components.Authorization' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\_Imports.razor(16,8): warning CS0105: The using directive for 'Microsoft.AspNetCore.Authorization' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\SaleService.cs(298,55): warning CS8604: Possible null reference argument for parameter 'period' in 'List<SaleChartPointDto> SaleService.BuildChartData(List<Sale> sales, string period)'. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AIChatbotService.cs(129,55): warning CS8604: Possible null reference argument for parameter 'period' in 'List<SaleChartPointDto> AIChatbotService.BuildChartData(List<Sale> sales, string period)'. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Manager\Promotions\PromotionFormModal.razor(307,28): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Manager\Promotions\PromotionFormModal.razor(308,35): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Login.razor(173,30): warning CS8602: Dereference of a possibly null reference. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Customer\Reviews.razor(302,82): warning CS8602: Dereference of a possibly null reference. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\PromotionService.cs(176,31): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\PromotionService.cs(249,41): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(94,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(113,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(132,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(151,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\Customers\CustomerFormModal.razor(151,17): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\Customers\CustomerFormModal.razor(178,25): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\SentimentCharts.razor(334,68): warning CS8604: Possible null reference argument for parameter 'sentiment' in 'string SentimentCharts.GetSentimentClass(string sentiment)'. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\SentimentCharts.razor(431,34): warning CS8602: Dereference of a possibly null reference. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\Customers\CustomerList.razor(326,29): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]
+      The foreign key property 'Permission.RoleId1' was created in shadow state because a conflicting property with the simple name 'RoleId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (58ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1,291ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      
+      IF EXISTS
+          (SELECT *
+           FROM [sys].[objects] o
+           WHERE [o].[type] = 'U'
+           AND [o].[is_ms_shipped] = 0
+           AND [o].[object_id] NOT IN (SELECT [ep].[major_id]
+              FROM [sys].[extended_properties] AS [ep]
+              WHERE [ep].[minor_id] = 0
+                  AND [ep].[class] = 1
+                  AND [ep].[name] = N'microsoft_database_tools_support'
+          )
+      )
+      SELECT 1 ELSE SELECT 0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (103ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Categories] (
+          [Id] int NOT NULL IDENTITY,
+          [Name] nvarchar(100) NOT NULL,
+          [ParentCategoryId] int NULL,
+          [Description] text NULL,
+          [ImageURL] nvarchar(255) NULL,
+          CONSTRAINT [PK_Categories] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_Categories_Categories_ParentCategoryId] FOREIGN KEY ([ParentCategoryId]) REFERENCES [Categories] ([Id])
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Promotions] (
+          [Id] int NOT NULL IDENTITY,
+          [Code] nvarchar(50) NOT NULL,
+          [Description] nvarchar(max) NOT NULL,
+          [DiscountType] int NOT NULL,
+          [Value] decimal(10,2) NOT NULL,
+          [MinOrderValue] decimal(10,2) NOT NULL DEFAULT 0.0,
+          [MaxUsageLimit] int NULL,
+          [UsageCount] int NOT NULL DEFAULT 0,
+          [ValidFrom] date NOT NULL,
+          [ValidTo] date NOT NULL,
+          [IsActive] bit NOT NULL DEFAULT CAST(1 AS bit),
+          [CreatedAt] datetime2 NOT NULL,
+          CONSTRAINT [PK_Promotions] PRIMARY KEY ([Id])
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Roles] (
+          [Id] int NOT NULL IDENTITY,
+          [Name] nvarchar(50) NOT NULL,
+          [RoleName] nvarchar(max) NOT NULL,
+          [Permissions] nvarchar(max) NOT NULL,
+          CONSTRAINT [PK_Roles] PRIMARY KEY ([Id])
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Suppliers] (
+          [Id] int NOT NULL IDENTITY,
+          [Name] nvarchar(100) NOT NULL,
+          [ContactPerson] nvarchar(100) NULL,
+          [ContactNo] nvarchar(20) NULL,
+          [Email] nvarchar(150) NULL,
+          [Address] text NULL,
+          [IsActive] bit NOT NULL DEFAULT CAST(1 AS bit),
+          CONSTRAINT [PK_Suppliers] PRIMARY KEY ([Id])
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Permissions] (
+          [Id] int NOT NULL IDENTITY,
+          [RoleId] int NOT NULL,
+          [Module] nvarchar(100) NOT NULL,
+          [CanCreate] bit NOT NULL DEFAULT CAST(0 AS bit),
+          [CanRead] bit NOT NULL DEFAULT CAST(0 AS bit),
+          [CanUpdate] bit NOT NULL DEFAULT CAST(0 AS bit),
+          [CanDelete] bit NOT NULL DEFAULT CAST(0 AS bit),
+          [RoleId1] int NULL,
+          CONSTRAINT [PK_Permissions] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_Permissions_Roles_RoleId] FOREIGN KEY ([RoleId]) REFERENCES [Roles] ([Id]) ON DELETE CASCADE,
+          CONSTRAINT [FK_Permissions_Roles_RoleId1] FOREIGN KEY ([RoleId1]) REFERENCES [Roles] ([Id])
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Users] (
+          [Id] int NOT NULL IDENTITY,
+          [Name] nvarchar(100) NOT NULL,
+          [Email] nvarchar(150) NOT NULL,
+          [PasswordHash] nvarchar(255) NOT NULL,
+          [RoleId] int NOT NULL,
+          [IsActive] bit NOT NULL DEFAULT CAST(1 AS bit),
+          [CreatedAt] datetime2 NOT NULL DEFAULT ((getutcdate())),
+          CONSTRAINT [PK_Users] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_Users_Roles_RoleId] FOREIGN KEY ([RoleId]) REFERENCES [Roles] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Products] (
+          [Id] int NOT NULL IDENTITY,
+          [Name] nvarchar(150) NOT NULL,
+          [SKU] nvarchar(50) NOT NULL,
+          [Description] text NULL,
+          [ImageURL] nvarchar(255) NULL,
+          [Price] decimal(10,2) NOT NULL,
+          [CostPrice] decimal(10,2) NOT NULL,
+          [IsActive] bit NOT NULL DEFAULT CAST(1 AS bit),
+          [CategoryId] int NOT NULL,
+          [SupplierId] int NULL,
+          [CreatedAt] datetime2 NOT NULL DEFAULT ((getutcdate())),
+          CONSTRAINT [PK_Products] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_Products_Categories_CategoryId] FOREIGN KEY ([CategoryId]) REFERENCES [Categories] ([Id]) ON DELETE NO ACTION,
+          CONSTRAINT [FK_Products_Suppliers_SupplierId] FOREIGN KEY ([SupplierId]) REFERENCES [Suppliers] ([Id]) ON DELETE SET NULL
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (41ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [AuditLogs] (
+          [Id] int NOT NULL IDENTITY,
+          [UserId] int NOT NULL,
+          [Action] nvarchar(255) NOT NULL,
+          [Module] nvarchar(100) NOT NULL,
+          [EntityId] int NOT NULL,
+          [OldValues] nvarchar(max) NULL,
+          [NewValues] nvarchar(max) NULL,
+          [Timestamp] datetime2 NOT NULL DEFAULT ((getutcdate())),
+          [IPAddress] nvarchar(45) NULL,
+          [Details] text NULL,
+          CONSTRAINT [PK_AuditLogs] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_AuditLogs_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Customers] (
+          [Id] int NOT NULL IDENTITY,
+          [UserId] int NOT NULL,
+          [Name] nvarchar(100) NOT NULL,
+          [Email] nvarchar(150) NOT NULL,
+          [Phone] nvarchar(20) NULL,
+          [DateOfBirth] date NULL,
+          [Address] text NULL,
+          [IsActive] bit NOT NULL,
+          [LoyaltyPoints] int NOT NULL DEFAULT 0,
+          [TotalSpent] decimal(10,2) NOT NULL DEFAULT 0.0,
+          [CreatedAt] datetime2 NOT NULL DEFAULT ((getutcdate())),
+          CONSTRAINT [PK_Customers] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_Customers_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (20ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [PurchaseOrders] (
+          [Id] int NOT NULL IDENTITY,
+          [SupplierId] int NOT NULL,
+          [UserId] int NOT NULL,
+          [Status] int NOT NULL DEFAULT 0,
+          [TotalCost] decimal(10,2) NOT NULL,
+          [OrderDate] datetime2 NOT NULL DEFAULT ((getutcdate())),
+          [ReceivedAt] datetime2 NULL,
+          [Notes] text NULL,
+          CONSTRAINT [PK_PurchaseOrders] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_PurchaseOrders_Suppliers_SupplierId] FOREIGN KEY ([SupplierId]) REFERENCES [Suppliers] ([Id]) ON DELETE CASCADE,
+          CONSTRAINT [FK_PurchaseOrders_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Inventory] (
+          [Id] int NOT NULL IDENTITY,
+          [ProductId] int NOT NULL,
+          [Quantity] int NOT NULL DEFAULT 0,
+          [ReorderLevel] int NOT NULL,
+          [LastUpdated] datetime2 NOT NULL DEFAULT ((getutcdate())),
+          CONSTRAINT [PK_Inventory] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_Inventory_Products_ProductId] FOREIGN KEY ([ProductId]) REFERENCES [Products] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (20ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [LoyaltyTransactions] (
+          [Id] int NOT NULL IDENTITY,
+          [CustomerId] int NOT NULL,
+          [Points] int NOT NULL,
+          [Type] nvarchar(max) NOT NULL,
+          [Reason] nvarchar(max) NOT NULL,
+          [CreatedAt] datetime2 NOT NULL,
+          CONSTRAINT [PK_LoyaltyTransactions] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_LoyaltyTransactions_Customers_CustomerId] FOREIGN KEY ([CustomerId]) REFERENCES [Customers] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (14ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Reviews] (
+          [Id] int NOT NULL IDENTITY,
+          [CustomerId] int NOT NULL,
+          [ProductId] int NOT NULL,
+          [Rating] int NOT NULL,
+          [Comment] text NULL,
+          [Sentiment] nvarchar(20) NULL,
+          [SentimentScore] float NULL,
+          [CreatedAt] datetime2 NOT NULL DEFAULT ((getutcdate())),
+          CONSTRAINT [PK_Reviews] PRIMARY KEY ([Id]),
+          CONSTRAINT [CK_Review_Rating] CHECK ([Rating] >= 1 AND [Rating] <= 5),
+          CONSTRAINT [FK_Reviews_Customers_CustomerId] FOREIGN KEY ([CustomerId]) REFERENCES [Customers] ([Id]) ON DELETE CASCADE,
+          CONSTRAINT [FK_Reviews_Products_ProductId] FOREIGN KEY ([ProductId]) REFERENCES [Products] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Sales] (
+          [Id] int NOT NULL IDENTITY,
+          [CustomerId] int NULL,
+          [UserId] int NOT NULL,
+          [PromoId] int NULL,
+          [SaleType] int NOT NULL,
+          [TotalAmount] decimal(10,2) NOT NULL,
+          [DiscountAmount] decimal(10,2) NOT NULL DEFAULT 0.0,
+          [TaxAmount] decimal(10,2) NOT NULL,
+          [SaleDate] datetime2 NOT NULL DEFAULT ((getutcdate())),
+          [Status] int NOT NULL DEFAULT 0,
+          CONSTRAINT [PK_Sales] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_Sales_Customers_CustomerId] FOREIGN KEY ([CustomerId]) REFERENCES [Customers] ([Id]),
+          CONSTRAINT [FK_Sales_Promotions_PromoId] FOREIGN KEY ([PromoId]) REFERENCES [Promotions] ([Id]),
+          CONSTRAINT [FK_Sales_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [POLineItems] (
+          [Id] int NOT NULL IDENTITY,
+          [POID] int NOT NULL,
+          [ProductId] int NOT NULL,
+          [OrderedQty] int NOT NULL,
+          [UnitPrice] decimal(10,2) NOT NULL,
+          CONSTRAINT [PK_POLineItems] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_POLineItems_Products_ProductId] FOREIGN KEY ([ProductId]) REFERENCES [Products] ([Id]) ON DELETE CASCADE,
+          CONSTRAINT [FK_POLineItems_PurchaseOrders_POID] FOREIGN KEY ([POID]) REFERENCES [PurchaseOrders] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [Payments] (
+          [Id] int NOT NULL IDENTITY,
+          [SaleId] int NOT NULL,
+          [Method] int NOT NULL,
+          [Amount] decimal(10,2) NOT NULL,
+          [Status] int NOT NULL DEFAULT 0,
+          [TransactionRef] nvarchar(255) NULL,
+          [PaidAt] datetime2 NULL,
+          CONSTRAINT [PK_Payments] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_Payments_Sales_SaleId] FOREIGN KEY ([SaleId]) REFERENCES [Sales] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (23ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE [SaleItems] (
+          [Id] int NOT NULL IDENTITY,
+          [SaleId] int NOT NULL,
+          [ProductId] int NOT NULL,
+          [Quantity] int NOT NULL,
+          [UnitPrice] decimal(18,2) NOT NULL,
+          [LineTotal] decimal(18,2) NOT NULL,
+          CONSTRAINT [PK_SaleItems] PRIMARY KEY ([Id]),
+          CONSTRAINT [FK_SaleItems_Products_ProductId] FOREIGN KEY ([ProductId]) REFERENCES [Products] ([Id]) ON DELETE NO ACTION,
+          CONSTRAINT [FK_SaleItems_Sales_SaleId] FOREIGN KEY ([SaleId]) REFERENCES [Sales] ([Id]) ON DELETE CASCADE
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_AuditLogs_UserId] ON [AuditLogs] ([UserId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (30ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Categories_ParentCategoryId] ON [Categories] ([ParentCategoryId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (12ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX [IX_Customers_Email] ON [Customers] ([Email]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX [IX_Customers_UserId] ON [Customers] ([UserId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX [IX_Inventories_ProductId] ON [Inventory] ([ProductId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_LoyaltyTransactions_CustomerId] ON [LoyaltyTransactions] ([CustomerId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX [IX_Payments_SaleId] ON [Payments] ([SaleId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (18ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Permissions_RoleId] ON [Permissions] ([RoleId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Permissions_RoleId1] ON [Permissions] ([RoleId1]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_POLineItems_POID] ON [POLineItems] ([POID]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_POLineItems_ProductId] ON [POLineItems] ([ProductId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Products_CategoryId] ON [Products] ([CategoryId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX [IX_Products_SKU] ON [Products] ([SKU]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Products_SupplierId] ON [Products] ([SupplierId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX [IX_Promotions_Code] ON [Promotions] ([Code]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_PurchaseOrders_SupplierId] ON [PurchaseOrders] ([SupplierId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (7ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_PurchaseOrders_UserId] ON [PurchaseOrders] ([UserId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Reviews_CustomerId] ON [Reviews] ([CustomerId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Reviews_ProductId] ON [Reviews] ([ProductId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_SaleItems_ProductId] ON [SaleItems] ([ProductId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_SaleItems_SaleId] ON [SaleItems] ([SaleId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Sales_CustomerId] ON [Sales] ([CustomerId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Sales_PromoId] ON [Sales] ([PromoId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Sales_UserId] ON [Sales] ([UserId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX [IX_Suppliers_Email] ON [Suppliers] ([Email]) WHERE [Email] IS NOT NULL;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE UNIQUE INDEX [IX_Users_Email] ON [Users] ([Email]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE INDEX [IX_Users_RoleId] ON [Users] ([RoleId]);
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (118ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Roles] AS [r]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (86ms) [Parameters=[@p0='?' (Size = 50), @p1='?' (Size = 4000), @p2='?' (Size = 4000), @p3='?' (Size = 50), @p4='?' (Size = 4000), @p5='?' (Size = 4000), @p6='?' (Size = 50), @p7='?' (Size = 4000), @p8='?' (Size = 4000), @p9='?' (Size = 50), @p10='?' (Size = 4000), @p11='?' (Size = 4000)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      MERGE [Roles] USING (
+      VALUES (@p0, @p1, @p2, 0),
+      (@p3, @p4, @p5, 1),
+      (@p6, @p7, @p8, 2),
+      (@p9, @p10, @p11, 3)) AS i ([Name], [Permissions], [RoleName], _Position) ON 1=0
+      WHEN NOT MATCHED THEN
+      INSERT ([Name], [Permissions], [RoleName])
+      VALUES (i.[Name], i.[Permissions], i.[RoleName])
+      OUTPUT INSERTED.[Id], i._Position;
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Users] AS [u]
+              WHERE [u].[Email] = N'admin@smartpos.com') THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (64ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT TOP(1) [r].[Id], [r].[Name], [r].[Permissions], [r].[RoleName]
+      FROM [Roles] AS [r]
+      WHERE [r].[Name] = N'Admin'
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (5ms) [Parameters=[@p0='?' (DbType = DateTime2), @p1='?' (Size = 150), @p2='?' (Size = 100), @p3='?' (Size = 255), @p4='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']
+      SET IMPLICIT_TRANSACTIONS OFF;
+      SET NOCOUNT ON;
+      INSERT INTO [Users] ([CreatedAt], [Email], [Name], [PasswordHash], [RoleId])
+      OUTPUT INSERTED.[Id], INSERTED.[IsActive]
+      VALUES (@p0, @p1, @p2, @p3, @p4);
+info: Program[0]
+      Database initialized successfully.

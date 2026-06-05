@@ -144,8 +144,7 @@ using (var scope = app.Services.CreateScope())
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     try
     {
-        // Since we are using a Database-First approach, database migrations on startup are bypassed.
-        // db.Database.Migrate();
+        db.Database.EnsureCreated();
 
         // Seed Roles if empty
         if (!db.Roles.Any())
@@ -200,7 +199,7 @@ app.UseAntiforgery();
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "SmartPOS.Web", "wwwroot")),
+        Path.Combine(builder.Environment.ContentRootPath, "wwwroot")),
     RequestPath = ""
 });
 app.UseSwagger();

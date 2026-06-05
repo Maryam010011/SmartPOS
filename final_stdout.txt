@@ -1,0 +1,111 @@
+Using launch settings from C:\Users\jahan\Desktop\proj\SmartPOS\Properties\launchSettings.json...
+Building...
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\App.razor(25,5): warning RZ10012: Found markup element with unexpected name 'ReconnectModal'. If this is intended to be a component, add a @using directive for its namespace. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Program.cs(17,7): warning CS0105: The using directive for 'Blazored.LocalStorage' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Program.cs(18,7): warning CS0105: The using directive for 'System.Text' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\PurchaseOrderService.cs(8,7): warning CS0105: The using directive for 'SmartPOS.Shared.Enums' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\_Imports.razor(15,8): warning CS0105: The using directive for 'Microsoft.AspNetCore.Components.Authorization' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\_Imports.razor(16,8): warning CS0105: The using directive for 'Microsoft.AspNetCore.Authorization' appeared previously in this namespace [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\SaleService.cs(298,55): warning CS8604: Possible null reference argument for parameter 'period' in 'List<SaleChartPointDto> SaleService.BuildChartData(List<Sale> sales, string period)'. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AIChatbotService.cs(129,55): warning CS8604: Possible null reference argument for parameter 'period' in 'List<SaleChartPointDto> AIChatbotService.BuildChartData(List<Sale> sales, string period)'. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Manager\Promotions\PromotionFormModal.razor(307,28): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Manager\Promotions\PromotionFormModal.razor(308,35): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(94,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(113,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(132,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\AuditLogService.cs(151,30): warning CS0168: The variable 'ex' is declared but never used [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\PromotionService.cs(176,31): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Services\PromotionService.cs(249,41): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Login.razor(173,30): warning CS8602: Dereference of a possibly null reference. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Customer\Reviews.razor(302,82): warning CS8602: Dereference of a possibly null reference. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\Customers\CustomerFormModal.razor(151,17): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\Customers\CustomerFormModal.razor(178,25): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\Customers\CustomerList.razor(326,29): warning CS8601: Possible null reference assignment. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\SentimentCharts.razor(334,68): warning CS8604: Possible null reference argument for parameter 'sentiment' in 'string SentimentCharts.GetSentimentClass(string sentiment)'. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+C:\Users\jahan\Desktop\proj\SmartPOS\Components\Pages\Admin\SentimentCharts.razor(431,34): warning CS8602: Dereference of a possibly null reference. [C:\Users\jahan\Desktop\proj\SmartPOS\SmartPOS.csproj]
+warn: Microsoft.EntityFrameworkCore.Model.Validation[10625]
+      The foreign key property 'Permission.RoleId1' was created in shadow state because a conflicting property with the simple name 'RoleId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+fail: Microsoft.EntityFrameworkCore.Database.Command[20102]
+      Failed executing DbCommand (260ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT CASE
+          WHEN EXISTS (
+              SELECT 1
+              FROM [Roles] AS [r]) THEN CAST(1 AS bit)
+          ELSE CAST(0 AS bit)
+      END
+fail: Microsoft.EntityFrameworkCore.Query[10100]
+      An exception occurred while iterating over the results of a query for context type 'SmartPOS.Data.AppDbContext'.
+      Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'Roles'.
+         at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+         at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+         at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+         at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+         at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+         at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+         at Microsoft.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReader(RelationalCommandParameterObject parameterObject)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.InitializeReader(Enumerator enumerator)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.<>c.<MoveNext>b__21_0(DbContext _, Enumerator enumerator)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.<>c__DisplayClass28_0`2.<Execute>b__0(DbContext context, TState innerState)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteImplementation[TState,TResult](Func`3 operation, Func`3 verifySucceeded, TState state)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.MoveNext()
+      ClientConnectionId:a6cbc686-623f-4400-aab0-4b1966ad425d
+      Error Number:208,State:1,Class:16
+      Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'Roles'.
+         at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+         at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+         at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+         at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+         at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+         at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+         at Microsoft.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReader(RelationalCommandParameterObject parameterObject)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.InitializeReader(Enumerator enumerator)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.<>c.<MoveNext>b__21_0(DbContext _, Enumerator enumerator)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.<>c__DisplayClass28_0`2.<Execute>b__0(DbContext context, TState innerState)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteImplementation[TState,TResult](Func`3 operation, Func`3 verifySucceeded, TState state)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.MoveNext()
+      ClientConnectionId:a6cbc686-623f-4400-aab0-4b1966ad425d
+      Error Number:208,State:1,Class:16
+fail: Program[0]
+      Database initialization failed. Check your SQL Server connection string in appsettings.json.
+      Microsoft.Data.SqlClient.SqlException (0x80131904): Invalid object name 'Roles'.
+         at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+         at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, SqlCommand command, Boolean callerHasConnectionLock, Boolean asyncClose)
+         at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+         at Microsoft.Data.SqlClient.SqlDataReader.TryConsumeMetaData()
+         at Microsoft.Data.SqlClient.SqlDataReader.get_MetaData()
+         at Microsoft.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString, Boolean isInternal, Boolean forDescribeParameterEncryption, Boolean shouldCacheForAlwaysEncrypted)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReaderTds(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, Boolean isAsync, Int32 timeout, Task& task, Boolean asyncWrite, Boolean inRetry, SqlDataReader ds, Boolean describeParameterEncryptionRequest)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String method)
+         at Microsoft.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+         at Microsoft.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior)
+         at Microsoft.Data.SqlClient.SqlCommand.ExecuteDbDataReader(CommandBehavior behavior)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReader(RelationalCommandParameterObject parameterObject)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.InitializeReader(Enumerator enumerator)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.<>c.<MoveNext>b__21_0(DbContext _, Enumerator enumerator)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.<>c__DisplayClass28_0`2.<Execute>b__0(DbContext context, TState innerState)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.ExecuteImplementation[TState,TResult](Func`3 operation, Func`3 verifySucceeded, TState state)
+         at Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy.Execute[TState,TResult](TState state, Func`3 operation, Func`3 verifySucceeded)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.Enumerator.MoveNext()
+         at System.Linq.Enumerable.TryGetSingle[TSource](IEnumerable`1 source, Boolean& found)
+         at lambda_method41(Closure, QueryContext)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.ExecuteCore[TResult](Expression query, Boolean async, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.QueryCompiler.Execute[TResult](Expression query)
+         at Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryProvider.Execute[TResult](Expression expression)
+         at Program.<Main>$(String[] args) in C:\Users\jahan\Desktop\proj\SmartPOS\Program.cs:line 151
+      ClientConnectionId:a6cbc686-623f-4400-aab0-4b1966ad425d
+      Error Number:208,State:1,Class:16
