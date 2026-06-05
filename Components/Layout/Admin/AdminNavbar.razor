@@ -13,20 +13,35 @@
 
         <!-- Desktop Nav Links -->
         <nav class="navbar-links" aria-label="Admin navigation">
+            <a class="nav-link @(IsActive("/admin/dashboard"))"      href="/admin/dashboard">
+                <span class="nav-icon"></span><span>Dashboard</span>
+            </a>
             <a class="nav-link @(IsActive("/admin/analytics"))"      href="/admin/analytics">
-                <span class="nav-icon">ðŸ“Š</span><span>Analytics</span>
+                <span class="nav-icon"></span><span>Analytics</span>
             </a>
             <a class="nav-link @(IsActive("/admin/products"))"       href="/admin/products">
-                <span class="nav-icon">ðŸ§</span><span>Products</span>
+                <span class="nav-icon"></span><span>Products</span>
             </a>
             <a class="nav-link @(IsActive("/admin/categories"))"     href="/admin/categories">
-                <span class="nav-icon">ðŸ—‚ï¸</span><span>Categories</span>
+                <span class="nav-icon"></span><span>Categories</span>
             </a>
             <a class="nav-link @(IsActive("/admin/suppliers"))"      href="/admin/suppliers">
-                <span class="nav-icon">ðŸšš</span><span>Suppliers</span>
+                <span class="nav-icon"></span><span>Suppliers</span>
             </a>
-            <a class="nav-link @(IsActive("/admin/sentiment-charts"))" href="/admin/sentiment-charts">
-                <span class="nav-icon">ðŸ¤–</span><span>Sentiment</span>
+            <a class="nav-link @(IsActive("/admin/users"))"          href="/admin/users">
+                <span class="nav-icon"></span><span>Users</span>
+            </a>
+            <a class="nav-link @(IsActive("/admin/roles"))"          href="/admin/roles">
+                <span class="nav-icon"></span><span>Roles</span>
+            </a>
+            <a class="nav-link @(IsActive("/admin/customers"))"      href="/admin/customers">
+                <span class="nav-icon"></span><span>Customers</span>
+            </a>
+            <a class="nav-link @(IsActive("/admin/audit-logs"))"     href="/admin/audit-logs">
+                <span class="nav-icon"></span><span>Audit Logs</span>
+            </a>
+            <a class="nav-link @(IsActive("/admin/sentiment"))"      href="/admin/sentiment">
+                <span class="nav-icon"></span><span>Sentiment</span>
             </a>
         </nav>
 
@@ -51,11 +66,16 @@
     @if (_mobileOpen)
     {
         <nav class="mobile-menu" aria-label="Admin mobile navigation">
-            <a class="mobile-link @(IsActive("/admin/analytics"))"        href="/admin/analytics"        @onclick="CloseMobile">ðŸ“Š Analytics</a>
-            <a class="mobile-link @(IsActive("/admin/products"))"          href="/admin/products"          @onclick="CloseMobile">ðŸ§ Products</a>
-            <a class="mobile-link @(IsActive("/admin/categories"))"        href="/admin/categories"        @onclick="CloseMobile">ðŸ—‚ï¸ Categories</a>
-            <a class="mobile-link @(IsActive("/admin/suppliers"))"         href="/admin/suppliers"         @onclick="CloseMobile">ðŸšš Suppliers</a>
-            <a class="mobile-link @(IsActive("/admin/sentiment-charts"))"  href="/admin/sentiment-charts"  @onclick="CloseMobile">ðŸ¤– Sentiment</a>
+            <a class="mobile-link @(IsActive("/admin/dashboard"))"  href="/admin/dashboard"   @onclick="CloseMobile">Dashboard</a>
+            <a class="mobile-link @(IsActive("/admin/analytics"))"  href="/admin/analytics"   @onclick="CloseMobile">Analytics</a>
+            <a class="mobile-link @(IsActive("/admin/products"))"   href="/admin/products"    @onclick="CloseMobile">Products</a>
+            <a class="mobile-link @(IsActive("/admin/categories"))" href="/admin/categories"  @onclick="CloseMobile">Categories</a>
+            <a class="mobile-link @(IsActive("/admin/suppliers"))"  href="/admin/suppliers"   @onclick="CloseMobile">Suppliers</a>
+            <a class="mobile-link @(IsActive("/admin/users"))"      href="/admin/users"       @onclick="CloseMobile">Users</a>
+            <a class="mobile-link @(IsActive("/admin/roles"))"      href="/admin/roles"       @onclick="CloseMobile">Roles</a>
+            <a class="mobile-link @(IsActive("/admin/customers"))"  href="/admin/customers"   @onclick="CloseMobile">Customers</a>
+            <a class="mobile-link @(IsActive("/admin/audit-logs"))" href="/admin/audit-logs"  @onclick="CloseMobile">Audit Logs</a>
+            <a class="mobile-link @(IsActive("/admin/sentiment"))"  href="/admin/sentiment"   @onclick="CloseMobile">Sentiment</a>
         </nav>
     }
 </header>
@@ -115,7 +135,7 @@
         height: var(--nav-height, 64px);
         max-width: 1600px;
         margin: 0 auto;
-        padding: 0 1.25rem;
+        padding: 0 0 0 1.25rem;
         gap: 0.5rem;
     }
 

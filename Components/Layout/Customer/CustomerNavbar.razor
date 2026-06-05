@@ -13,24 +13,33 @@
 
         <!-- Desktop Nav Links -->
         <nav class="navbar-links" aria-label="Customer navigation">
+            <a class="nav-link @(IsActive("/customer/dashboard"))"     href="/customer/dashboard">
+                <span class="nav-icon"></span><span>Dashboard</span>
+            </a>
             <a class="nav-link @(IsActive("/customer/home"))"          href="/customer/home">
-                <span class="nav-icon">ðŸ </span><span>Home</span>
+                <span class="nav-icon"></span><span>Home</span>
             </a>
             <a class="nav-link @(IsActive("/customer/shop"))"          href="/customer/shop">
-                <span class="nav-icon">ðŸ›ï¸</span><span>Shop</span>
+                <span class="nav-icon"></span><span>Shop</span>
             </a>
             <a class="nav-link @(IsActive("/customer/cart"))"          href="/customer/cart">
-                <span class="nav-icon">ðŸ›’</span><span>Cart</span>
+                <span class="nav-icon"></span><span>Cart</span>
                 @if (CartCount > 0)
                 {
                     <span class="cart-badge">@(CartCount > 9 ? "9+" : CartCount.ToString())</span>
                 }
             </a>
-            <a class="nav-link @(IsActive("/customer/order-history"))" href="/customer/order-history">
-                <span class="nav-icon">ðŸ“‹</span><span>Orders</span>
+            <a class="nav-link @(IsActive("/customer/orders"))"        href="/customer/orders">
+                <span class="nav-icon"></span><span>Orders</span>
             </a>
             <a class="nav-link @(IsActive("/customer/reviews"))"       href="/customer/reviews">
-                <span class="nav-icon">â­</span><span>Reviews</span>
+                <span class="nav-icon"></span><span>Reviews</span>
+            </a>
+            <a class="nav-link @(IsActive("/customer/profile"))"       href="/customer/profile">
+                <span class="nav-icon"></span><span>Profile</span>
+            </a>
+            <a class="nav-link @(IsActive("/customer/promotions"))"    href="/customer/promotions">
+                <span class="nav-icon"></span><span>Promotions</span>
             </a>
         </nav>
 
@@ -53,11 +62,14 @@
     @if (_mobileOpen)
     {
         <nav class="mobile-menu" aria-label="Customer mobile navigation">
-            <a class="mobile-link @(IsActive("/customer/home"))"          href="/customer/home"          @onclick="CloseMobile">ðŸ  Home</a>
-            <a class="mobile-link @(IsActive("/customer/shop"))"          href="/customer/shop"          @onclick="CloseMobile">ðŸ›ï¸ Shop</a>
-            <a class="mobile-link @(IsActive("/customer/cart"))"          href="/customer/cart"          @onclick="CloseMobile">ðŸ›’ Cart @(CartCount > 0 ? $"({CartCount})" : "")</a>
-            <a class="mobile-link @(IsActive("/customer/order-history"))" href="/customer/order-history" @onclick="CloseMobile">ðŸ“‹ Orders</a>
-            <a class="mobile-link @(IsActive("/customer/reviews"))"       href="/customer/reviews"       @onclick="CloseMobile">â­ Reviews</a>
+            <a class="mobile-link @(IsActive("/customer/dashboard"))"     href="/customer/dashboard"     @onclick="CloseMobile">Dashboard</a>
+            <a class="mobile-link @(IsActive("/customer/home"))"          href="/customer/home"          @onclick="CloseMobile">Home</a>
+            <a class="mobile-link @(IsActive("/customer/shop"))"          href="/customer/shop"          @onclick="CloseMobile">Shop</a>
+            <a class="mobile-link @(IsActive("/customer/cart"))"          href="/customer/cart"          @onclick="CloseMobile">Cart @(CartCount > 0 ? $"({CartCount})" : "")</a>
+            <a class="mobile-link @(IsActive("/customer/orders"))"        href="/customer/orders"        @onclick="CloseMobile">Orders</a>
+            <a class="mobile-link @(IsActive("/customer/reviews"))"       href="/customer/reviews"       @onclick="CloseMobile">Reviews</a>
+            <a class="mobile-link @(IsActive("/customer/profile"))"       href="/customer/profile"       @onclick="CloseMobile">Profile</a>
+            <a class="mobile-link @(IsActive("/customer/promotions"))"    href="/customer/promotions"    @onclick="CloseMobile">Promotions</a>
         </nav>
     }
 </header>
@@ -158,7 +170,7 @@
         height: var(--nav-height, 64px);
         max-width: 1600px;
         margin: 0 auto;
-        padding: 0 1.25rem;
+        padding: 0 0 0 1.25rem;
         gap: 0.5rem;
     }
 

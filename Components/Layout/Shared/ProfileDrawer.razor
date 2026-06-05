@@ -60,6 +60,13 @@
                     <span>Settings</span>
                 </a>
             }
+            @foreach (var item in NavItems)
+            {
+                <a class="drawer-nav-item" href="@item.Url">
+                    <span class="nav-item-icon"></span>
+                    <span>@item.Label</span>
+                </a>
+            }
             <button class="drawer-nav-item danger-item" @onclick="SignOut">
                 <span class="nav-item-icon">ðŸšª</span>
                 <span>Sign Out</span>
@@ -83,6 +90,13 @@
     [Parameter] public string RoleColor     { get; set; } = "#C4848A";
     [Parameter] public string DashboardRoute  { get; set; } = "/";
     [Parameter] public string SettingsRoute   { get; set; } = "";
+    [Parameter] public List<DrawerNavItem> NavItems { get; set; } = new();
+
+    public class DrawerNavItem
+    {
+        public string Label { get; set; } = "";
+        public string Url   { get; set; } = "";
+    }
 
     private async Task Close() => await OnClose.InvokeAsync();
 

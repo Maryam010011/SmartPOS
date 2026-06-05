@@ -13,8 +13,17 @@
 
         <!-- Desktop Nav Links -->
         <nav class="navbar-links" aria-label="Cashier navigation">
+            <a class="nav-link @(IsActive("/cashier/dashboard"))" href="/cashier/dashboard">
+                <span class="nav-icon"></span><span>Dashboard</span>
+            </a>
             <a class="nav-link @(IsActive("/cashier/pos"))" href="/cashier/pos">
-                <span class="nav-icon">ðŸ–¥ï¸</span><span>Point of Sale</span>
+                <span class="nav-icon"></span><span>Point of Sale</span>
+            </a>
+            <a class="nav-link @(IsActive("/cashier/sales-history"))" href="/cashier/sales-history">
+                <span class="nav-icon"></span><span>Sales History</span>
+            </a>
+            <a class="nav-link @(IsActive("/cashier/customer-lookup"))" href="/cashier/customer-lookup">
+                <span class="nav-icon"></span><span>Customer Lookup</span>
             </a>
         </nav>
 
@@ -41,7 +50,10 @@
     @if (_mobileOpen)
     {
         <nav class="mobile-menu" aria-label="Cashier mobile navigation">
-            <a class="mobile-link @(IsActive("/cashier/pos"))" href="/cashier/pos" @onclick="CloseMobile">ðŸ–¥ï¸ Point of Sale</a>
+            <a class="mobile-link @(IsActive("/cashier/dashboard"))"      href="/cashier/dashboard"      @onclick="CloseMobile">Dashboard</a>
+            <a class="mobile-link @(IsActive("/cashier/pos"))"            href="/cashier/pos"            @onclick="CloseMobile">Point of Sale</a>
+            <a class="mobile-link @(IsActive("/cashier/sales-history"))"  href="/cashier/sales-history"  @onclick="CloseMobile">Sales History</a>
+            <a class="mobile-link @(IsActive("/cashier/customer-lookup"))" href="/cashier/customer-lookup" @onclick="CloseMobile">Customer Lookup</a>
         </nav>
     }
 </header>
@@ -151,7 +163,7 @@
         height: var(--nav-height, 64px);
         max-width: 1600px;
         margin: 0 auto;
-        padding: 0 1.25rem;
+        padding: 0 0 0 1.25rem;
         gap: 0.5rem;
     }
 
