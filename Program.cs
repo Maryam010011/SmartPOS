@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -32,15 +32,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             errorNumbersToAdd: null)
     ));
 
-// â”€â”€â”€ API Controllers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+builder.Services.AddScoped<IDbContextFactory<AppDbContext>>(sp =>
+{
+    var options = sp.GetRequiredService<DbContextOptions<AppDbContext>>();
+    return new SimpleDbContextFactory(options);
+});
+
+// ─── API Controllers ───────────────────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// â”€â”€â”€ HttpClient (required by FBRService and AIChatbotService) â”€â”€
+// ─── HttpClient (required by FBRService and AIChatbotService) ──
 builder.Services.AddHttpClient();
 
-// â”€â”€â”€ Shahzain's Service Registrations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Shahzain's Service Registrations ─────────────────────────
 builder.Services.AddScoped<IProductService,     ProductService>();
 builder.Services.AddScoped<ICategoryService,    CategoryService>();
 builder.Services.AddScoped<ISupplierService,    SupplierService>();
@@ -53,15 +59,15 @@ builder.Services.AddScoped<IBERTService,        BERTService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IWeatherService,     WeatherService>();
 
-// â”€â”€â”€ Shared Cart State (Scoped = per Blazor Server circuit / user session) â”€â”€â”€
+// ─── Shared Cart State (Scoped = per Blazor Server circuit / user session) ───
 builder.Services.AddScoped<CartStateService>();
 
-// â”€â”€â”€ MaryamY's Service Registrations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── MaryamY's Service Registrations ──────────────────────────
 builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-// â”€â”€ JWT Authentication â”€â”€
+// ── JWT Authentication ──
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -174,7 +180,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         logger.LogError(ex, "Database initialization failed. Check your SQL Server connection string in appsettings.json.");
-        throw; // Re-throw so the app fails fast â€” prevents runtime errors later
+        throw; // Re-throw so the app fails fast — prevents runtime errors later
     }
 }
 
@@ -206,3 +212,18 @@ app.MapRazorComponents<App>()
 
 await SmartPOS.Web.Data.DatabaseSeeder.SeedAsync(app.Services);
 await app.RunAsync();
+
+class SimpleDbContextFactory : IDbContextFactory<AppDbContext>
+{
+    private readonly DbContextOptions<AppDbContext> _options;
+
+    public SimpleDbContextFactory(DbContextOptions<AppDbContext> options)
+    {
+        _options = options;
+    }
+
+    public AppDbContext CreateDbContext()
+    {
+        return new AppDbContext(_options);
+    }
+}
