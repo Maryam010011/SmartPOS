@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.AuditLogs;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 
 namespace SmartPOS.Services.MaryamJ
 {
@@ -41,7 +41,7 @@ namespace SmartPOS.Services.MaryamJ
             }
             catch
             {
-                // Silently fail — audit logging should never break the calling operation
+                // Silently fail â€” audit logging should never break the calling operation
             }
         }
 
@@ -93,7 +93,7 @@ namespace SmartPOS.Services.MaryamJ
             }
             catch (Exception ex)
             {
-                return ApiResponse<List<AuditLogDto>>.Fail("Failed to retrieve audit logs.", new() { ex.Message });
+                return ApiResponse<List<AuditLogDto>>.Fail("Failed to retrieve audit logs.");
             }
         }
 
@@ -112,7 +112,7 @@ namespace SmartPOS.Services.MaryamJ
             }
             catch (Exception ex)
             {
-                return ApiResponse<List<AuditLogDto>>.Fail("Failed to retrieve logs for user.", new() { ex.Message });
+                return ApiResponse<List<AuditLogDto>>.Fail("Failed to retrieve logs for user.");
             }
         }
 
@@ -131,7 +131,7 @@ namespace SmartPOS.Services.MaryamJ
             }
             catch (Exception ex)
             {
-                return ApiResponse<List<AuditLogDto>>.Fail("Failed to retrieve logs for entity.", new() { ex.Message });
+                return ApiResponse<List<AuditLogDto>>.Fail("Failed to retrieve logs for entity.");
             }
         }
 
@@ -150,7 +150,7 @@ namespace SmartPOS.Services.MaryamJ
             }
             catch (Exception ex)
             {
-                return ApiResponse<AuditLogDto>.Fail("Failed to retrieve audit log.", new() { ex.Message });
+                return ApiResponse<AuditLogDto>.Fail("Failed to retrieve audit log.");
             }
         }
 

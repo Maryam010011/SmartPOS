@@ -2,8 +2,8 @@
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Categories;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 
 namespace SmartPOS.Services
 {

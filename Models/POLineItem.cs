@@ -1,4 +1,4 @@
-namespace SmartPOS.Models;
+﻿namespace SmartPOS.Models;
 
 public partial class POLineItem
 {

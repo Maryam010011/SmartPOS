@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.PurchaseOrders;
 using SmartPOS.Shared.Enums;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 using SmartPOS.Shared.Enums;
 
 namespace SmartPOS.Services.MaryamJ

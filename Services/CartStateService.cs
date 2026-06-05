@@ -1,21 +1,21 @@
-using SmartPOS.Shared.DTOs.Products;
+﻿using SmartPOS.Shared.DTOs.Products;
 
 namespace SmartPOS.Web.Services.Shahzain;
 
 /// <summary>
-/// Scoped cart state service — one instance per Blazor Server circuit (per user session).
+/// Scoped cart state service â€” one instance per Blazor Server circuit (per user session).
 /// Because AddScoped on Blazor Server = per SignalR connection lifetime, both Shop.razor
 /// and Cart.razor receive the exact same instance, enabling seamless cart persistence
 /// across navigation without query-string serialisation or JS sessionStorage.
 ///
 /// Usage:
-///   • In Shop.razor  → AddItem / UpdateQuantity / RemoveItem / Clear
-///   • In Cart.razor  → Read Items, SubTotal, Count; call Clear on order success
-///   • Subscribe to OnCartChanged and call StateHasChanged for reactive UI updates
+///   â€¢ In Shop.razor  â†’ AddItem / UpdateQuantity / RemoveItem / Clear
+///   â€¢ In Cart.razor  â†’ Read Items, SubTotal, Count; call Clear on order success
+///   â€¢ Subscribe to OnCartChanged and call StateHasChanged for reactive UI updates
 /// </summary>
 public sealed class CartStateService
 {
-    // ── Internal mutable list ────────────────────────────────────────────
+    // â”€â”€ Internal mutable list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private readonly List<CartItem> _items = new();
 
     /// <summary>Read-only view of current cart items.</summary>
@@ -27,11 +27,11 @@ public sealed class CartStateService
     /// </summary>
     public event Action? OnCartChanged;
 
-    // ── Computed Properties ──────────────────────────────────────────────
+    // â”€â”€ Computed Properties â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public int     Count    => _items.Sum(i => i.Quantity);
     public decimal SubTotal => _items.Sum(i => i.Product.Price * i.Quantity);
 
-    // ── Mutation Methods ─────────────────────────────────────────────────
+    // â”€â”€ Mutation Methods â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /// <summary>Add a product to the cart. If it already exists, increments quantity.</summary>
     public void AddItem(ProductDto product, int qty = 1)
@@ -74,10 +74,10 @@ public sealed class CartStateService
         NotifyChange();
     }
 
-    // ── Private Helpers ──────────────────────────────────────────────────
+    // â”€â”€ Private Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private void NotifyChange() => OnCartChanged?.Invoke();
 
-    // ── Nested DTO ───────────────────────────────────────────────────────
+    // â”€â”€ Nested DTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     /// <summary>A single line in the cart: one product + its chosen quantity.</summary>
     public sealed class CartItem
     {

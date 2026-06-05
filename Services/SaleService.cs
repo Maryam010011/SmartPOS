@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Sales;
 using SmartPOS.Shared.Enums;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 
 namespace SmartPOS.Web.Services.Shahzain
 {
@@ -28,9 +28,9 @@ namespace SmartPOS.Web.Services.Shahzain
             _inventoryService = inventoryService;
         }
 
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  ProcessSale
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Processes a new sale end-to-end:
@@ -49,7 +49,7 @@ namespace SmartPOS.Web.Services.Shahzain
             try
             {
                 using var context = _factory.CreateDbContext();
-                // ── Validate items ───────────────────────────
+                // â”€â”€ Validate items â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if (dto.Items == null || !dto.Items.Any())
                     return ApiResponse<SaleResultDto>.Fail("Sale must contain at least one item.");
 
@@ -82,7 +82,7 @@ namespace SmartPOS.Web.Services.Shahzain
                     subTotal += lineTotal;
                 }
 
-                // ── Apply promotional discount ───────────────
+                // â”€â”€ Apply promotional discount â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 decimal discountAmount = 0m;
                 int? promoId = null;
 
@@ -95,17 +95,17 @@ namespace SmartPOS.Web.Services.Shahzain
                     // TODO: Integrate IPromotionService once Maryam Jahangir completes the module.
                 }
 
-                // ── Calculate tax ────────────────────────────
+                // â”€â”€ Calculate tax â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 // Pakistan standard sales tax rate: 17 %
                 const decimal taxRate = 0.17m;
                 decimal taxableAmount = subTotal - discountAmount;
                 decimal taxAmount = Math.Round(taxableAmount * taxRate, 2);
                 decimal totalAmount = taxableAmount + taxAmount;
 
-                // ── Generate receipt number ──────────────────
+                // â”€â”€ Generate receipt number â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 string receiptNumber = $"RCP-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..8].ToUpper()}";
 
-                // ── Persist Sale ─────────────────────────────
+                // â”€â”€ Persist Sale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 var sale = new Sale
                 {
                     CustomerId = dto.CustomerId,
@@ -131,7 +131,7 @@ namespace SmartPOS.Web.Services.Shahzain
                 context.SaleItems.AddRange(saleItems);
                 await context.SaveChangesAsync();
 
-                // ── Deduct inventory ─────────────────────────
+                // â”€â”€ Deduct inventory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 foreach (var si in saleItems)
                 {
                     var deductResult = await _inventoryService.DeductStock(si.ProductId, si.Quantity);
@@ -144,7 +144,7 @@ namespace SmartPOS.Web.Services.Shahzain
                     }
                 }
 
-                // ── Build result DTO ─────────────────────────
+                // â”€â”€ Build result DTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 var result = new SaleResultDto
                 {
                     SaleId = sale.Id,
@@ -173,9 +173,9 @@ namespace SmartPOS.Web.Services.Shahzain
             }
         }
 
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  GetById
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Retrieves a single sale by its unique identifier,
@@ -204,9 +204,9 @@ namespace SmartPOS.Web.Services.Shahzain
             }
         }
 
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  GetAll (with filtering)
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Retrieves sales with optional filtering by date range,
@@ -224,7 +224,7 @@ namespace SmartPOS.Web.Services.Shahzain
                         .ThenInclude(si => si.Product)
                     .AsQueryable();
 
-                // ── Apply filters ────────────────────────────
+                // â”€â”€ Apply filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if (filter.From.HasValue)
                     query = query.Where(s => s.SaleDate >= filter.From.Value);
 
@@ -253,9 +253,9 @@ namespace SmartPOS.Web.Services.Shahzain
             }
         }
 
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  GetAnalytics
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Aggregates sales analytics (total revenue, transaction count,
@@ -273,7 +273,7 @@ namespace SmartPOS.Web.Services.Shahzain
                     .Where(s => s.Status == SaleStatus.Completed)
                     .AsQueryable();
 
-                // ── Apply date filters ───────────────────────
+                // â”€â”€ Apply date filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if (filter.From.HasValue)
                     query = query.Where(s => s.SaleDate >= filter.From.Value);
 
@@ -294,7 +294,7 @@ namespace SmartPOS.Web.Services.Shahzain
                     ? Math.Round(totalRevenue / totalTransactions, 2)
                     : 0m;
 
-                // ── Build chart data grouped by period ───────
+                // â”€â”€ Build chart data grouped by period â”€â”€â”€â”€â”€â”€â”€
                 var chartData = BuildChartData(sales, filter.Period);
 
                 var analytics = new SaleAnalyticsDto
@@ -313,9 +313,9 @@ namespace SmartPOS.Web.Services.Shahzain
             }
         }
 
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  VoidSale
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Voids a completed sale with the given reason.
@@ -359,9 +359,9 @@ namespace SmartPOS.Web.Services.Shahzain
             }
         }
 
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  RefundSale
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Refunds a completed sale. Sets the status to Refunded
@@ -401,12 +401,12 @@ namespace SmartPOS.Web.Services.Shahzain
             }
         }
 
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  Private helpers
-        // ──────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
-        /// Maps a Sale entity (with loaded SaleItems → Product) to a SaleResultDto.
+        /// Maps a Sale entity (with loaded SaleItems â†’ Product) to a SaleResultDto.
         /// </summary>
         private static SaleResultDto MapToResultDto(Sale sale)
         {

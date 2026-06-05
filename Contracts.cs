@@ -1,4 +1,4 @@
-namespace SmartPOS.Shared.Enums;
+﻿namespace SmartPOS.Shared.Enums;
 
 public enum DiscountType
 {

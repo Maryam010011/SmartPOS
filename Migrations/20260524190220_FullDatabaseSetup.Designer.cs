@@ -13,7 +13,7 @@ namespace SmartPOS.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260524190220_FullDatabaseSetup")]
-    partial class FullDatabaseSetup
+    partial class InitialFullDatabaseSetup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

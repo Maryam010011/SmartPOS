@@ -1,4 +1,4 @@
-@namespace SmartPOS.Components.Layout
+﻿@namespace SmartPOS.Components.Layout
 @inject NavigationManager Nav
 
 <header class="smartpos-navbar cashier-navbar" id="cashier-navbar">
@@ -6,7 +6,7 @@
 
         <!-- Brand -->
         <a class="navbar-brand" href="/cashier/pos">
-            <span class="brand-icon">🥐</span>
+            <span class="brand-icon">ðŸ¥</span>
             <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
             <span class="brand-role-tag cashier-tag">Cashier</span>
         </a>
@@ -14,7 +14,7 @@
         <!-- Desktop Nav Links -->
         <nav class="navbar-links" aria-label="Cashier navigation">
             <a class="nav-link @(IsActive("/cashier/pos"))" href="/cashier/pos">
-                <span class="nav-icon">🖥️</span><span>Point of Sale</span>
+                <span class="nav-icon">ðŸ–¥ï¸</span><span>Point of Sale</span>
             </a>
         </nav>
 
@@ -41,7 +41,7 @@
     @if (_mobileOpen)
     {
         <nav class="mobile-menu" aria-label="Cashier mobile navigation">
-            <a class="mobile-link @(IsActive("/cashier/pos"))" href="/cashier/pos" @onclick="CloseMobile">🖥️ Point of Sale</a>
+            <a class="mobile-link @(IsActive("/cashier/pos"))" href="/cashier/pos" @onclick="CloseMobile">ðŸ–¥ï¸ Point of Sale</a>
         </nav>
     }
 </header>

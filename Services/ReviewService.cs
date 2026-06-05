@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Reviews;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 
 namespace SmartPOS.Web.Services.Shahzain
 {
@@ -77,7 +77,7 @@ namespace SmartPOS.Web.Services.Shahzain
                 }
                 else
                 {
-                    // No comment provided — derive sentiment from rating alone
+                    // No comment provided â€” derive sentiment from rating alone
                     review.Sentiment = DeriveSentimentFromRating(dto.Rating);
                     review.SentimentScore = MapSentimentToScore(review.Sentiment);
                 }
@@ -173,9 +173,9 @@ namespace SmartPOS.Web.Services.Shahzain
             }
         }
 
-        // ────────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  Private Helper Methods
-        // ────────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Maps a Review entity to a ReviewDto.

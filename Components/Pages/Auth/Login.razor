@@ -1,4 +1,4 @@
-@page "/login"
+﻿@page "/login"
 @using SmartPOS.Services
 @using SmartPOS.Providers
 @using Blazored.LocalStorage
@@ -23,19 +23,19 @@
 
             <div class="role-grid">
                 <button type="button" class="role-btn" @onclick='() => SelectRole("Admin")'>
-                    <span class="role-icon">🛡️</span>
+                    <span class="role-icon">ðŸ›¡ï¸</span>
                     <span>Admin</span>
                 </button>
                 <button type="button" class="role-btn" @onclick='() => SelectRole("Manager")'>
-                    <span class="role-icon">💼</span>
+                    <span class="role-icon">ðŸ’¼</span>
                     <span>Manager</span>
                 </button>
                 <button type="button" class="role-btn" @onclick='() => SelectRole("Cashier")'>
-                    <span class="role-icon">💵</span>
+                    <span class="role-icon">ðŸ’µ</span>
                     <span>Cashier</span>
                 </button>
                 <button type="button" class="role-btn" @onclick='() => SelectRole("Customer")'>
-                    <span class="role-icon">🛍️</span>
+                    <span class="role-icon">ðŸ›ï¸</span>
                     <span>Customer</span>
                 </button>
             </div>
@@ -50,7 +50,7 @@
             <div class="auth-form">
                 <div class="form-header">
                     <button type="button" class="back-btn" @onclick="ClearRole">
-                        ← Back to Roles
+                        â† Back to Roles
                     </button>
                 </div>
 
@@ -70,7 +70,7 @@
                     <div class="auth-form-group">
                         <label class="auth-label">Email Address</label>
                         <div class="input-container">
-                            <span class="auth-input-icon">✉</span>
+                            <span class="auth-input-icon">âœ‰</span>
                             <InputText @bind-Value="loginModel.Email" class="auth-input" placeholder="e.g. name@smartpos.com" />
                         </div>
                         <ValidationMessage For="@(() => loginModel.Email)" class="text-danger" />
@@ -79,8 +79,8 @@
                     <div class="auth-form-group">
                         <label class="auth-label">Password</label>
                         <div class="input-container">
-                            <span class="auth-input-icon">🔒</span>
-                            <InputText @bind-Value="loginModel.Password" type="password" class="auth-input" placeholder="••••••••" />
+                            <span class="auth-input-icon">ðŸ”’</span>
+                            <InputText @bind-Value="loginModel.Password" type="password" class="auth-input" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" />
                         </div>
                         <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
                     </div>

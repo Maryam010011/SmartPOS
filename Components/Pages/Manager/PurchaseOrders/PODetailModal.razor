@@ -1,4 +1,4 @@
-@using SmartPOS.Shared.DTOs.PurchaseOrders
+﻿@using SmartPOS.Shared.DTOs.PurchaseOrders
 @using SmartPOS.Shared.DTOs.Users
 @using SmartPOS.Shared.Enums
 @using SmartPOS.Shared.Interfaces
@@ -347,6 +347,6 @@
             POStatus.Cancelled => ("Cancelled", "#dc3545", "rgba(220, 53, 69, 0.15)"),
             _ => ("Unknown", "#6c757d", "rgba(108, 117, 125, 0.15)")
         };
-        return (MarkupString)$"<span class=\"badge px-2 py-1.5 rounded-pill\" style=\"background-color: {bg}; color: {color}; border: 1px solid {color}33;\">● {text}</span>";
+        return (MarkupString)$"<span class=\"badge px-2 py-1.5 rounded-pill\" style=\"background-color: {bg}; color: {color}; border: 1px solid {color}33;\">â— {text}</span>";
     }
 }

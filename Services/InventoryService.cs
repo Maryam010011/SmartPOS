@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Inventory;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 
 namespace SmartPOS.Services
 {
@@ -60,7 +60,7 @@ namespace SmartPOS.Services
             }
             catch (Exception ex)
             {
-                return ApiResponse.Fail($"Failed to add stock: {ex.Message}");
+                return ApiResponse<List<InventoryDto>>.Fail($"Failed to add stock: {ex.Message}");
             }
         }
 

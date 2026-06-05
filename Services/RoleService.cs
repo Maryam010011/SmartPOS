@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -7,8 +7,8 @@ using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.AuditLogs;
 using SmartPOS.Shared.DTOs.Roles;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 
 namespace SmartPOS.Services.MaryamJ
 {
@@ -203,7 +203,7 @@ namespace SmartPOS.Services.MaryamJ
             return ApiResponse.Ok("Permissions updated successfully.");
         }
 
-        // ── Helper ──
+        // â”€â”€ Helper â”€â”€
         private static PermissionsDto DeserializePermissions(string json)
         {
             try

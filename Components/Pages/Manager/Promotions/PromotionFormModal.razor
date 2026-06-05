@@ -1,4 +1,4 @@
-@using SmartPOS.Shared.DTOs.Promotions
+﻿@using SmartPOS.Shared.DTOs.Promotions
 @using SmartPOS.Shared.Interfaces
 @using SmartPOS.Shared.Common
 @using SmartPOS.Shared.Enums
@@ -196,8 +196,8 @@
     private decimal MinOrderValue;
     private int MaxUsageLimit = 100;
     private bool IsActive = true;
-    private DateTime ValidFrom;
-    private DateTime ValidTo;
+    private DateOnly ValidFrom;
+    private DateOnly ValidTo;
 
     public void OpenCreate()
     {
@@ -217,10 +217,10 @@
         DiscountType = p.DiscountType;
         Value = p.Value;
         MinOrderValue = p.MinOrderValue;
-        MaxUsageLimit = p.MaxUsageLimit;
+        MaxUsageLimit = p.MaxUsageLimit ?? 100;
         IsActive = p.IsActive;
-        ValidFrom = p.ValidFrom.Date;
-        ValidTo = p.ValidTo.Date;
+        ValidFrom = p.ValidFrom;
+        ValidTo = p.ValidTo;
         ShowErrors = false;
         ErrorMessage = "";
         IsVisible = true;
@@ -236,7 +236,7 @@
         MinOrderValue = 0;
         MaxUsageLimit = 100;
         IsActive = true;
-        var now = DateTime.UtcNow.Date;
+        var now = DateOnly.FromDateTime(DateTime.UtcNow);
         ValidFrom = now;
         ValidTo = now.AddDays(30);
         ShowErrors = false;

@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using SmartPOS.Shared.Common;
@@ -108,7 +108,7 @@ namespace SmartPOS.Web.Services.Shahzain
                         ItemCode = $"ITEM-{item.ProductId}",
                         ItemName = item.ProductName,
                         Quantity = item.Quantity,
-                        PCTCode = "99.00.0000",  // Default HS code — should be configured per product
+                        PCTCode = "99.00.0000",  // Default HS code â€” should be configured per product
                         TaxRate = GST_RATE * 100,
                         SaleValue = item.LineTotal,
                         TotalAmount = item.LineTotal,
@@ -209,7 +209,7 @@ namespace SmartPOS.Web.Services.Shahzain
 
                 var statusDescription = string.IsNullOrWhiteSpace(message)
                     ? $"Invoice {invoiceRef}: Status = {status}"
-                    : $"Invoice {invoiceRef}: Status = {status} — {message}";
+                    : $"Invoice {invoiceRef}: Status = {status} â€” {message}";
 
                 return ApiResponse<string>.Ok(statusDescription, "Tax status retrieved successfully.");
             }
@@ -223,9 +223,9 @@ namespace SmartPOS.Web.Services.Shahzain
             }
         }
 
-        // ────────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  Private Helper Methods
-        // ────────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Generates a Unique Sale Identification Number (USIN) for FBR.

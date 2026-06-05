@@ -1,8 +1,8 @@
-using BCrypt.Net;
+﻿using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 using SmartPOS.Shared.Enums;
 
 namespace SmartPOS.Web.Data;

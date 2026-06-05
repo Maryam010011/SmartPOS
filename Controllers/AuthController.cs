@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Auth;
 using SmartPOS.Shared.Interfaces;

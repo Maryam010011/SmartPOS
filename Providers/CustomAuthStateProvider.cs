@@ -1,4 +1,4 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -20,7 +20,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     {
         try
         {
-            // During SSR pre-rendering, JS interop is unavailable — return anonymous gracefully
+            // During SSR pre-rendering, JS interop is unavailable â€” return anonymous gracefully
             var token = await _localStorage.GetItemAsync<string>("authToken");
 
             if (string.IsNullOrWhiteSpace(token))
@@ -32,7 +32,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         }
         catch
         {
-            // JS interop not yet available (pre-rendering phase) — safe fallback
+            // JS interop not yet available (pre-rendering phase) â€” safe fallback
             return _anonymous;
         }
     }

@@ -12,6 +12,7 @@ public partial class Customer
     public string? Phone { get; set; }
     public DateOnly? DateOfBirth { get; set; }
     public string? Address { get; set; }
+    public bool IsActive { get; set; } = true;
     public int LoyaltyPoints { get; set; }
     public decimal TotalSpent { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -19,4 +20,5 @@ public partial class Customer
     public virtual User User { get; set; } = null!;
     public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public virtual ICollection<LoyaltyTransaction> LoyaltyTransactions { get; set; } = new List<LoyaltyTransaction>();
 }

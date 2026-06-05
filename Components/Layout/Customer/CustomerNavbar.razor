@@ -1,4 +1,4 @@
-@namespace SmartPOS.Components.Layout
+﻿@namespace SmartPOS.Components.Layout
 @inject NavigationManager Nav
 
 <header class="smartpos-navbar customer-navbar" id="customer-navbar">
@@ -6,7 +6,7 @@
 
         <!-- Brand -->
         <a class="navbar-brand" href="/customer/home">
-            <span class="brand-icon">🥐</span>
+            <span class="brand-icon">ðŸ¥</span>
             <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
             <span class="brand-role-tag customer-tag">Shop</span>
         </a>
@@ -14,23 +14,23 @@
         <!-- Desktop Nav Links -->
         <nav class="navbar-links" aria-label="Customer navigation">
             <a class="nav-link @(IsActive("/customer/home"))"          href="/customer/home">
-                <span class="nav-icon">🏠</span><span>Home</span>
+                <span class="nav-icon">ðŸ </span><span>Home</span>
             </a>
             <a class="nav-link @(IsActive("/customer/shop"))"          href="/customer/shop">
-                <span class="nav-icon">🛍️</span><span>Shop</span>
+                <span class="nav-icon">ðŸ›ï¸</span><span>Shop</span>
             </a>
             <a class="nav-link @(IsActive("/customer/cart"))"          href="/customer/cart">
-                <span class="nav-icon">🛒</span><span>Cart</span>
+                <span class="nav-icon">ðŸ›’</span><span>Cart</span>
                 @if (CartCount > 0)
                 {
                     <span class="cart-badge">@(CartCount > 9 ? "9+" : CartCount.ToString())</span>
                 }
             </a>
             <a class="nav-link @(IsActive("/customer/order-history"))" href="/customer/order-history">
-                <span class="nav-icon">📋</span><span>Orders</span>
+                <span class="nav-icon">ðŸ“‹</span><span>Orders</span>
             </a>
             <a class="nav-link @(IsActive("/customer/reviews"))"       href="/customer/reviews">
-                <span class="nav-icon">⭐</span><span>Reviews</span>
+                <span class="nav-icon">â­</span><span>Reviews</span>
             </a>
         </nav>
 
@@ -53,11 +53,11 @@
     @if (_mobileOpen)
     {
         <nav class="mobile-menu" aria-label="Customer mobile navigation">
-            <a class="mobile-link @(IsActive("/customer/home"))"          href="/customer/home"          @onclick="CloseMobile">🏠 Home</a>
-            <a class="mobile-link @(IsActive("/customer/shop"))"          href="/customer/shop"          @onclick="CloseMobile">🛍️ Shop</a>
-            <a class="mobile-link @(IsActive("/customer/cart"))"          href="/customer/cart"          @onclick="CloseMobile">🛒 Cart @(CartCount > 0 ? $"({CartCount})" : "")</a>
-            <a class="mobile-link @(IsActive("/customer/order-history"))" href="/customer/order-history" @onclick="CloseMobile">📋 Orders</a>
-            <a class="mobile-link @(IsActive("/customer/reviews"))"       href="/customer/reviews"       @onclick="CloseMobile">⭐ Reviews</a>
+            <a class="mobile-link @(IsActive("/customer/home"))"          href="/customer/home"          @onclick="CloseMobile">ðŸ  Home</a>
+            <a class="mobile-link @(IsActive("/customer/shop"))"          href="/customer/shop"          @onclick="CloseMobile">ðŸ›ï¸ Shop</a>
+            <a class="mobile-link @(IsActive("/customer/cart"))"          href="/customer/cart"          @onclick="CloseMobile">ðŸ›’ Cart @(CartCount > 0 ? $"({CartCount})" : "")</a>
+            <a class="mobile-link @(IsActive("/customer/order-history"))" href="/customer/order-history" @onclick="CloseMobile">ðŸ“‹ Orders</a>
+            <a class="mobile-link @(IsActive("/customer/reviews"))"       href="/customer/reviews"       @onclick="CloseMobile">â­ Reviews</a>
         </nav>
     }
 </header>
@@ -138,7 +138,7 @@
         margin-left: 2px;
     }
 
-    /* ── Shared base styles ─────────────────────────────── */
+    /* â”€â”€ Shared base styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .smartpos-navbar {
         position: sticky;
         top: 0;

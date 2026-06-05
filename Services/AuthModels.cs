@@ -1,4 +1,4 @@
-namespace SmartPOS.Services.MaryamJ;
+﻿namespace SmartPOS.Services.MaryamJ;
 
 public class LoginResult
 {

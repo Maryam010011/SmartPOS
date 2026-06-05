@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using SmartPOS.Shared.Enums;
 
 namespace SmartPOS.Models;

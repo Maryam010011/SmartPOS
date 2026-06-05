@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -9,8 +9,8 @@ using SmartPOS.Shared.DTOs.AuditLogs;
 using SmartPOS.Shared.DTOs.Users;
 using SmartPOS.Shared.Enums;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace SmartPOS.Services.MaryamJ

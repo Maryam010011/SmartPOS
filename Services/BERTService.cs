@@ -1,11 +1,11 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Reviews;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
+using SmartPOS.Data;
 
 namespace SmartPOS.Web.Services.Shahzain
 {
@@ -151,9 +151,9 @@ namespace SmartPOS.Web.Services.Shahzain
             }
         }
 
-        // ────────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  Private Helper Methods
-        // ────────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Parses the HuggingFace Inference API response and maps the
@@ -162,9 +162,9 @@ namespace SmartPOS.Web.Services.Shahzain
         /// <remarks>
         /// The nlptown/bert-base-multilingual-uncased-sentiment model returns
         /// labels like "1 star" through "5 stars". This method maps:
-        /// - 4-5 stars → Positive
-        /// - 3 stars → Neutral
-        /// - 1-2 stars → Negative
+        /// - 4-5 stars â†’ Positive
+        /// - 3 stars â†’ Neutral
+        /// - 1-2 stars â†’ Negative
         ///
         /// For other models that return POSITIVE/NEGATIVE/NEUTRAL directly,
         /// the labels are normalized to title case.

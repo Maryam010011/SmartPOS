@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Promotions;
 using SmartPOS.Shared.Enums;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 
 namespace SmartPOS.Services.MaryamJ;
 
@@ -18,7 +18,7 @@ public class PromotionService : IPromotionService
         _context = context;
     }
 
-    // ── Shahzain's Sales module compatibility methods ──
+    // â”€â”€ Shahzain's Sales module compatibility methods â”€â”€
 
     public async Task<ApiResponse<PromotionDto>> GetByCode(string code)
     {
@@ -100,7 +100,7 @@ public class PromotionService : IPromotionService
         return await DeletePromotion(id);
     }
 
-    // ── MaryamJ's Promotion module methods ──
+    // â”€â”€ MaryamJ's Promotion module methods â”€â”€
 
     public async Task<ApiResponse<List<PromotionDto>>> GetAllPromotions()
     {
@@ -321,7 +321,7 @@ public class PromotionService : IPromotionService
                     ErrorMessage = "This promo code is currently inactive."
                 });
 
-            var now = DateTime.UtcNow;
+            var now = DateOnly.FromDateTime(DateTime.UtcNow);
             if (now < promotion.ValidFrom)
                 return ApiResponse<PromoValidationResult>.Ok(new PromoValidationResult
                 {
@@ -418,7 +418,7 @@ public class PromotionService : IPromotionService
                 .GroupBy(s => s.SaleDate.Date)
                 .Select(g => new DailyUsageStat
                 {
-                    Date = g.Key,
+                    Date = DateOnly.FromDateTime(g.Key),
                     UsageCount = g.Count(),
                     TotalDiscount = g.Sum(s => s.DiscountAmount),
                     TotalRevenue = g.Sum(s => s.TotalAmount)
@@ -446,9 +446,9 @@ public class PromotionService : IPromotionService
      {
          try
          {
-             var now = DateTime.UtcNow;
-             var activePromotions = await _context.Promotions
-                 .Where(p => p.IsActive && now >= p.ValidFrom && now <= p.ValidTo && p.UsageCount < p.MaxUsageLimit)
+              var now = DateOnly.FromDateTime(DateTime.UtcNow);
+              var activePromotions = await _context.Promotions
+                  .Where(p => p.IsActive && now >= p.ValidFrom && now <= p.ValidTo && p.UsageCount < p.MaxUsageLimit)
                  .OrderBy(p => p.ValidTo)
                  .ToListAsync();
 
@@ -461,7 +461,7 @@ public class PromotionService : IPromotionService
          }
      }
 
-     // ── Helpers ──
+     // â”€â”€ Helpers â”€â”€
 
     private static string GeneratePromoCode()
     {

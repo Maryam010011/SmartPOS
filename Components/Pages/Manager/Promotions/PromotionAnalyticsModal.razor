@@ -1,4 +1,4 @@
-@using SmartPOS.Shared.DTOs.Promotions
+﻿@using SmartPOS.Shared.DTOs.Promotions
 @using SmartPOS.Shared.Interfaces
 @using SmartPOS.Shared.Common
 @inject IPromotionService PromotionService
@@ -222,12 +222,12 @@
 
         // Get last 30 days of data
         var last30Days = Enumerable.Range(0, 30)
-            .Select(i => DateTime.Today.AddDays(-29 + i).Date)
+            .Select(i => DateOnly.FromDateTime(DateTime.Today.AddDays(-29 + i)))
             .ToList();
 
         // Create a dictionary for lookup
         var usageDict = Analytics.DailyUsageList
-            .GroupBy(d => d.Date.Date)
+            .GroupBy(d => d.Date)
             .ToDictionary(g => g.Key, g => g.Sum(x => x.UsageCount));
 
         // Build chart data
@@ -254,7 +254,7 @@
             .Take(10)
             .Select(d => new RecentSaleEntry
             {
-                Date = d.Date,
+                Date = d.Date.ToDateTime(TimeOnly.MinValue),
                 OrderId = d.UsageCount,
                 Discount = d.TotalDiscount,
                 Total = d.TotalRevenue

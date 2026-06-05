@@ -1,4 +1,4 @@
-@page "/admin/roles"
+﻿@page "/admin/roles"
 @layout AdminLayout
 @using SmartPOS.Shared.DTOs.Roles
 @using SmartPOS.Shared.Interfaces
@@ -16,10 +16,10 @@
                 <span class="toast-icon">
                     @switch (ToastType)
                     {
-                        case "success": <text>✅</text>; break;
-                        case "error": <text>❌</text>; break;
-                        case "warning": <text>⚠️</text>; break;
-                        default: <text>ℹ️</text>; break;
+                        case "success": <text>âœ…</text>; break;
+                        case "error": <text>âŒ</text>; break;
+                        case "warning": <text>âš ï¸</text>; break;
+                        default: <text>â„¹ï¸</text>; break;
                     }
                 </span>
                 <span class="toast-body">@ToastMessage</span>
@@ -166,7 +166,7 @@
                                             <button class="btn btn-sm @(role.UserCount > 0 ? "btn-outline-danger" : "btn-outline-danger") fw-semibold"
                                                     @onclick="() => PromptDelete(role)"
                                                     disabled="@(role.UserCount > 0)"
-                                                    title="@(role.UserCount > 0 ? "Cannot delete — users are assigned to this role" : "Delete role")">
+                                                    title="@(role.UserCount > 0 ? "Cannot delete â€” users are assigned to this role" : "Delete role")">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                                                     <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.18a.5.5 0 0 0-.548.436l-.5 8.5a.5.5 0 1 0 .996.06l.5-8.5a.5.5 0 0 0-.436-.548M6.165 5.25a.5.5 0 0 0-.93.244l.15 8.5a.5.5 0 1 0 .99-.017l-.15-8.5z"/>
                                                 </svg>
@@ -377,7 +377,7 @@
         };
     }
 
-    // ── Add Role ──
+    // â”€â”€ Add Role â”€â”€
     private void OpenAddModal()
     {
         NewRoleName = string.Empty;
@@ -432,7 +432,7 @@
         }
     }
 
-    // ── Inline Edit Name ──
+    // â”€â”€ Inline Edit Name â”€â”€
     private void StartEditName(RoleDto role)
     {
         EditingRoleId = role.Id;
@@ -504,7 +504,7 @@
         }
     }
 
-    // ── Delete ──
+    // â”€â”€ Delete â”€â”€
     private void PromptDelete(RoleDto role)
     {
         DeleteTarget = role;
@@ -551,13 +551,13 @@
         }
     }
 
-    // ── Navigation ──
+    // â”€â”€ Navigation â”€â”€
     private void NavigateToPermissions(int roleId)
     {
         Navigation.NavigateTo($"/admin/roles/{roleId}/permissions");
     }
 
-    // ── Toast ──
+    // â”€â”€ Toast â”€â”€
     private void ShowToast(string type, string message)
     {
         ToastType = type;
@@ -570,7 +570,7 @@
         ToastMessage = string.Empty;
     }
 
-    // ── Summary Model ──
+    // â”€â”€ Summary Model â”€â”€
     private class RoleSummary
     {
         public bool IsFullAccess { get; set; }

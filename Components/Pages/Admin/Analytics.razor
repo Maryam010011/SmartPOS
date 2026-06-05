@@ -1,4 +1,4 @@
-@page "/admin/analytics"
+﻿@page "/admin/analytics"
 @rendermode @(Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer)
 @layout AdminLayout
 @using SmartPOS.Shared.DTOs.Weather
@@ -6,11 +6,11 @@
 @inject ISaleService SaleService
 @inject IWeatherService WeatherService
 
-<PageTitle>Analytics — SmartPOS+</PageTitle>
+<PageTitle>Analytics â€” SmartPOS+</PageTitle>
 
 <div class="analytics-page">
 
-    <!-- ── Page Header ─────────────────────────────────────────────── -->
+    <!-- â”€â”€ Page Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <header class="page-header">
         <div class="page-title">
             <h1>Sales Analytics</h1>
@@ -29,23 +29,23 @@
                 }
                 else
                 {
-                    <span class="icon-refresh">↻</span>
+                    <span class="icon-refresh">â†»</span>
                     <span>Refresh</span>
                 }
             </button>
         </div>
     </header>
 
-    <!-- ── Status Alert ────────────────────────────────────────────── -->
+    <!-- â”€â”€ Status Alert â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     @if (!string.IsNullOrWhiteSpace(statusMessage))
     {
         <div class="alert @(isStatusSuccess ? "alert-success" : "alert-error")">
             <span>@statusMessage</span>
-            <button class="btn btn-text" @onclick="ClearStatus">✕</button>
+            <button class="btn btn-text" @onclick="ClearStatus">âœ•</button>
         </div>
     }
 
-    <!-- ── Filter Bar ──────────────────────────────────────────────── -->
+    <!-- â”€â”€ Filter Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="filter-bar">
         <div class="filter-group">
             <span class="filter-label">Period Preset</span>
@@ -106,17 +106,17 @@
         </div>
     </section>
 
-    <!-- ── KPI Cards + Weather ──────────────────────────────────────── -->
+    <!-- â”€â”€ KPI Cards + Weather â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="kpi-grid">
 
         <!-- Total Revenue -->
         <div class="kpi-card kpi-revenue">
-            <div class="kpi-icon-wrap">₨</div>
+            <div class="kpi-icon-wrap">â‚¨</div>
             <div class="kpi-content">
                 <span class="kpi-label">Total Revenue</span>
                 @if (isLoading)
                 {
-                    <span class="kpi-value kpi-skeleton">——</span>
+                    <span class="kpi-value kpi-skeleton">â€”â€”</span>
                 }
                 else
                 {
@@ -133,7 +133,7 @@
                 <span class="kpi-label">Total Transactions</span>
                 @if (isLoading)
                 {
-                    <span class="kpi-value kpi-skeleton">——</span>
+                    <span class="kpi-value kpi-skeleton">â€”â€”</span>
                 }
                 else
                 {
@@ -145,12 +145,12 @@
 
         <!-- Average Order Value -->
         <div class="kpi-card kpi-aov">
-            <div class="kpi-icon-wrap">⌀</div>
+            <div class="kpi-icon-wrap">âŒ€</div>
             <div class="kpi-content">
                 <span class="kpi-label">Avg. Order Value</span>
                 @if (isLoading)
                 {
-                    <span class="kpi-value kpi-skeleton">——</span>
+                    <span class="kpi-value kpi-skeleton">â€”â€”</span>
                 }
                 else
                 {
@@ -162,12 +162,12 @@
 
         <!-- Chart Intervals -->
         <div class="kpi-card kpi-intervals">
-            <div class="kpi-icon-wrap">≡</div>
+            <div class="kpi-icon-wrap">â‰¡</div>
             <div class="kpi-content">
                 <span class="kpi-label">Chart Intervals</span>
                 @if (isLoading)
                 {
-                    <span class="kpi-value kpi-skeleton">——</span>
+                    <span class="kpi-value kpi-skeleton">â€”â€”</span>
                 }
                 else
                 {
@@ -183,23 +183,23 @@
             {
                 <div class="weather-loading">
                     <span class="spinner"></span>
-                    <span>Fetching weather…</span>
+                    <span>Fetching weatherâ€¦</span>
                 </div>
             }
             else if (weather != null)
             {
                 <div class="weather-city-row">
-                    <span class="weather-icon">🌤</span>
+                    <span class="weather-icon">ðŸŒ¤</span>
                     <span class="weather-city">@weather.City</span>
                 </div>
-                <div class="weather-temp">@weather.Temperature.ToString("F1")°C</div>
+                <div class="weather-temp">@weather.Temperature.ToString("F1")Â°C</div>
                 <div class="weather-condition">@weather.Condition</div>
                 <div class="weather-fetched">Updated @weather.FetchedAt.ToLocalTime().ToString("hh:mm tt")</div>
             }
             else
             {
                 <div class="weather-city-row">
-                    <span class="weather-icon">🌤</span>
+                    <span class="weather-icon">ðŸŒ¤</span>
                     <span class="weather-city">Local Store</span>
                 </div>
                 <div class="weather-unavailable">Weather service unavailable</div>
@@ -208,7 +208,7 @@
 
     </section>
 
-    <!-- ── Revenue Trend Chart ──────────────────────────────────────── -->
+    <!-- â”€â”€ Revenue Trend Chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="card chart-card">
         <div class="card-header">
             <div>
@@ -221,7 +221,7 @@
             <div class="chart-legend">
                 <span class="legend-dot legend-revenue"></span>
                 <span>Revenue (PKR)</span>
-                <span class="legend-sep">·</span>
+                <span class="legend-sep">Â·</span>
                 <span class="legend-dot legend-txns"></span>
                 <span>Transactions</span>
             </div>
@@ -231,7 +231,7 @@
             {
                 <div class="loading-state">
                     <span class="spinner"></span>
-                    <span>Building chart data…</span>
+                    <span>Building chart dataâ€¦</span>
                 </div>
             }
             else if (analytics == null || !analytics.ChartData.Any())
@@ -287,7 +287,7 @@
                                   fill="var(--color-button-primary)"
                                   opacity="0.82"
                                   class="chart-bar">
-                                <title>@pt.Label — PKR @pt.Revenue.ToString("N2") · @pt.Transactions txns</title>
+                                <title>@pt.Label â€” PKR @pt.Revenue.ToString("N2") Â· @pt.Transactions txns</title>
                             </rect>
 
                             <!-- Transactions dot overlay -->
@@ -295,7 +295,7 @@
                                     cy="@((CH - ((double)pt.Transactions / (double)maxTxn * CH)).ToString("F1"))"
                                     r="3.5" fill="var(--color-navbar-bg)" opacity="0.7"
                                     class="chart-dot">
-                                <title>@pt.Label — @pt.Transactions transactions</title>
+                                <title>@pt.Label â€” @pt.Transactions transactions</title>
                             </circle>
 
                             <!-- X-axis Labels (only when few points) -->
@@ -332,7 +332,7 @@
         </div>
     </section>
 
-    <!-- ── Bottom Row: Top Products + Period Breakdown ──────────────── -->
+    <!-- â”€â”€ Bottom Row: Top Products + Period Breakdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <div class="bottom-grid">
 
         <!-- Top Products -->
@@ -340,7 +340,7 @@
             <div class="card-header">
                 <div>
                     <h2>Top Products</h2>
-                    <p class="card-subtitle">Ranked by units sold — top 10</p>
+                    <p class="card-subtitle">Ranked by units sold â€” top 10</p>
                 </div>
                 @if (!isLoadingSales && topProducts.Any())
                 {
@@ -352,7 +352,7 @@
                 {
                     <div class="loading-state">
                         <span class="spinner"></span>
-                        <span>Aggregating product sales…</span>
+                        <span>Aggregating product salesâ€¦</span>
                     </div>
                 }
                 else if (!topProducts.Any())
@@ -415,7 +415,7 @@
                 {
                     <div class="loading-state">
                         <span class="spinner"></span>
-                        <span>Loading breakdown…</span>
+                        <span>Loading breakdownâ€¦</span>
                     </div>
                 }
                 else if (analytics == null || !analytics.ChartData.Any())
@@ -467,7 +467,7 @@
 
 @code {
 
-    // ── State ──────────────────────────────────────────────────────────
+    // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private SaleAnalyticsDto?   analytics;
     private WeatherDto?         weather;
     private List<TopProductRow> topProducts = new();
@@ -490,10 +490,10 @@
     private string?   statusMessage;
     private bool      isStatusSuccess;
 
-    // ── Lifecycle ──────────────────────────────────────────────────────
+    // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     protected override async Task OnInitializedAsync()
     {
-        // Fire all three data loads concurrently — never block on each other
+        // Fire all three data loads concurrently â€” never block on each other
         await Task.WhenAll(
             LoadAnalyticsAsync(),
             LoadWeatherAsync(),
@@ -502,7 +502,7 @@
         lastRefreshed = DateTime.UtcNow;
     }
 
-    // ── Data Loaders ───────────────────────────────────────────────────
+    // â”€â”€ Data Loaders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private async Task LoadAnalyticsAsync()
     {
@@ -555,7 +555,7 @@
         isLoadingSales = false;
     }
 
-    // ── User Actions ───────────────────────────────────────────────────
+    // â”€â”€ User Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private async Task RefreshAsync()
     {
@@ -654,7 +654,7 @@
 
     private void ClearStatus() => statusMessage = null;
 
-    // ── Inner record ──────────────────────────────────────────────────
+    // â”€â”€ Inner record â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private sealed class TopProductRow
     {
         public string  ProductName   { get; set; } = string.Empty;
@@ -665,12 +665,12 @@
 
 <style>
 
-    /* ═══════════════════════════════════════════════════════════
-       Analytics Page — SmartPOS+ Bakery Theme
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       Analytics Page â€” SmartPOS+ Bakery Theme
        All colors reference tokens from wwwroot/css/colors.css
-       ═══════════════════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-    /* ── Page Shell ──────────────────────────────────────────── */
+    /* â”€â”€ Page Shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .analytics-page {
         display: flex;
         flex-direction: column;
@@ -682,7 +682,7 @@
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
-    /* ── Page Header ─────────────────────────────────────────── */
+    /* â”€â”€ Page Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .page-header {
         display: flex;
         justify-content: space-between;
@@ -728,7 +728,7 @@
         transform: rotate(180deg);
     }
 
-    /* ── Alerts ──────────────────────────────────────────────── */
+    /* â”€â”€ Alerts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .alert {
         display: flex;
         justify-content: space-between;
@@ -742,7 +742,7 @@
     .alert-success { border-color: var(--color-accent); }
     .alert-error   { border-color: var(--color-navbar-bg); }
 
-    /* ── Filter Bar ──────────────────────────────────────────── */
+    /* â”€â”€ Filter Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .filter-bar {
         display: flex;
         align-items: flex-end;
@@ -823,7 +823,7 @@
         align-items: center;
     }
 
-    /* ── Buttons ─────────────────────────────────────────────── */
+    /* â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .btn {
         display: inline-flex;
         align-items: center;
@@ -878,7 +878,7 @@
         cursor: not-allowed;
     }
 
-    /* ── KPI Grid ────────────────────────────────────────────── */
+    /* â”€â”€ KPI Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .kpi-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
@@ -960,7 +960,7 @@
         margin-top: 0.1rem;
     }
 
-    /* ── Weather Card Specifics ───────────────────────────────── */
+    /* â”€â”€ Weather Card Specifics â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .kpi-weather {
         background: linear-gradient(140deg, var(--color-card-bg) 0%, rgba(196,132,138,0.06) 100%);
     }
@@ -1015,7 +1015,7 @@
         font-style: italic;
     }
 
-    /* ── Cards ───────────────────────────────────────────────── */
+    /* â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .card {
         background-color: var(--color-card-bg);
         border: 1px solid var(--color-border-accent);
@@ -1067,7 +1067,7 @@
         white-space: nowrap;
     }
 
-    /* ── Chart ───────────────────────────────────────────────── */
+    /* â”€â”€ Chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .chart-legend {
         display: flex;
         align-items: center;
@@ -1112,14 +1112,14 @@
     }
     .chart-dot:hover { r: 5; }
 
-    /* ── Bottom Grid ─────────────────────────────────────────── */
+    /* â”€â”€ Bottom Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .bottom-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
         gap: 1.5rem;
     }
 
-    /* ── Tables ──────────────────────────────────────────────── */
+    /* â”€â”€ Tables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .table {
         width: 100%;
         border-collapse: collapse;
@@ -1227,7 +1227,7 @@
         scrollbar-color: var(--color-border-accent) transparent;
     }
 
-    /* ── Loading / Empty States ──────────────────────────────── */
+    /* â”€â”€ Loading / Empty States â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .loading-state,
     .empty-state {
         display: flex;
@@ -1240,7 +1240,7 @@
         opacity: 0.65;
     }
 
-    /* ── Spinner ─────────────────────────────────────────────── */
+    /* â”€â”€ Spinner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .spinner {
         display: inline-block;
         width: 14px; height: 14px;
@@ -1251,7 +1251,7 @@
         flex-shrink: 0;
     }
 
-    /* ── Keyframes ───────────────────────────────────────────── */
+    /* â”€â”€ Keyframes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     @@keyframes spin {
         to { transform: rotate(360deg); }
     }

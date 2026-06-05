@@ -1,4 +1,4 @@
-@namespace SmartPOS.Components.Layout
+﻿@namespace SmartPOS.Components.Layout
 @inject NavigationManager Nav
 
 <header class="smartpos-navbar manager-navbar" id="manager-navbar">
@@ -6,7 +6,7 @@
 
         <!-- Brand -->
         <a class="navbar-brand" href="/manager/inventory">
-            <span class="brand-icon">🥐</span>
+            <span class="brand-icon">ðŸ¥</span>
             <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
             <span class="brand-role-tag manager-tag">Manager</span>
         </a>
@@ -14,13 +14,13 @@
         <!-- Desktop Nav Links -->
         <nav class="navbar-links" aria-label="Manager navigation">
             <a class="nav-link @(IsActive("/manager/inventory"))"      href="/manager/inventory">
-                <span class="nav-icon">📦</span><span>Inventory</span>
+                <span class="nav-icon">ðŸ“¦</span><span>Inventory</span>
             </a>
             <a class="nav-link @(IsActive("/manager/low-stock"))"      href="/manager/low-stock">
-                <span class="nav-icon">⚠️</span><span>Low Stock</span>
+                <span class="nav-icon">âš ï¸</span><span>Low Stock</span>
             </a>
             <a class="nav-link @(IsActive("/manager/purchase-orders"))" href="/manager/purchase-orders">
-                <span class="nav-icon">🛒</span><span>Purchase Orders</span>
+                <span class="nav-icon">ðŸ›’</span><span>Purchase Orders</span>
             </a>
         </nav>
 
@@ -43,9 +43,9 @@
     @if (_mobileOpen)
     {
         <nav class="mobile-menu" aria-label="Manager mobile navigation">
-            <a class="mobile-link @(IsActive("/manager/inventory"))"       href="/manager/inventory"       @onclick="CloseMobile">📦 Inventory</a>
-            <a class="mobile-link @(IsActive("/manager/low-stock"))"       href="/manager/low-stock"       @onclick="CloseMobile">⚠️ Low Stock</a>
-            <a class="mobile-link @(IsActive("/manager/purchase-orders"))" href="/manager/purchase-orders" @onclick="CloseMobile">🛒 Purchase Orders</a>
+            <a class="mobile-link @(IsActive("/manager/inventory"))"       href="/manager/inventory"       @onclick="CloseMobile">ðŸ“¦ Inventory</a>
+            <a class="mobile-link @(IsActive("/manager/low-stock"))"       href="/manager/low-stock"       @onclick="CloseMobile">âš ï¸ Low Stock</a>
+            <a class="mobile-link @(IsActive("/manager/purchase-orders"))" href="/manager/purchase-orders" @onclick="CloseMobile">ðŸ›’ Purchase Orders</a>
         </nav>
     }
 </header>
@@ -108,7 +108,7 @@
         background: rgba(138,159,196,0.14) !important;
     }
 
-    /* ── Shared Navbar base (copied from Admin for isolation) ── */
+    /* â”€â”€ Shared Navbar base (copied from Admin for isolation) â”€â”€ */
     .smartpos-navbar {
         position: sticky;
         top: 0;

@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Customers;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 
 namespace SmartPOS.Services.MaryamJ;
 
@@ -125,7 +125,7 @@ public class CustomerService : ICustomerService
                         Id = s.Id,
                         SaleDate = s.SaleDate,
                         TotalAmount = s.TotalAmount,
-                        Status = s.Status,
+                    Status = s.Status.ToString(),
                         ItemCount = s.SaleItems?.Count ?? 0
                     })
                     .ToList(),
@@ -357,7 +357,7 @@ public class CustomerService : ICustomerService
                     Id = s.Id,
                     SaleDate = s.SaleDate,
                     TotalAmount = s.TotalAmount,
-                    Status = s.Status,
+                    Status = s.Status.ToString(),
                     ItemCount = s.SaleItems.Count
                 })
                 .ToListAsync();

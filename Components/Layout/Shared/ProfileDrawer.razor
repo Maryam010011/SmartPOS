@@ -1,4 +1,4 @@
-@namespace SmartPOS.Components.Layout
+﻿@namespace SmartPOS.Components.Layout
 @inject NavigationManager Nav
 
 <!-- Overlay -->
@@ -50,18 +50,18 @@
         <div class="drawer-section-label">Quick Actions</div>
         <nav class="drawer-nav">
             <a class="drawer-nav-item" href="@DashboardRoute">
-                <span class="nav-item-icon">🏠</span>
+                <span class="nav-item-icon">ðŸ </span>
                 <span>Dashboard</span>
             </a>
             @if (!string.IsNullOrEmpty(SettingsRoute))
             {
                 <a class="drawer-nav-item" href="@SettingsRoute">
-                    <span class="nav-item-icon">⚙️</span>
+                    <span class="nav-item-icon">âš™ï¸</span>
                     <span>Settings</span>
                 </a>
             }
             <button class="drawer-nav-item danger-item" @onclick="SignOut">
-                <span class="nav-item-icon">🚪</span>
+                <span class="nav-item-icon">ðŸšª</span>
                 <span>Sign Out</span>
             </button>
         </nav>
@@ -69,7 +69,7 @@
 
     <!-- Footer -->
     <div class="drawer-footer">
-        <span class="drawer-app-name">🥐 SmartPOS<span class="drawer-plus">+</span></span>
+        <span class="drawer-app-name">ðŸ¥ SmartPOS<span class="drawer-plus">+</span></span>
         <span class="drawer-version">v1.0</span>
     </div>
 
@@ -100,7 +100,7 @@
 }
 
 <style>
-    /* ── Overlay ────────────────────────────────────────────── */
+    /* â”€â”€ Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .drawer-overlay {
         position: fixed;
         inset: 0;
@@ -115,7 +115,7 @@
         to   { opacity: 1; }
     }
 
-    /* ── Drawer Panel ────────────────────────────────────────── */
+    /* â”€â”€ Drawer Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .profile-drawer {
         position: fixed;
         top: 0;
@@ -136,7 +136,7 @@
         transform: translateX(0);
     }
 
-    /* ── Drawer Header ───────────────────────────────────────── */
+    /* â”€â”€ Drawer Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .drawer-header {
         background: var(--drawer-header-bg, #3D1C02);
         color: var(--drawer-header-text, #FFF8DC);
@@ -221,7 +221,7 @@
         color: #FFF8DC;
     }
 
-    /* ── Drawer Body ─────────────────────────────────────────── */
+    /* â”€â”€ Drawer Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .drawer-body {
         flex: 1;
         overflow-y: auto;
@@ -317,7 +317,7 @@
         background: rgba(196, 74, 74, 0.08);
     }
 
-    /* ── Drawer Footer ───────────────────────────────────────── */
+    /* â”€â”€ Drawer Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .drawer-footer {
         padding: 0.85rem 1.25rem;
         border-top: 1px solid var(--surface-border, rgba(61,28,2,0.09));

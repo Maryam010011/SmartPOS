@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartPOS.Migrations
 {
     /// <inheritdoc />
-    public partial class FullDatabaseSetup : Migration
+    public partial class InitialFullDatabaseSetup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

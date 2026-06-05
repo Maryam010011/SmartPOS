@@ -1,4 +1,4 @@
-// TEMPORARY STUB — Replace with real InventoryService once MaryamY's database layer is merged
+﻿// TEMPORARY STUB â€” Replace with real InventoryService once MaryamY's database layer is merged
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using SmartPOS.Shared.Common;

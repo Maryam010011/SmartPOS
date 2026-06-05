@@ -1,4 +1,4 @@
-@page "/admin/customers"
+﻿@page "/admin/customers"
 @layout AdminLayout
 @using SmartPOS.Shared.DTOs.Customers
 @using SmartPOS.Shared.Interfaces
@@ -16,9 +16,9 @@
                 <span class="toast-icon">
                     @switch (ToastType)
                     {
-                        case "success": <text>✅</text>; break;
-                        case "error": <text>❌</text>; break;
-                        default: <text>ℹ️</text>; break;
+                        case "success": <text>âœ…</text>; break;
+                        case "error": <text>âŒ</text>; break;
+                        default: <text>â„¹ï¸</text>; break;
                     }
                 </span>
                 <span class="toast-body">@ToastMessage</span>
@@ -151,11 +151,11 @@
                                     <td>
                                         @if (c.IsActive)
                                         {
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1.5 rounded-pill">● Active</span>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1.5 rounded-pill">â— Active</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1.5 rounded-pill">● Inactive</span>
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1.5 rounded-pill">â— Inactive</span>
                                         }
                                     </td>
                                     <td class="text-end" style="padding-right: 20px;">

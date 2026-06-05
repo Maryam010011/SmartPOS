@@ -1,12 +1,12 @@
-@page "/admin/sentiment"
+﻿@page "/admin/sentiment"
 @rendermode @(Microsoft.AspNetCore.Components.Web.RenderMode.InteractiveServer)
 @layout AdminLayout
 
-<PageTitle>Sentiment & Reviews — SmartPOS+</PageTitle>
+<PageTitle>Sentiment & Reviews â€” SmartPOS+</PageTitle>
 
 <div class="sentiment-page">
 
-    <!-- ── Page Header ─────────────────────────────────────────────── -->
+    <!-- â”€â”€ Page Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <header class="page-header">
         <div class="page-title">
             <h1>Customer Sentiment &amp; Reviews</h1>
@@ -21,37 +21,37 @@
                 @if (isLoading)
                 {
                     <span class="spinner"></span>
-                    <span>Refreshing…</span>
+                    <span>Refreshingâ€¦</span>
                 }
                 else
                 {
-                    <span class="icon-refresh">↻</span>
+                    <span class="icon-refresh">â†»</span>
                     <span>Refresh</span>
                 }
             </button>
         </div>
     </header>
 
-    <!-- ── Status Alert ────────────────────────────────────────────── -->
+    <!-- â”€â”€ Status Alert â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     @if (!string.IsNullOrWhiteSpace(statusMessage))
     {
         <div class="alert @(isStatusSuccess ? "alert-success" : "alert-error")">
             <span>@statusMessage</span>
-            <button class="btn btn-text" @onclick="ClearStatus">✕</button>
+            <button class="btn btn-text" @onclick="ClearStatus">âœ•</button>
         </div>
     }
 
-    <!-- ── KPI Summary Row ─────────────────────────────────────────── -->
+    <!-- â”€â”€ KPI Summary Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="kpi-grid">
 
         <!-- Positive Sentiment Rate -->
         <div class="kpi-card kpi-positive">
-            <div class="kpi-icon-wrap kpi-icon-pos">😊</div>
+            <div class="kpi-icon-wrap kpi-icon-pos">ðŸ˜Š</div>
             <div class="kpi-content">
                 <span class="kpi-label">Positive Sentiment</span>
                 @if (isLoading)
                 {
-                    <span class="kpi-value kpi-skeleton">——</span>
+                    <span class="kpi-value kpi-skeleton">â€”â€”</span>
                 }
                 else
                 {
@@ -63,12 +63,12 @@
 
         <!-- Total Reviews -->
         <div class="kpi-card kpi-total">
-            <div class="kpi-icon-wrap kpi-icon-total">📝</div>
+            <div class="kpi-icon-wrap kpi-icon-total">ðŸ“</div>
             <div class="kpi-content">
                 <span class="kpi-label">Total Reviews</span>
                 @if (isLoading)
                 {
-                    <span class="kpi-value kpi-skeleton">——</span>
+                    <span class="kpi-value kpi-skeleton">â€”â€”</span>
                 }
                 else
                 {
@@ -80,12 +80,12 @@
 
         <!-- Average Rating -->
         <div class="kpi-card kpi-rating">
-            <div class="kpi-icon-wrap kpi-icon-rating">⭐</div>
+            <div class="kpi-icon-wrap kpi-icon-rating">â­</div>
             <div class="kpi-content">
                 <span class="kpi-label">Avg. Customer Rating</span>
                 @if (isLoading)
                 {
-                    <span class="kpi-value kpi-skeleton">——</span>
+                    <span class="kpi-value kpi-skeleton">â€”â€”</span>
                 }
                 else
                 {
@@ -94,7 +94,7 @@
                         @for (int s = 1; s <= 5; s++)
                         {
                             int si = s;
-                            <span class="star @(OverallAvgRating >= si ? "star-full" : OverallAvgRating >= si - 0.5 ? "star-half" : "star-empty")">★</span>
+                            <span class="star @(OverallAvgRating >= si ? "star-full" : OverallAvgRating >= si - 0.5 ? "star-half" : "star-empty")">â˜…</span>
                         }
                     </div>
                 }
@@ -137,7 +137,7 @@
 
     </section>
 
-    <!-- ── Filter Toolbar ─────────────────────────────────────────── -->
+    <!-- â”€â”€ Filter Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="filter-bar">
         <!-- Product Selector -->
         <div class="filter-group">
@@ -158,9 +158,9 @@
             <span class="filter-label">Sentiment Filter</span>
             <div class="pill-group">
                 <button id="sentiment-pill-all"      class="pill @(sentimentFilter == "All"      ? "pill-active" : "")" @onclick='() => SetSentimentFilter("All")'>All</button>
-                <button id="sentiment-pill-positive" class="pill pill-pos @(sentimentFilter == "Positive" ? "pill-active pill-active-pos" : "")" @onclick='() => SetSentimentFilter("Positive")'>😊 Positive</button>
-                <button id="sentiment-pill-neutral"  class="pill pill-neu @(sentimentFilter == "Neutral"  ? "pill-active pill-active-neu" : "")" @onclick='() => SetSentimentFilter("Neutral")'>😐 Neutral</button>
-                <button id="sentiment-pill-negative" class="pill pill-neg @(sentimentFilter == "Negative" ? "pill-active pill-active-neg" : "")" @onclick='() => SetSentimentFilter("Negative")'>😟 Negative</button>
+                <button id="sentiment-pill-positive" class="pill pill-pos @(sentimentFilter == "Positive" ? "pill-active pill-active-pos" : "")" @onclick='() => SetSentimentFilter("Positive")'>ðŸ˜Š Positive</button>
+                <button id="sentiment-pill-neutral"  class="pill pill-neu @(sentimentFilter == "Neutral"  ? "pill-active pill-active-neu" : "")" @onclick='() => SetSentimentFilter("Neutral")'>ðŸ˜ Neutral</button>
+                <button id="sentiment-pill-negative" class="pill pill-neg @(sentimentFilter == "Negative" ? "pill-active pill-active-neg" : "")" @onclick='() => SetSentimentFilter("Negative")'>ðŸ˜Ÿ Negative</button>
             </div>
         </div>
 
@@ -168,16 +168,16 @@
         <div class="filter-group filter-search">
             <span class="filter-label">Search Comments</span>
             <div class="search-wrap">
-                <span class="search-icon">🔍</span>
+                <span class="search-icon">ðŸ”</span>
                 <input id="sentiment-search-input"
                        type="text"
                        class="filter-input search-input"
-                       placeholder="Search review text…"
+                       placeholder="Search review textâ€¦"
                        value="@searchQuery"
                        @oninput="OnSearchInput" />
                 @if (!string.IsNullOrEmpty(searchQuery))
                 {
-                    <button class="search-clear" @onclick="ClearSearch">✕</button>
+                    <button class="search-clear" @onclick="ClearSearch">âœ•</button>
                 }
             </div>
         </div>
@@ -188,7 +188,7 @@
         </div>
     </section>
 
-    <!-- ── Product Sentiment Leaderboard ──────────────────────────── -->
+    <!-- â”€â”€ Product Sentiment Leaderboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="card">
         <div class="card-header">
             <div>
@@ -205,7 +205,7 @@
             {
                 <div class="loading-state">
                     <span class="spinner"></span>
-                    <span>Aggregating BERT sentiment data…</span>
+                    <span>Aggregating BERT sentiment dataâ€¦</span>
                 </div>
             }
             else if (!sentimentStats.Any())
@@ -250,7 +250,7 @@
                                         <td class="num-col">@stat.TotalReviews</td>
                                         <td class="num-col rating-cell">
                                             <span>@stat.AverageRating.ToString("F1")</span>
-                                            <span class="rating-star">★</span>
+                                            <span class="rating-star">â˜…</span>
                                         </td>
                                         <td class="sentiment-col">
                                             <div class="mini-compound-bar">
@@ -279,7 +279,7 @@
         </div>
     </section>
 
-    <!-- ── Customer Reviews Feed ──────────────────────────────────── -->
+    <!-- â”€â”€ Customer Reviews Feed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <section class="card">
         <div class="card-header">
             <div>
@@ -305,7 +305,7 @@
             {
                 <div class="loading-state">
                     <span class="spinner"></span>
-                    <span>Loading customer reviews…</span>
+                    <span>Loading customer reviewsâ€¦</span>
                 </div>
             }
             else if (!FilteredReviews.Any())
@@ -340,14 +340,14 @@
                                 <div class="review-meta">
                                     <span class="review-customer">Customer #@review.CustomerId</span>
                                     <span class="review-product">@review.ProductName</span>
-                                    <span class="review-date">@review.CreatedAt.ToLocalTime().ToString("dd MMM yyyy · hh:mm tt")</span>
+                                    <span class="review-date">@review.CreatedAt.ToLocalTime().ToString("dd MMM yyyy Â· hh:mm tt")</span>
                                 </div>
                                 <div class="review-right">
                                     <!-- Star Rating -->
                                     <div class="review-stars" aria-label="@review.Rating out of 5">
                                         @for (int s = 1; s <= 5; s++)
                                         {
-                                            <span class="star-sm @(s <= review.Rating ? "star-full" : "star-empty")">★</span>
+                                            <span class="star-sm @(s <= review.Rating ? "star-full" : "star-empty")">â˜…</span>
                                         }
                                     </div>
                                     <!-- Sentiment Badge -->
@@ -390,31 +390,31 @@
 
 @code {
 
-    // ── Services ───────────────────────────────────────────────────────
+    // â”€â”€ Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     [Inject] private IReviewService ReviewService { get; set; } = default!;
     [Inject] private IBERTService   BertService   { get; set; } = default!;
 
-    // ── Raw Data ───────────────────────────────────────────────────────
+    // â”€â”€ Raw Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private List<SentimentStatDto> sentimentStats = new();
     private List<ReviewDto>        allReviews     = new();
 
-    // ── Filters ────────────────────────────────────────────────────────
+    // â”€â”€ Filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private string selectedProductName = string.Empty;
     private string sentimentFilter     = "All";
     private string searchQuery         = string.Empty;
 
-    // ── Pagination ─────────────────────────────────────────────────────
+    // â”€â”€ Pagination â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private int pageSize    = 10;
     private int currentPage = 1;
 
-    // ── Loading / Status ───────────────────────────────────────────────
+    // â”€â”€ Loading / Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private bool      isLoading;
     private bool      isLoadingReviews;
     private DateTime? lastRefreshed;
     private string?   statusMessage;
     private bool      isStatusSuccess;
 
-    // ── Computed: Filtered Reviews ────────────────────────────────────
+    // â”€â”€ Computed: Filtered Reviews â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private List<ReviewDto> FilteredReviews
     {
         get
@@ -434,7 +434,7 @@
         }
     }
 
-    // ── Computed: Overall KPIs ─────────────────────────────────────────
+    // â”€â”€ Computed: Overall KPIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private int TotalReviewCount   => sentimentStats.Sum(s => s.TotalReviews);
     private int TotalPositive      => sentimentStats.Sum(s => s.Positive);
     private int TotalNeutral       => sentimentStats.Sum(s => s.Neutral);
@@ -447,14 +447,14 @@
         ? sentimentStats.Sum(s => s.AverageRating * s.TotalReviews) / Math.Max(TotalReviewCount, 1)
         : 0;
 
-    // ── Lifecycle ──────────────────────────────────────────────────────
+    // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     protected override async Task OnInitializedAsync()
     {
         await Task.WhenAll(LoadSentimentStatsAsync(), LoadReviewsAsync());
         lastRefreshed = DateTime.UtcNow;
     }
 
-    // ── Data Loaders ──────────────────────────────────────────────────
+    // â”€â”€ Data Loaders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private async Task LoadSentimentStatsAsync()
     {
@@ -488,7 +488,7 @@
         isLoadingReviews = false;
     }
 
-    // ── User Actions ──────────────────────────────────────────────────
+    // â”€â”€ User Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private async Task RefreshAllAsync()
     {
@@ -542,7 +542,7 @@
 
     private void ClearStatus() => statusMessage = null;
 
-    // ── Helpers ───────────────────────────────────────────────────────
+    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private static string GetSentimentClass(string sentiment) => sentiment?.ToLower() switch
     {
@@ -554,10 +554,10 @@
 
     private static string GetSentimentEmoji(string sentiment) => sentiment?.ToLower() switch
     {
-        "positive" => "😊",
-        "negative" => "😟",
-        "neutral"  => "😐",
-        _          => "😐"
+        "positive" => "ðŸ˜Š",
+        "negative" => "ðŸ˜Ÿ",
+        "neutral"  => "ðŸ˜",
+        _          => "ðŸ˜"
     };
 
     private static string GetAvatarInitials(ReviewDto review)
@@ -569,22 +569,22 @@
 
 <style>
 
-    /* ═══════════════════════════════════════════════════════════════
-       Sentiment Charts Page — SmartPOS+ Bakery Theme
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       Sentiment Charts Page â€” SmartPOS+ Bakery Theme
        All colors reference tokens from wwwroot/css/colors.css
-       ═══════════════════════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-    /* ── Semantic Color Variables (Sentiment-specific) ─────────────── */
+    /* â”€â”€ Semantic Color Variables (Sentiment-specific) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     :root {
-        --color-positive:    #5a7a52;   /* Sage green — harmonious with bakery palette */
+        --color-positive:    #5a7a52;   /* Sage green â€” harmonious with bakery palette */
         --color-positive-bg: #edf4eb;
-        --color-neutral:     #8a7040;   /* Warm honey — accent warmth                  */
+        --color-neutral:     #8a7040;   /* Warm honey â€” accent warmth                  */
         --color-neutral-bg:  #fef6e4;
-        --color-negative:    #8b4040;   /* Soft terracotta — warming red               */
+        --color-negative:    #8b4040;   /* Soft terracotta â€” warming red               */
         --color-negative-bg: #faeaea;
     }
 
-    /* ── Page Shell ─────────────────────────────────────────────────── */
+    /* â”€â”€ Page Shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .sentiment-page {
         display: flex;
         flex-direction: column;
@@ -596,7 +596,7 @@
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     }
 
-    /* ── Page Header ───────────────────────────────────────────────── */
+    /* â”€â”€ Page Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .page-header {
         display: flex;
         justify-content: space-between;
@@ -642,7 +642,7 @@
         transform: rotate(180deg);
     }
 
-    /* ── Alerts ─────────────────────────────────────────────────────── */
+    /* â”€â”€ Alerts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .alert {
         display: flex;
         justify-content: space-between;
@@ -656,7 +656,7 @@
     .alert-success { border-color: var(--color-accent); }
     .alert-error   { border-color: var(--color-navbar-bg); }
 
-    /* ── Buttons ─────────────────────────────────────────────────────── */
+    /* â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .btn {
         display: inline-flex;
         align-items: center;
@@ -717,7 +717,7 @@
         text-underline-offset: 2px;
     }
 
-    /* ── Spinner ─────────────────────────────────────────────────────── */
+    /* â”€â”€ Spinner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .spinner {
         display: inline-block;
         width: 14px; height: 14px;
@@ -728,7 +728,7 @@
     }
     @@keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── KPI Grid ────────────────────────────────────────────────────── */
+    /* â”€â”€ KPI Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .kpi-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -885,7 +885,7 @@
     .dot-neu { background: var(--color-neutral); }
     .dot-neg { background: var(--color-negative); }
 
-    /* ── Filter Bar ─────────────────────────────────────────────────── */
+    /* â”€â”€ Filter Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .filter-bar {
         display: flex;
         align-items: flex-end;
@@ -1005,7 +1005,7 @@
     .search-clear:hover { opacity: 1; }
     .filter-actions { display: flex; align-items: flex-end; }
 
-    /* ── Cards ──────────────────────────────────────────────────────── */
+    /* â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .card {
         background-color: var(--color-card-bg);
         border: 1px solid rgba(196, 132, 138, 0.2);
@@ -1054,7 +1054,7 @@
         border: 1px solid rgba(196, 132, 138, 0.3);
     }
 
-    /* ── Loading / Empty States ─────────────────────────────────────── */
+    /* â”€â”€ Loading / Empty States â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .loading-state {
         display: flex;
         align-items: center;
@@ -1073,7 +1073,7 @@
         opacity: 0.5;
     }
 
-    /* ── Table ──────────────────────────────────────────────────────── */
+    /* â”€â”€ Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .table-scroll {
         overflow-x: auto;
         border-radius: 0.65rem;
@@ -1158,7 +1158,7 @@
     .badge-mid  { background: var(--color-neutral-bg);  color: var(--color-neutral); }
     .badge-low  { background: var(--color-negative-bg); color: var(--color-negative); }
 
-    /* ── Reviews Feed ────────────────────────────────────────────────── */
+    /* â”€â”€ Reviews Feed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .reviews-feed {
         display: flex;
         flex-direction: column;

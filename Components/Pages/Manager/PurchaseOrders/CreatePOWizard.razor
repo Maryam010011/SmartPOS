@@ -1,4 +1,4 @@
-@using SmartPOS.Shared.DTOs.PurchaseOrders
+﻿@using SmartPOS.Shared.DTOs.PurchaseOrders
 @using SmartPOS.Shared.DTOs.Products
 @using SmartPOS.Shared.DTOs.Suppliers
 @using SmartPOS.Shared.Interfaces
@@ -36,7 +36,7 @@
                                                  @(CurrentStep == stepIdx ? "background-color: var(--color-button-primary); color: white;" :
                                                    stepIdx < CurrentStep ? "background-color: #198754; color: white;" :
                                                    "background-color: #e9ecef; color: #6c757d;")">
-                                        @(stepIdx < CurrentStep ? "✓" : (stepIdx + 1).ToString())
+                                        @(stepIdx < CurrentStep ? "âœ“" : (stepIdx + 1).ToString())
                                     </span>
                                     <span class="small fw-semibold @(CurrentStep == stepIdx ? "text-dark" : "text-muted")">@Steps[stepIdx]</span>
                                 </div>
@@ -327,7 +327,7 @@
         <div class="toast-container-pos" style="z-index: 1070;">
             <div class="toast-pos toast-@ToastType">
                 <span class="toast-icon">
-                    @(ToastType == "success" ? "✅" : ToastType == "error" ? "❌" : "ℹ️")
+                    @(ToastType == "success" ? "âœ…" : ToastType == "error" ? "âŒ" : "â„¹ï¸")
                 </span>
                 <span class="toast-body">@ToastMessage</span>
                 <button class="toast-close" @onclick="DismissToast">&times;</button>
@@ -553,11 +553,10 @@
                 SupplierId = SelectedSupplierId,
                 UserId = 1,
                 Notes = Notes,
-                LineItems = LineItems.Select(li => new POLineItemDto
+                LineItems = LineItems.Select(li => new CreatePOLineItemDto
                 {
                     ProductId = li.ProductId,
-                    ProductName = li.ProductName,
-                    OrderedQty = li.OrderedQty,
+                    Quantity = li.OrderedQty,
                     UnitPrice = li.UnitPrice
                 }).ToList()
             };

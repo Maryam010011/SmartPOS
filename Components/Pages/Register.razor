@@ -1,16 +1,16 @@
-@page "/register"
+﻿@page "/register"
 @attribute [AllowAnonymous]
 @rendermode InteractiveServer
 @inject AppDbContext DbContext
 @inject NavigationManager NavigationManager
 @using Microsoft.EntityFrameworkCore
-@using SmartPOS.Web.Data
-@using SmartPOS.Web.Models
+@using SmartPOS.Data
+@using SmartPOS.Models
 
 <div class="register-page">
     <div class="register-card">
         <div class="register-header">
-            <div class="register-logo">🧁</div>
+            <div class="register-logo">ðŸ§</div>
             <h2>Create Account</h2>
             <p class="text-muted">Join the SmartPOS+ bakery customer family</p>
         </div>
@@ -39,16 +39,16 @@
             <div class="mb-3">
                 <label class="form-label fw-semibold small">Password</label>
                 <div class="input-group">
-                    <InputText @bind-Value="Model.Password" type="@(ShowPassword ? "text" : "password")" class="form-control" placeholder="••••••••" required />
+                    <InputText @bind-Value="Model.Password" type="@(ShowPassword ? "text" : "password")" class="form-control" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required />
                     <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
-                        @(ShowPassword ? "🙈" : "👁")
+                        @(ShowPassword ? "ðŸ™ˆ" : "ðŸ‘")
                     </button>
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label fw-semibold small">Confirm Password</label>
-                <InputText @bind-Value="Model.ConfirmPassword" type="password" class="form-control" placeholder="••••••••" required />
+                <InputText @bind-Value="Model.ConfirmPassword" type="password" class="form-control" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required />
             </div>
 
             <div class="mb-3">
@@ -175,7 +175,7 @@
 
             if (roleName == "Customer")
             {
-                var customerProfile = new SmartPOS.Web.Models.Customer
+                var customerProfile = new SmartPOS.Models.Customer
                 {
                     Name = user.Name,
                     Email = user.Email,

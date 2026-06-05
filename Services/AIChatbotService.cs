@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Sales;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
+using SmartPOS.Data;
 
 namespace SmartPOS.Web.Services.Shahzain
 {
@@ -55,7 +55,7 @@ namespace SmartPOS.Web.Services.Shahzain
                 var salesContext = await BuildSalesContextAsync();
 
                 var systemPrompt = $"""
-                    You are SmartPOS AI Assistant — an intelligent business analytics assistant
+                    You are SmartPOS AI Assistant â€” an intelligent business analytics assistant
                     for a bakery point-of-sale system. You help managers and owners understand
                     their sales data, identify trends, and make data-driven decisions.
 
@@ -271,9 +271,9 @@ namespace SmartPOS.Web.Services.Shahzain
             }
         }
 
-        // ────────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         //  Private Helper Methods
-        // ────────────────────────────────────────────────────────────
+        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         /// <summary>
         /// Sends a chat completion request to the OpenAI-compatible API.

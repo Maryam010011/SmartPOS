@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SmartPOS.Shared.Interfaces;
 
 namespace SmartPOS.Web.Controllers

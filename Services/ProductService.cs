@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Products;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Web.Models;
+using SmartPOS.Data;
+using SmartPOS.Models;
 
 namespace SmartPOS.Services
 {
@@ -138,10 +138,10 @@ namespace SmartPOS.Services
                     Price = dto.Price,
                     CostPrice = dto.CostPrice,
                     ImageURL = dto.ImageURL,
-                IsActive = true,
+                
                     CategoryId = dto.CategoryId,
                     SupplierId = dto.SupplierId,
-                    IsActive = true,
+                    
                     CreatedAt = DateTime.UtcNow
                 };
 

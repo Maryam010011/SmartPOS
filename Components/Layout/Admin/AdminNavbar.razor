@@ -1,4 +1,4 @@
-@namespace SmartPOS.Components.Layout
+﻿@namespace SmartPOS.Components.Layout
 @inject NavigationManager Nav
 
 <header class="smartpos-navbar" id="admin-navbar">
@@ -6,7 +6,7 @@
 
         <!-- Brand -->
         <a class="navbar-brand" href="/admin/analytics">
-            <span class="brand-icon">🥐</span>
+            <span class="brand-icon">ðŸ¥</span>
             <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
             <span class="brand-role-tag">Admin</span>
         </a>
@@ -14,19 +14,19 @@
         <!-- Desktop Nav Links -->
         <nav class="navbar-links" aria-label="Admin navigation">
             <a class="nav-link @(IsActive("/admin/analytics"))"      href="/admin/analytics">
-                <span class="nav-icon">📊</span><span>Analytics</span>
+                <span class="nav-icon">ðŸ“Š</span><span>Analytics</span>
             </a>
             <a class="nav-link @(IsActive("/admin/products"))"       href="/admin/products">
-                <span class="nav-icon">🧁</span><span>Products</span>
+                <span class="nav-icon">ðŸ§</span><span>Products</span>
             </a>
             <a class="nav-link @(IsActive("/admin/categories"))"     href="/admin/categories">
-                <span class="nav-icon">🗂️</span><span>Categories</span>
+                <span class="nav-icon">ðŸ—‚ï¸</span><span>Categories</span>
             </a>
             <a class="nav-link @(IsActive("/admin/suppliers"))"      href="/admin/suppliers">
-                <span class="nav-icon">🚚</span><span>Suppliers</span>
+                <span class="nav-icon">ðŸšš</span><span>Suppliers</span>
             </a>
             <a class="nav-link @(IsActive("/admin/sentiment-charts"))" href="/admin/sentiment-charts">
-                <span class="nav-icon">🤖</span><span>Sentiment</span>
+                <span class="nav-icon">ðŸ¤–</span><span>Sentiment</span>
             </a>
         </nav>
 
@@ -51,11 +51,11 @@
     @if (_mobileOpen)
     {
         <nav class="mobile-menu" aria-label="Admin mobile navigation">
-            <a class="mobile-link @(IsActive("/admin/analytics"))"        href="/admin/analytics"        @onclick="CloseMobile">📊 Analytics</a>
-            <a class="mobile-link @(IsActive("/admin/products"))"          href="/admin/products"          @onclick="CloseMobile">🧁 Products</a>
-            <a class="mobile-link @(IsActive("/admin/categories"))"        href="/admin/categories"        @onclick="CloseMobile">🗂️ Categories</a>
-            <a class="mobile-link @(IsActive("/admin/suppliers"))"         href="/admin/suppliers"         @onclick="CloseMobile">🚚 Suppliers</a>
-            <a class="mobile-link @(IsActive("/admin/sentiment-charts"))"  href="/admin/sentiment-charts"  @onclick="CloseMobile">🤖 Sentiment</a>
+            <a class="mobile-link @(IsActive("/admin/analytics"))"        href="/admin/analytics"        @onclick="CloseMobile">ðŸ“Š Analytics</a>
+            <a class="mobile-link @(IsActive("/admin/products"))"          href="/admin/products"          @onclick="CloseMobile">ðŸ§ Products</a>
+            <a class="mobile-link @(IsActive("/admin/categories"))"        href="/admin/categories"        @onclick="CloseMobile">ðŸ—‚ï¸ Categories</a>
+            <a class="mobile-link @(IsActive("/admin/suppliers"))"         href="/admin/suppliers"         @onclick="CloseMobile">ðŸšš Suppliers</a>
+            <a class="mobile-link @(IsActive("/admin/sentiment-charts"))"  href="/admin/sentiment-charts"  @onclick="CloseMobile">ðŸ¤– Sentiment</a>
         </nav>
     }
 </header>
@@ -92,9 +92,9 @@
 }
 
 <style>
-    /* ═══════════════════════════════════════════════════════════
-       AdminNavbar — SmartPOS+ Bakery Theme
-       ═══════════════════════════════════════════════════════════ */
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       AdminNavbar â€” SmartPOS+ Bakery Theme
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
     .smartpos-navbar {
         position: sticky;

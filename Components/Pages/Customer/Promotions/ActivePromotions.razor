@@ -1,4 +1,4 @@
-@page "/customer/promotions"
+﻿@page "/customer/promotions"
 @layout CustomerLayout
 @using SmartPOS.Shared.DTOs.Promotions
 @using SmartPOS.Shared.Interfaces
@@ -294,7 +294,7 @@
             {
                 var now = DateTime.UtcNow;
                 PromotionsList = result.Data
-                    .Where(p => p.IsActive && now <= p.ValidTo && p.UsageCount < p.MaxUsageLimit)
+                    .Where(p => p.IsActive && DateOnly.FromDateTime(now) <= p.ValidTo && p.UsageCount < p.MaxUsageLimit)
                     .OrderBy(p => p.ValidTo)
                     .ToList();
             }

@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,18 +8,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using SmartPOS.Components;
+using SmartPOS.Services;
 using SmartPOS.Services.MaryamJ;
 using SmartPOS.Shared.Common;
 using SmartPOS.Shared.DTOs.Auth;
 using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Data;
-using SmartPOS.Shared.Interfaces;
-using SmartPOS.Web.Services.Shahzain;
 using SmartPOS.Data;
 using Blazored.LocalStorage;
 using System.Text;
 using SmartPOS.Providers;
 using SmartPOS.Models;
+using SmartPOS.Web.Services.Shahzain;
+using SmartPOS.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,15 +32,15 @@ builder.Services.AddDbContext<AppDbContext>(options =>
             errorNumbersToAdd: null)
     ));
 
-// ─── API Controllers ───────────────────────────────────────────
+// â”€â”€â”€ API Controllers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// ─── HttpClient (required by FBRService and AIChatbotService) ──
+// â”€â”€â”€ HttpClient (required by FBRService and AIChatbotService) â”€â”€
 builder.Services.AddHttpClient();
 
-// ─── Shahzain's Service Registrations ─────────────────────────
+// â”€â”€â”€ Shahzain's Service Registrations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddScoped<IProductService,     ProductService>();
 builder.Services.AddScoped<ICategoryService,    CategoryService>();
 builder.Services.AddScoped<ISupplierService,    SupplierService>();
@@ -53,15 +53,15 @@ builder.Services.AddScoped<IBERTService,        BERTService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IWeatherService,     WeatherService>();
 
-// ─── Shared Cart State (Scoped = per Blazor Server circuit / user session) ───
+// â”€â”€â”€ Shared Cart State (Scoped = per Blazor Server circuit / user session) â”€â”€â”€
 builder.Services.AddScoped<CartStateService>();
 
-// ─── MaryamY's Service Registrations ──────────────────────────
+// â”€â”€â”€ MaryamY's Service Registrations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-// ── JWT Authentication ──
+// â”€â”€ JWT Authentication â”€â”€
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -96,7 +96,7 @@ builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredLocalStorage();
 
 // Register Auth State & Services
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider, SmartPOS.Providers.CustomAuthStateProvider>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IAuthService, ServerAuthService>();
 
@@ -122,23 +122,8 @@ builder.Services.AddScoped<IAuditLogService, SmartPOS.Services.MaryamJ.AuditLogS
 // Register Promotion Management Service
 builder.Services.AddScoped<IPromotionService, SmartPOS.Services.MaryamJ.PromotionService>();
 
-// Register Product Management Service
-builder.Services.AddScoped<IProductService, SmartPOS.Services.MaryamJ.ProductService>();
-
-// Register Category Management Service
-builder.Services.AddScoped<ICategoryService, SmartPOS.Services.MaryamJ.CategoryService>();
-
-// Register Inventory Management Service
-builder.Services.AddScoped<IInventoryService, SmartPOS.Services.MaryamJ.InventoryService>();
-
-// Register Supplier Service
-builder.Services.AddScoped<ISupplierService, SmartPOS.Services.MaryamJ.SupplierService>();
-
 // Register Purchase Order Service
 builder.Services.AddScoped<IPurchaseOrderService, SmartPOS.Services.MaryamJ.PurchaseOrderService>();
-
-// Register Weather Service
-builder.Services.AddScoped<IWeatherService, SmartPOS.Services.MaryamJ.WeatherService>();
 
 // Enable Web API Controllers
 builder.Services.AddControllers();
@@ -189,7 +174,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         logger.LogError(ex, "Database initialization failed. Check your SQL Server connection string in appsettings.json.");
-        throw; // Re-throw so the app fails fast — prevents runtime errors later
+        throw; // Re-throw so the app fails fast â€” prevents runtime errors later
     }
 }
 
@@ -219,5 +204,5 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-await DatabaseSeeder.SeedAsync(app.Services);
+await SmartPOS.Web.Data.DatabaseSeeder.SeedAsync(app.Services);
 await app.RunAsync();

@@ -1,4 +1,4 @@
-@page "/customer/shop"
+﻿@page "/customer/shop"
 @rendermode InteractiveServer
 @layout CustomerLayout
 
@@ -10,16 +10,16 @@
 @implements IDisposable
 
 
-<PageTitle>Shop — SmartPOS+ Bakery</PageTitle>
+<PageTitle>Shop â€” SmartPOS+ Bakery</PageTitle>
 
 <div class="shop-root">
 
-    <!-- ── TOP HEADER BAR ───────────────────────────────────────── -->
+    <!-- â”€â”€ TOP HEADER BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
     <header class="shop-header">
         <div class="shop-header-inner">
 
             <div class="shop-brand">
-                <span class="shop-brand-icon">🥐</span>
+                <span class="shop-brand-icon">ðŸ¥</span>
                 <span class="shop-brand-name">SmartPOS+ Bakery</span>
             </div>
 
@@ -29,7 +29,7 @@
                 <input id="shop-search-input"
                        class="search-input"
                        type="text"
-                       placeholder="Search breads, cakes, pastries…"
+                       placeholder="Search breads, cakes, pastriesâ€¦"
                        value="@_searchTerm"
                        @oninput="OnSearchInput" />
                 @if (!string.IsNullOrEmpty(_searchTerm))
@@ -40,7 +40,7 @@
 
             <!-- Cart FAB -->
             <button id="cart-toggle-btn" class="cart-fab" @onclick="ToggleCart">
-                <span class="cart-fab-icon">🛒</span>
+                <span class="cart-fab-icon">ðŸ›’</span>
                 @if (CartCount > 0)
                 {
                     <span class="cart-badge">@CartCount</span>
@@ -51,14 +51,14 @@
 
     <div class="shop-body">
 
-        <!-- ── CATEGORY SIDEBAR ──────────────────────────────────── -->
+        <!-- â”€â”€ CATEGORY SIDEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <aside class="category-sidebar">
             <h3 class="sidebar-title">Categories</h3>
 
             <button id="cat-btn-all"
                     class="cat-pill @(_selectedCategoryId == 0 ? "cat-pill--active" : "")"
                     @onclick="@(() => SelectCategory(0))">
-                <span class="cat-pill-icon">🏪</span> All Items
+                <span class="cat-pill-icon">ðŸª</span> All Items
             </button>
 
             @foreach (var cat in _categories)
@@ -73,7 +73,7 @@
                         }
                         else
                         {
-                            <span>🗂</span>
+                            <span>ðŸ—‚</span>
                         }
                     </span>
                     @cat.Name
@@ -85,7 +85,7 @@
             }
         </aside>
 
-        <!-- ── MAIN CONTENT ──────────────────────────────────────── -->
+        <!-- â”€â”€ MAIN CONTENT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
         <main class="shop-main">
 
             <!-- Result meta row -->
@@ -110,8 +110,8 @@
             @if (!string.IsNullOrEmpty(_errorMessage))
             {
                 <div class="error-banner" role="alert">
-                    <span>⚠️ @_errorMessage</span>
-                    <button class="error-dismiss" @onclick="@(() => _errorMessage = null)">✕</button>
+                    <span>âš ï¸ @_errorMessage</span>
+                    <button class="error-dismiss" @onclick="@(() => _errorMessage = null)">âœ•</button>
                 </div>
             }
 
@@ -136,7 +136,7 @@
             {
                 <!-- Empty State -->
                 <div class="empty-state">
-                    <div class="empty-icon">🧁</div>
+                    <div class="empty-icon">ðŸ§</div>
                     <h2 class="empty-title">No products found</h2>
                     <p class="empty-sub">Try a different search term or browse another category.</p>
                     <button class="btn-primary" @onclick="ResetFilters">Browse All Products</button>
@@ -158,11 +158,11 @@
                                          alt="@product.Name"
                                          loading="lazy"
                                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-                                    <div class="card-image-placeholder" style="display:none;">🥖</div>
+                                    <div class="card-image-placeholder" style="display:none;">ðŸ¥–</div>
                                 }
                                 else
                                 {
-                                    <div class="card-image-placeholder">🥖</div>
+                                    <div class="card-image-placeholder">ðŸ¥–</div>
                                 }
 
                                 <!-- Stock Badge -->
@@ -211,9 +211,9 @@
     </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      CART SIDEBAR PANEL
-     ══════════════════════════════════════════════════════════════ -->
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 @if (_showCart)
 {
     <div class="cart-overlay" @onclick="ToggleCart"></div>
@@ -221,14 +221,14 @@
 
 <div class="cart-sidebar @(_showCart ? "cart-sidebar--open" : "")">
     <div class="cart-sidebar-header">
-        <h2 class="cart-title">🛒 Your Cart</h2>
+        <h2 class="cart-title">ðŸ›’ Your Cart</h2>
         <button id="cart-close-btn" class="cart-close" @onclick="ToggleCart">&#10005;</button>
     </div>
 
     @if (CartState.Count == 0)
     {
         <div class="cart-empty">
-            <div class="cart-empty-icon">🛒</div>
+            <div class="cart-empty-icon">ðŸ›’</div>
             <p>Your cart is empty.</p>
             <button class="btn-primary" @onclick="ToggleCart">Continue Shopping</button>
         </div>
@@ -247,7 +247,7 @@
                         }
                         else
                         {
-                            <span class="cart-item-img-placeholder">🥖</span>
+                            <span class="cart-item-img-placeholder">ðŸ¥–</span>
                         }
                     </div>
                     <div class="cart-item-info">
@@ -255,12 +255,12 @@
                         <span class="cart-item-unit">Rs. @item.Product.Price.ToString("N0") each</span>
                         <div class="cart-qty-row">
                             <button class="qty-btn" id="qty-minus-@item.Product.Id"
-                                    @onclick="@(() => UpdateQuantity(item.Product.Id, -1))">−</button>
+                                    @onclick="@(() => UpdateQuantity(item.Product.Id, -1))">âˆ’</button>
                             <span class="qty-value">@item.Quantity</span>
                             <button class="qty-btn" id="qty-plus-@item.Product.Id"
                                     @onclick="@(() => UpdateQuantity(item.Product.Id, +1))">+</button>
                             <button class="qty-remove" id="qty-remove-@item.Product.Id"
-                                    @onclick="@(() => RemoveFromCart(item.Product.Id))" title="Remove">🗑</button>
+                                    @onclick="@(() => RemoveFromCart(item.Product.Id))" title="Remove">ðŸ—‘</button>
                         </div>
                     </div>
                     <span class="cart-item-line">Rs. @((item.Product.Price * item.Quantity).ToString("N0"))</span>
@@ -276,15 +276,15 @@
             <div class="cart-summary-row cart-summary-note">
                 <span>Tax &amp; delivery calculated at checkout</span>
             </div>
-            <button id="checkout-btn" class="btn-checkout" @onclick="NavigateToCheckout">Proceed to Checkout →</button>
+            <button id="checkout-btn" class="btn-checkout" @onclick="NavigateToCheckout">Proceed to Checkout â†’</button>
             <button class="btn-clear-cart" @onclick="ClearCart">Clear Cart</button>
         </div>
     }
 </div>
 
-<!-- ══════════════════════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      QUICK-VIEW PRODUCT MODAL
-     ══════════════════════════════════════════════════════════════ -->
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 @if (_showModal && _selectedProduct is not null)
 {
     <div class="modal-backdrop" @onclick="CloseModal"></div>
@@ -297,11 +297,11 @@
             {
                 <img src="@_selectedProduct.ImageURL" class="modal-image" alt="@_selectedProduct.Name"
                      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-                <div class="modal-image-fallback" style="display:none;">🥖</div>
+                <div class="modal-image-fallback" style="display:none;">ðŸ¥–</div>
             }
             else
             {
-                <div class="modal-image-fallback">🥖</div>
+                <div class="modal-image-fallback">ðŸ¥–</div>
             }
             <span class="modal-stock-badge @StockClass(_selectedProduct.CurrentStock)">
                 @StockLabel(_selectedProduct.CurrentStock)
@@ -321,7 +321,7 @@
             <div class="modal-meta-row">
                 <div class="modal-meta-item">
                     <span class="modal-meta-label">Supplier</span>
-                    <span class="modal-meta-value">@(string.IsNullOrEmpty(_selectedProduct.SupplierName) || _selectedProduct.SupplierName == "N/A" ? "—" : _selectedProduct.SupplierName)</span>
+                    <span class="modal-meta-value">@(string.IsNullOrEmpty(_selectedProduct.SupplierName) || _selectedProduct.SupplierName == "N/A" ? "â€”" : _selectedProduct.SupplierName)</span>
                 </div>
                 <div class="modal-meta-item">
                     <span class="modal-meta-label">In Stock</span>
@@ -336,7 +336,7 @@
             <!-- Quantity selector for modal -->
             <div class="modal-qty-row">
                 <label class="modal-qty-label">Qty:</label>
-                <button class="qty-btn" @onclick="@(() => { if (_modalQty > 1) _modalQty--; })">−</button>
+                <button class="qty-btn" @onclick="@(() => { if (_modalQty > 1) _modalQty--; })">âˆ’</button>
                 <span class="qty-value modal-qty-display">@_modalQty</span>
                 <button class="qty-btn" @onclick="@(() => _modalQty++)">+</button>
             </div>
@@ -352,14 +352,14 @@
 }
 
 
-<!-- ══════════════════════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      SCOPED STYLES  (all colors from colors.css variables)
-     ══════════════════════════════════════════════════════════════ -->
+     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <style>
-    /* ── Google Font ── */
+    /* â”€â”€ Google Font â”€â”€ */
     @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@@300;400;500;600;700&display=swap');
 
-    /* ── Reset scope ── */
+    /* â”€â”€ Reset scope â”€â”€ */
     .shop-root *,
     .cart-sidebar *,
     .modal-dialog *,
@@ -375,9 +375,9 @@
         color: var(--color-primary-text);
     }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        HEADER
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .shop-header {
         position: sticky;
         top: 0;
@@ -506,9 +506,9 @@
         border: 2px solid var(--color-page-bg);
     }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        BODY LAYOUT
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .shop-body {
         display: flex;
         align-items: flex-start;
@@ -518,9 +518,9 @@
         min-height: calc(100vh - 60px);
     }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        CATEGORY SIDEBAR
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .category-sidebar {
         width: 220px;
         flex-shrink: 0;
@@ -586,9 +586,9 @@
         font-weight: 400;
     }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        MAIN CONTENT
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .shop-main {
         flex: 1;
         padding: 1.75rem 2rem 3rem;
@@ -641,16 +641,16 @@
         opacity: .6;
     }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        PRODUCT GRID
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .product-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 1.4rem;
     }
 
-    /* ── Product Card ── */
+    /* â”€â”€ Product Card â”€â”€ */
     .product-card {
         background: var(--color-card-bg);
         border-radius: 16px;
@@ -807,9 +807,9 @@
         cursor: not-allowed;
     }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        SKELETON LOADING
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .skeleton-card { pointer-events: none; }
 
     .skeleton {
@@ -835,9 +835,9 @@
         100% { background-position: -200% 0; }
     }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        EMPTY STATE
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .empty-state {
         display: flex;
         flex-direction: column;
@@ -864,9 +864,9 @@
         margin: 0;
     }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        BUTTONS (shared)
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .btn-primary {
         background: var(--color-button-primary);
         color: #fff;
@@ -886,9 +886,9 @@
         transform: scale(1.02);
     }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        CART SIDEBAR
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .cart-overlay {
         position: fixed;
         inset: 0;
@@ -1137,9 +1137,9 @@
 
     .btn-clear-cart:hover { opacity: 1; border-color: var(--color-border-accent); }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        MODAL
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     .modal-backdrop {
         position: fixed;
         inset: 0;
@@ -1332,9 +1332,9 @@
         letter-spacing: .4px;
     }
 
-    /* ════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        RESPONSIVE BREAKPOINTS
-       ════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     @@media (max-width: 1024px) {
         .category-sidebar { width: 180px; }
         .product-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
@@ -1371,27 +1371,27 @@
 
 
 @code {
-    /* ── Services ── */
+    /* â”€â”€ Services â”€â”€ */
     private List<ProductDto>  _filteredProducts = new();
     private List<CategoryDto> _categories       = new();
 
-    /* ── UI State ── */
+    /* â”€â”€ UI State â”€â”€ */
     private bool    _isLoading      = true;
     private string? _errorMessage;
     private string  _searchTerm     = string.Empty;
     private int     _selectedCategoryId = 0;   // 0 = All
 
-    /* ── Cart State ── */
+    /* â”€â”€ Cart State â”€â”€ */
     private bool           _showCart  = false;
 
-    /* ── Modal State ── */
+    /* â”€â”€ Modal State â”€â”€ */
     private ProductDto? _selectedProduct;
     private bool        _showModal = false;
     private int         _modalQty  = 1;
 
-    /* ══════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        LIFECYCLE
-       ══════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     protected override async Task OnInitializedAsync()
     {
         CartState.OnCartChanged += HandleCartChanged;
@@ -1406,9 +1406,9 @@
         CartState.OnCartChanged -= HandleCartChanged;
     }
 
-    /* ══════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        DATA LOADING
-       ══════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     private async Task LoadCategories()
     {
         var result = await CategoryService.GetAll();
@@ -1439,9 +1439,9 @@
         _isLoading = false;
     }
 
-    /* ══════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        SEARCH & FILTER
-       ══════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     private async Task OnSearchInput(ChangeEventArgs e)
     {
         _searchTerm         = e.Value?.ToString() ?? string.Empty;
@@ -1469,9 +1469,9 @@
         await LoadProducts();
     }
 
-    /* ══════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        MODAL
-       ══════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     private void OpenModal(ProductDto product)
     {
         _selectedProduct = product;
@@ -1493,9 +1493,9 @@
         CloseModal();
     }
 
-    /* ══════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        CART
-       ══════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     private void AddToCart(ProductDto product, int qty = 1)
     {
         CartState.AddItem(product, qty);
@@ -1519,9 +1519,9 @@
     private decimal CartTotal => CartState.SubTotal;
     private int     CartCount => CartState.Count;
 
-    /* ══════════════════════════════════════════════
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
        HELPERS
-       ══════════════════════════════════════════════ */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
     private static string StockLabel(int stock) => stock switch
     {
         0      => "Out of Stock",
@@ -1537,7 +1537,7 @@
     };
 
     private static string TruncateDesc(string text, int max)
-        => text.Length <= max ? text : text[..max].TrimEnd() + "…";
+        => text.Length <= max ? text : text[..max].TrimEnd() + "â€¦";
 
 
 }

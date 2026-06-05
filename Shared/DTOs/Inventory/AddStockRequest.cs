@@ -1,0 +1,7 @@
+﻿namespace SmartPOS.Shared.DTOs.Inventory;
+
+public class AddStockRequest
+{
+    public int ProductId { get; set; }
+    public int Quantity { get; set; }
+}

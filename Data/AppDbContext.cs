@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SmartPOS.Models;
 using SmartPOS.Shared.Enums;
 //using SmartPOS.Models;
@@ -25,25 +25,15 @@ public partial class AppDbContext : DbContext
     public virtual DbSet<SaleItem> SaleItems { get; set; }
     public virtual DbSet<Review> Reviews { get; set; }
     public virtual DbSet<Inventory> Inventories { get; set; }
+    public virtual DbSet<Inventory> Inventory { get => Inventories; set => Inventories = value; }
+    public virtual DbSet<LoyaltyTransaction> LoyaltyTransactions { get; set; }
     public virtual DbSet<PurchaseOrder> PurchaseOrders { get; set; }
     public virtual DbSet<POLineItem> POLineItems { get; set; }
     public virtual DbSet<Payment> Payments { get; set; }
 
-     // MaryamY's tables
-     public DbSet<Role> Roles { get; set; }
-     public DbSet<Permission> Permissions { get; set; }
-     public DbSet<User> Users { get; set; }
-     public DbSet<Customer> Customers { get; set; }
-     public DbSet<AuditLog> AuditLogs { get; set; }
-     public DbSet<Promotion> Promotions { get; set; }
-     public DbSet<Inventory> Inventories { get; set; }
-     public DbSet<PurchaseOrder> PurchaseOrders { get; set; }
-     public DbSet<POLineItem> POLineItems { get; set; }
-     public DbSet<Payment> Payments { get; set; }
-
      protected override void OnModelCreating(ModelBuilder modelBuilder)
      {
-        // ── Role ──────────────────────────────────────────────────────────────
+        // â”€â”€ Role â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Role>(entity =>
           {
             entity.Property(e => e.Name)
@@ -51,7 +41,7 @@ public partial class AppDbContext : DbContext
                   .IsRequired();
           });
 
-        // ── Permission ────────────────────────────────────────────────────────
+        // â”€â”€ Permission â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Permission>(entity =>
           {
                entity.HasIndex(e => e.RoleId, "IX_Permissions_RoleId");
@@ -65,12 +55,12 @@ public partial class AppDbContext : DbContext
                entity.Property(e => e.CanUpdate).HasDefaultValue(false);
                entity.Property(e => e.CanDelete).HasDefaultValue(false);
 
-               entity.HasOne(e => e.Role)
-                   .WithMany(r => r.Permissions)
-                   .HasForeignKey(e => e.RoleId);
+                entity.HasOne(e => e.Role)
+                    .WithMany()
+                    .HasForeignKey(e => e.RoleId);
           });
 
-        // ── User ──────────────────────────────────────────────────────────────
+        // â”€â”€ User â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<User>(entity =>
           {
                entity.HasIndex(e => e.Email, "IX_Users_Email").IsUnique();
@@ -87,7 +77,7 @@ public partial class AppDbContext : DbContext
                    .HasForeignKey(e => e.RoleId);
           });
 
-        // ── Customer ──────────────────────────────────────────────────────────
+        // â”€â”€ Customer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Customer>(entity =>
           {
                entity.HasIndex(e => e.UserId, "IX_Customers_UserId").IsUnique();
@@ -106,7 +96,7 @@ public partial class AppDbContext : DbContext
                    .HasForeignKey<Customer>(e => e.UserId);
           });
 
-        // ── AuditLog ──────────────────────────────────────────────────────────
+        // â”€â”€ AuditLog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<AuditLog>(entity =>
           {
                entity.HasIndex(e => e.UserId, "IX_AuditLogs_UserId");
@@ -122,7 +112,7 @@ public partial class AppDbContext : DbContext
                    .HasForeignKey(e => e.UserId);
           });
 
-        // ── Promotion ─────────────────────────────────────────────────────────
+        // â”€â”€ Promotion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Promotion>(entity =>
           {
                entity.HasIndex(e => e.Code, "IX_Promotions_Code").IsUnique();
@@ -134,7 +124,7 @@ public partial class AppDbContext : DbContext
                entity.Property(e => e.IsActive).HasDefaultValue(true);
           });
 
-        // ── Category ──────────────────────────────────────────────────────────
+        // â”€â”€ Category â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Category>(entity =>
           {
                entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
@@ -148,7 +138,7 @@ public partial class AppDbContext : DbContext
                    .OnDelete(DeleteBehavior.NoAction);
           });
 
-        // ── Supplier ──────────────────────────────────────────────────────────
+        // â”€â”€ Supplier â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Supplier>(entity =>
           {
                entity.HasIndex(e => e.Email, "IX_Suppliers_Email").IsUnique();
@@ -161,7 +151,7 @@ public partial class AppDbContext : DbContext
                entity.Property(e => e.IsActive).HasDefaultValue(true);
           });
 
-        // ── Product ───────────────────────────────────────────────────────────
+        // â”€â”€ Product â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Product>(entity =>
           {
                entity.HasIndex(e => e.SKU, "IX_Products_SKU").IsUnique();
@@ -187,7 +177,7 @@ public partial class AppDbContext : DbContext
                    .OnDelete(DeleteBehavior.SetNull);
           });
 
-        // ── Sale ──────────────────────────────────────────────────────────────
+        // â”€â”€ Sale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Sale>(entity =>
           {
                entity.Property(e => e.TotalAmount).HasPrecision(10, 2);
@@ -211,7 +201,7 @@ public partial class AppDbContext : DbContext
                    .IsRequired(false);
           });
 
-        // ── SaleItem ──────────────────────────────────────────────────────────
+        // â”€â”€ SaleItem â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<SaleItem>(entity =>
           {
                entity.HasIndex(e => e.SaleId, "IX_SaleItems_SaleId");
@@ -230,7 +220,7 @@ public partial class AppDbContext : DbContext
                    .OnDelete(DeleteBehavior.Restrict);
           });
 
-        // ── Review ────────────────────────────────────────────────────────────
+        // â”€â”€ Review â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Review>(entity =>
           {
                entity.ToTable(t => t.HasCheckConstraint("CK_Review_Rating", "[Rating] >= 1 AND [Rating] <= 5"));
@@ -248,7 +238,7 @@ public partial class AppDbContext : DbContext
                    .HasForeignKey(e => e.ProductId);
           });
 
-        // ── Inventory ─────────────────────────────────────────────────────────
+        // â”€â”€ Inventory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Inventory>(entity =>
           {
                entity.HasIndex(e => e.ProductId, "IX_Inventories_ProductId").IsUnique();
@@ -261,7 +251,7 @@ public partial class AppDbContext : DbContext
                    .HasForeignKey<Inventory>(e => e.ProductId);
           });
 
-        // ── PurchaseOrder ─────────────────────────────────────────────────────
+        // â”€â”€ PurchaseOrder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<PurchaseOrder>(entity =>
           {
                entity.Property(e => e.TotalCost).HasPrecision(10, 2);
@@ -278,7 +268,7 @@ public partial class AppDbContext : DbContext
                    .HasForeignKey(e => e.UserId);
           });
 
-        // ── POLineItem ────────────────────────────────────────────────────────
+        // â”€â”€ POLineItem â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<POLineItem>(entity =>
           {
                entity.HasIndex(e => e.POID, "IX_POLineItems_POID");
@@ -295,7 +285,7 @@ public partial class AppDbContext : DbContext
                    .HasForeignKey(e => e.ProductId);
           });
 
-        // ── Payment ───────────────────────────────────────────────────────────
+        // â”€â”€ Payment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Payment>(entity =>
           {
                entity.HasIndex(e => e.SaleId, "IX_Payments_SaleId").IsUnique();

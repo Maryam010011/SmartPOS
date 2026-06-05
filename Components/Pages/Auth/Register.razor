@@ -1,4 +1,4 @@
-@page "/register"
+﻿@page "/register"
 @using SmartPOS.Services
 @using SmartPOS.Providers
 @using Blazored.LocalStorage
@@ -29,31 +29,31 @@
                 <DataAnnotationsValidator />
 
                 <div class="auth-form-group">
-                    <span class="auth-icon">👤</span>
+                    <span class="auth-icon">ðŸ‘¤</span>
                     <InputText @bind-Value="registerModel.Name" class="auth-input" placeholder="Full Name:" />
                     <ValidationMessage For="@(() => registerModel.Name)" class="text-danger" />
                 </div>
 
                 <div class="auth-form-group">
-                    <span class="auth-icon">✉</span>
+                    <span class="auth-icon">âœ‰</span>
                     <InputText @bind-Value="registerModel.Email" class="auth-input" placeholder="Email Address:" />
                     <ValidationMessage For="@(() => registerModel.Email)" class="text-danger" />
                 </div>
 
                 <div class="auth-form-group">
-                    <span class="auth-icon">🔒</span>
+                    <span class="auth-icon">ðŸ”’</span>
                     <InputText @bind-Value="registerModel.Password" type="password" class="auth-input" placeholder="Password:" />
                     <ValidationMessage For="@(() => registerModel.Password)" class="text-danger" />
                 </div>
 
                 <div class="auth-form-group">
-                    <span class="auth-icon">🔒</span>
+                    <span class="auth-icon">ðŸ”’</span>
                     <InputText @bind-Value="registerModel.ConfirmPassword" type="password" class="auth-input" placeholder="Confirm Password:" />
                     <ValidationMessage For="@(() => registerModel.ConfirmPassword)" class="text-danger" />
                 </div>
 
                 <div class="auth-form-group">
-                    <span class="auth-icon">👔</span>
+                    <span class="auth-icon">ðŸ‘”</span>
                     <InputSelect @bind-Value="registerModel.SelectedRoleId" class="auth-input">
                         <option value="0">Select your role...</option>
                         @foreach (var role in availableRoles)
