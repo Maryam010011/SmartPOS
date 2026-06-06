@@ -5,15 +5,15 @@
 @inject IProductService  ProductService
 @inject IReviewService   ReviewService
 
-<PageTitle>Reviews â€” SmartPOS+ Bakery</PageTitle>
+<PageTitle>Reviews - SmartPOS+ Bakery</PageTitle>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+<!-- â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
      PAGE HERO HEADER
-     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+     â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* -->
 <section class="rv-hero">
     <div class="rv-hero-inner">
         <div class="rv-hero-text">
-            <span class="rv-hero-eyebrow">â­ Customer Voices</span>
+            <span class="rv-hero-eyebrow">Customer Voices</span>
             <h1 class="rv-hero-title">Reviews &amp; Feedback</h1>
             <p class="rv-hero-sub">
                 Share your experience and read what others are saying about our fresh-baked goods.
@@ -21,23 +21,23 @@
         </div>
         <div class="rv-hero-stat-row">
             <div class="rv-stat-chip">
-                <span class="rv-stat-icon">ðŸ“</span>
+                <span class="rv-stat-icon"></span>
                 <div class="rv-stat-body">
                     <span class="rv-stat-val">@_allReviews.Count</span>
                     <span class="rv-stat-lbl">Total Reviews</span>
                 </div>
             </div>
             <div class="rv-stat-chip">
-                <span class="rv-stat-icon">ðŸ˜Š</span>
+                <span class="rv-stat-icon"></span>
                 <div class="rv-stat-body">
                     <span class="rv-stat-val">@_positiveCount</span>
                     <span class="rv-stat-lbl">Positive</span>
                 </div>
             </div>
             <div class="rv-stat-chip">
-                <span class="rv-stat-icon">â­</span>
+                <span class="rv-stat-icon"></span>
                 <div class="rv-stat-body">
-                    <span class="rv-stat-val">@(_allReviews.Count > 0 ? (_allReviews.Average(r => r.Rating)).ToString("F1") : "â€”")</span>
+                    <span class="rv-stat-val">@(_allReviews.Count > 0 ? (_allReviews.Average(r => r.Rating)).ToString("F1") : "-")</span>
                     <span class="rv-stat-lbl">Avg Rating</span>
                 </div>
             </div>
@@ -45,15 +45,15 @@
     </div>
 </section>
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+<!-- â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
      MAIN SPLIT LAYOUT
-     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+     â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* -->
 <section class="rv-main-layout">
 
-    <!-- â”€â”€ LEFT PANEL: Write a Review â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── LEFT PANEL: Write a Review ──────────────────────────── -->
     <div class="rv-form-panel">
         <div class="rv-panel-header">
-            <span class="rv-panel-icon">âœï¸</span>
+            <span class="rv-panel-icon"></span>
             <div>
                 <h2 class="rv-panel-title">Write a Review</h2>
                 <p class="rv-panel-subtitle">Tell us about your experience</p>
@@ -63,24 +63,24 @@
         @if (_submitSuccess)
         {
             <div class="rv-success-toast" role="alert">
-                <span class="rv-success-icon">âœ…</span>
+                <span class="rv-success-icon"></span>
                 <div>
                     <strong>Review submitted!</strong>
                     <p>Thank you for your feedback. Your review has been added to the feed.</p>
                 </div>
-                <button class="rv-toast-dismiss" @onclick="DismissSuccess" aria-label="Dismiss">Ã—</button>
+                <button class="rv-toast-dismiss" @onclick="DismissSuccess" aria-label="Dismiss">x</button>
             </div>
         }
 
         @if (!string.IsNullOrEmpty(_submitError))
         {
             <div class="rv-error-toast" role="alert">
-                <span>âš ï¸</span>
+                <span></span>
                 <div>
                     <strong>Submission failed</strong>
                     <p>@_submitError</p>
                 </div>
-                <button class="rv-toast-dismiss" @onclick="DismissError" aria-label="Dismiss">Ã—</button>
+                <button class="rv-toast-dismiss" @onclick="DismissError" aria-label="Dismiss">x</button>
             </div>
         }
 
@@ -101,13 +101,13 @@
                                 class="rv-select"
                                 @bind="_selectedProductId"
                                 @bind:after="OnProductChanged">
-                            <option value="0">â€” Choose a product â€”</option>
+                            <option value="0">- Choose a product -</option>
                             @foreach (var product in _products)
                             {
                                 <option value="@product.Id">@product.Name</option>
                             }
                         </select>
-                        <span class="rv-select-arrow">â–¾</span>
+                        <span class="rv-select-arrow"></span>
                     </div>
                 }
                 @if (!string.IsNullOrEmpty(_productError))
@@ -132,7 +132,7 @@
                                 @onmouseenter="@(() => _hoverRating = star)"
                                 @onmouseleave="@(() => _hoverRating = 0)"
                                 aria-label="@star star@(star == 1 ? "" : "s")">
-                            â˜…
+                            *
                         </button>
                     }
                     <span class="rv-star-label">
@@ -156,11 +156,11 @@
             <div class="rv-field">
                 <label class="rv-label" for="rv-comment">
                     Your Comment
-                    <span class="rv-label-hint">(optional â€” our AI will analyze the sentiment)</span>
+                    <span class="rv-label-hint">(optional - our AI will analyze the sentiment)</span>
                 </label>
                 <textarea id="rv-comment"
                           class="rv-textarea"
-                          placeholder="Describe your experience with this productâ€¦"
+                           placeholder="Describe your experience with this product..."
                           rows="5"
                           maxlength="1000"
                           @bind="_newReview.Comment"
@@ -172,13 +172,13 @@
 
             <!-- Auth Placeholder Notice -->
             <div class="rv-auth-notice">
-                <span class="rv-auth-icon">ðŸ”</span>
+                <span class="rv-auth-icon"></span>
                 <p>
                     <!-- AUTH PLACEHOLDER: CustomerId is hardcoded to 1 below as a development stub.
                          TODO: Replace with the real authenticated customer ID once MaryamJ's
                          authentication branch (auth-system) is merged into main. Wire this to:
                          AuthStateService.CurrentUser.Id or equivalent auth state provider. -->
-                    Submitting as <strong>Guest Customer</strong> (Auth integration pending â€” see code comment).
+                    Submitting as <strong>Guest Customer</strong> (Auth integration pending - see code comment).
                 </p>
             </div>
 
@@ -191,21 +191,21 @@
                 @if (_isSubmitting)
                 {
                     <span class="rv-spinner"></span>
-                    <span>Submittingâ€¦</span>
+                    <span>Submitting...</span>
                 }
                 else
                 {
                     <span>Submit Review</span>
-                    <span class="rv-submit-arrow">â†’</span>
+                    <span class="rv-submit-arrow">-&gt;</span>
                 }
             </button>
         </div>
     </div>
 
-    <!-- â”€â”€ RIGHT PANEL: Review Feed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <!-- ── RIGHT PANEL: Review Feed ─────────────────────────────── -->
     <div class="rv-feed-panel">
         <div class="rv-panel-header">
-            <span class="rv-panel-icon">ðŸ’¬</span>
+                <span class="rv-panel-icon"></span>
             <div>
                 <h2 class="rv-panel-title">
                     @if (_selectedProductId > 0)
@@ -258,14 +258,14 @@
             else if (!string.IsNullOrEmpty(_feedError))
             {
                 <div class="rv-feed-empty">
-                    <span class="rv-empty-icon">âš ï¸</span>
+                    <span class="rv-empty-icon"></span>
                     <p class="rv-empty-msg">@_feedError</p>
                 </div>
             }
             else if (FilteredReviews.Count == 0)
             {
                 <div class="rv-feed-empty">
-                    <span class="rv-empty-icon">ðŸŒŸ</span>
+                    <span class="rv-empty-icon"></span>
                     <p class="rv-empty-title">No reviews yet</p>
                     <p class="rv-empty-msg">
                         @if (_selectedProductId > 0)
@@ -308,7 +308,7 @@
                         <div class="rv-card-stars" aria-label="Rating: @review.Rating out of 5">
                             @for (int s = 1; s <= 5; s++)
                             {
-                                <span class="rv-card-star @(s <= review.Rating ? "rv-card-star--filled" : "")">â˜…</span>
+                                 <span class="rv-card-star @(s <= review.Rating ? "rv-card-star--filled" : "")">*</span>
                             }
                             <span class="rv-card-rating-num">@review.Rating.ToString("F0")/5</span>
                         </div>
@@ -345,12 +345,12 @@
 </section>
 
 @code {
-    // â”€â”€ State: Products â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── State: Products ──────────────────────────────────────────
     private List<ProductDto>  _products       = new();
     private bool              _loadingProducts = true;
     private string?           _productError;
 
-    // â”€â”€ State: Review Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── State: Review Form ───────────────────────────────────────
     private int               _selectedProductId   = 0;
     private string            _selectedProductName = string.Empty;
     private int               _hoverRating         = 0;
@@ -370,17 +370,17 @@
     /// </summary>
     private CreateReviewDto _newReview = new()
     {
-        CustomerId = 1  // â† PLACEHOLDER â€” see TODO above
+        CustomerId = 1  //  PLACEHOLDER  -  see TODO above
     };
 
-    // â”€â”€ State: Review Feed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── State: Review Feed ───────────────────────────────────────
     private List<ReviewDto>  _reviews        = new();
     private List<ReviewDto>  _allReviews     = new();
     private bool             _loadingReviews = false;
     private string?          _feedError;
     private string           _activeSentimentFilter = "All";
 
-    // â”€â”€ Computed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Computed ─────────────────────────────────────────────────
     private int _positiveCount => _allReviews.Count(r => r.Sentiment == "Positive");
 
     private List<ReviewDto> FilteredReviews =>
@@ -388,13 +388,13 @@
             ? _reviews
             : _reviews.Where(r => r.Sentiment == _activeSentimentFilter).ToList();
 
-    // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Lifecycle ────────────────────────────────────────────────
     protected override async Task OnInitializedAsync()
     {
         await Task.WhenAll(LoadProductsAsync(), LoadAllReviewsAsync());
     }
 
-    // â”€â”€ Data Loaders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Data Loaders ─────────────────────────────────────────────
     private async Task LoadProductsAsync()
     {
         _loadingProducts = true;
@@ -427,7 +427,7 @@
                 _reviews    = result.Data;
             }
         }
-        catch { /* Non-critical â€” stat chips will show 0 */ }
+        catch { /* Non-critical  -  stat chips will show 0 */ }
     }
 
     private async Task LoadReviewsForProductAsync(int productId)
@@ -453,7 +453,7 @@
         }
     }
 
-    // â”€â”€ Event Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Event Handlers ───────────────────────────────────────────
     private async Task OnProductChanged()
     {
         _activeSentimentFilter = "All";
@@ -503,7 +503,7 @@
                 // Reset form fields (keep product and CustomerId placeholder)
                 _newReview = new CreateReviewDto
                 {
-                    CustomerId = 1,  // â† PLACEHOLDER â€” see TODO above
+                    CustomerId = 1,  //  PLACEHOLDER  -  see TODO above
                     ProductId  = _selectedProductId
                 };
                 _formSubmitted = false;
@@ -527,23 +527,23 @@
     private void DismissSuccess() => _submitSuccess = false;
     private void DismissError()   => _submitError   = null;
 
-    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Helpers ──────────────────────────────────────────────────
     private static string RatingLabel(int rating) => rating switch
     {
-        1 => "ðŸ˜ž Poor",
-        2 => "ðŸ˜• Fair",
-        3 => "ðŸ˜ Average",
-        4 => "ðŸ˜Š Good",
-        5 => "ðŸ¤© Excellent",
+        1 => "Poor",
+        2 => "Fair",
+        3 => "Average",
+        4 => "Good",
+        5 => "Excellent",
         _ => string.Empty
     };
 
     private static string SentimentIcon(string sentiment) => sentiment switch
     {
-        "Positive" => "ðŸ˜Š",
-        "Negative" => "ðŸ˜ž",
-        "Neutral"  => "ðŸ˜",
-        _          => "â“"
+        "Positive" => "",
+        "Negative" => "",
+        "Neutral"  => "",
+        _          => ""
     };
 
     private static string GetAvatarInitial(string name)
@@ -561,13 +561,13 @@
 }
 
 
-<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-     SCOPED STYLES â€” ALL COLORS FROM colors.css VARIABLES
-     â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+<!-- â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
+     SCOPED STYLES  -  ALL COLORS FROM colors.css VARIABLES
+     â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* -->
 <style>
     @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@@300;400;500;600;700;800&display=swap');
 
-    /* â”€â”€ Box-sizing reset â”€â”€ */
+    /* ── Box-sizing reset ── */
     .rv-hero *,
     .rv-main-layout *,
     .rv-form-panel *,
@@ -576,9 +576,9 @@
         font-family: 'Inter', sans-serif;
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        HERO SECTION
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .rv-hero {
         background: var(--color-navbar-bg);
         position: relative;
@@ -678,9 +678,9 @@
         margin-top: .15rem;
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        SPLIT LAYOUT
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .rv-main-layout {
         max-width: 1280px;
         margin: 2.5rem auto 4rem;
@@ -697,9 +697,9 @@
         }
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        PANEL SHARED
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .rv-form-panel,
     .rv-feed-panel {
         background: #fff;
@@ -739,9 +739,9 @@
         margin: 0;
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        FORM PANEL
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .rv-form-body {
         padding: 1.5rem 1.75rem 1.75rem;
         display: flex;
@@ -1031,9 +1031,9 @@
 
     .rv-toast-dismiss:hover { opacity: 1; }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        FEED PANEL
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .rv-feed-panel .rv-panel-header {
         align-items: center;
     }
@@ -1115,7 +1115,7 @@
         margin: 0 auto;
     }
 
-    /* â”€â”€ Review Card â”€â”€ */
+    /* ── Review Card ── */
     .rv-review-card {
         background: var(--color-page-bg);
         border: 1px solid rgba(61,28,2,.08);
@@ -1204,21 +1204,21 @@
         white-space: nowrap;
     }
 
-    /* Positive â€” Soft Pastel Green (harmonizes with Buttermilk bg) */
+    /* Positive  -  Soft Pastel Green (harmonizes with Buttermilk bg) */
     .rv-sentiment-badge--positive {
         background: #E8F5E9;
         color: #2E7D32;
         border: 1px solid #A5D6A7;
     }
 
-    /* Neutral â€” Warm Taupe/Mocha Grey (complements Chocolate Brown brand) */
+    /* Neutral  -  Warm Taupe/Mocha Grey (complements Chocolate Brown brand) */
     .rv-sentiment-badge--neutral {
         background: #EFEBE9;
         color: #5D4037;
         border: 1px solid #BCAAA4;
     }
 
-    /* Negative â€” Soft Pastel Red */
+    /* Negative  -  Soft Pastel Red */
     .rv-sentiment-badge--negative {
         background: #FFEBEE;
         color: #C62828;
@@ -1312,7 +1312,7 @@
         text-align: right;
     }
 
-    /* â”€â”€ Skeleton Screens â”€â”€ */
+    /* ── Skeleton Screens ── */
     .rv-review-card--skeleton {
         pointer-events: none;
         gap: .85rem;
@@ -1340,7 +1340,7 @@
         width: 75%;
     }
 
-    /* â”€â”€ Animations â”€â”€ */
+    /* ── Animations ── */
     @@keyframes rv-shimmer {
         0%   { background-position: 200% 0; }
         100% { background-position: -200% 0; }

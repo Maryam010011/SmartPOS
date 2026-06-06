@@ -16,7 +16,7 @@
         <div class="toast-container-pos">
             <div class="toast-pos toast-@ToastType">
                 <span class="toast-icon">
-                    @(ToastType == "success" ? "âœ…" : ToastType == "error" ? "âŒ" : "â„¹ï¸")
+                    @(ToastType == "success" ? "" : ToastType == "error" ? "" : "")
                 </span>
                 <span class="toast-body">@ToastMessage</span>
                 <button class="toast-close" @onclick="DismissToast">&times;</button>
@@ -240,15 +240,15 @@
                                         <td>
                                             @if (statusClass == "Out of Stock")
                                             {
-                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1.5 rounded-pill">â— Out of Stock</span>
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1.5 rounded-pill">â -  Out of Stock</span>
                                             }
                                             else if (statusClass == "Low Stock")
                                             {
-                                                <span class="badge px-2 py-1.5 rounded-pill" style="background-color: rgba(204, 85, 0, 0.15); color: #CC5500; border: 1px solid rgba(204, 85, 0, 0.3);">â— Low Stock</span>
+                                                <span class="badge px-2 py-1.5 rounded-pill" style="background-color: rgba(204, 85, 0, 0.15); color: #CC5500; border: 1px solid rgba(204, 85, 0, 0.3);">â -  Low Stock</span>
                                             }
                                             else
                                             {
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1.5 rounded-pill">â— In Stock</span>
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1.5 rounded-pill">â -  In Stock</span>
                                             }
                                         </td>
                                         <td class="text-muted small">@item.LastUpdated.ToString("dd MMM yyyy HH:mm")</td>

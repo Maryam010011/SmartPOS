@@ -5,24 +5,9 @@
 
     <AdminNavbar OnAvatarClick="OpenDrawer" />
 
-    <ProfileDrawer IsOpen="@_drawerOpen"
-                   OnClose="CloseDrawer"
-                   DisplayName="Admin User"
+    <ProfileDrawer DisplayName="Admin User"
                    RoleName="Administrator"
-                   RoleColor="var(--role-admin-accent, #C4848A)"
-                    DashboardRoute="/admin/analytics"
-                    SettingsRoute=""
-                    NavItems="@(new List<ProfileDrawer.DrawerNavItem>
-                    {
-                        new() { Label = "Products",    Url = "/admin/products" },
-                        new() { Label = "Categories",  Url = "/admin/categories" },
-                        new() { Label = "Suppliers",   Url = "/admin/suppliers" },
-                        new() { Label = "Users",       Url = "/admin/users" },
-                        new() { Label = "Roles",       Url = "/admin/roles" },
-                        new() { Label = "Customers",   Url = "/admin/customers" },
-                        new() { Label = "Audit Logs",  Url = "/admin/audit-logs" },
-                        new() { Label = "Sentiment",   Url = "/admin/sentiment" },
-                    })" />
+                   RoleColor="var(--role-admin-accent, #C4848A)" />
 
     <main class="admin-main" id="admin-content">
         <div class="admin-content-wrap">
@@ -38,7 +23,7 @@
     private bool _drawerOpen = false;
 
     private void OpenDrawer()  { _drawerOpen = true; StateHasChanged(); }
-    private void CloseDrawer() => _drawerOpen = false;
+    private void CloseDrawer() { _drawerOpen = false; StateHasChanged(); }
 }
 
 <style>

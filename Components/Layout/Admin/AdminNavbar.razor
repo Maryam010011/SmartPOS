@@ -6,7 +6,7 @@
 
         <!-- Brand -->
         <a class="navbar-brand" href="/admin/analytics">
-            <span class="brand-icon">ðŸ¥</span>
+            <span class="brand-icon"></span>
             <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
             <span class="brand-role-tag">Admin</span>
         </a>
@@ -48,15 +48,15 @@
         <!-- Right Controls -->
         <div class="navbar-right">
             <span class="navbar-time">@_currentTime</span>
-            <button class="nav-avatar-btn" @onclick="ToggleDrawer"
+            <button class="nav-avatar-btn" onclick="toggleSidebar()"
                     aria-label="Open profile drawer" id="admin-profile-btn">
                 <span class="avatar-ring">
                     <span class="avatar-initials">AD</span>
                 </span>
             </button>
             <!-- Mobile hamburger -->
-            <button class="hamburger-btn @(_mobileOpen ? "ham-open" : "")"
-                    @onclick="ToggleMobile" aria-label="Toggle menu">
+            <button class="hamburger-btn"
+                    onclick="toggleSidebar()" aria-label="Open profile drawer">
                 <span></span><span></span><span></span>
             </button>
         </div>
@@ -112,9 +112,9 @@
 }
 
 <style>
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       AdminNavbar â€” SmartPOS+ Bakery Theme
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
+       AdminNavbar  -  SmartPOS+ Bakery Theme
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
 
     .smartpos-navbar {
         position: sticky;

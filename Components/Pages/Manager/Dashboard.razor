@@ -97,7 +97,7 @@
                     <div class="card-body p-0">
                         @if (LowStockItems == null || !LowStockItems.Any())
                         {
-                            <div class="text-center py-4 text-muted small">All items are well-stocked. âœ…</div>
+                            <div class="text-center py-4 text-muted small">All items are well-stocked. ✅</div>
                         }
                         else
                         {
@@ -121,11 +121,11 @@
                                                 <td class="text-end" style="padding-right: 20px;">
                                                     @if (item.Quantity == 0)
                                                     {
-                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1.5 rounded-pill">â— Out of Stock</span>
+                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1.5 rounded-pill">â -  Out of Stock</span>
                                                     }
                                                     else
                                                     {
-                                                        <span class="badge px-2 py-1.5 rounded-pill" style="background-color: rgba(204, 85, 0, 0.15); color: #CC5500; border: 1px solid rgba(204, 85, 0, 0.3);">â— Low Stock</span>
+                                                        <span class="badge px-2 py-1.5 rounded-pill" style="background-color: rgba(204, 85, 0, 0.15); color: #CC5500; border: 1px solid rgba(204, 85, 0, 0.3);">â -  Low Stock</span>
                                                     }
                                                 </td>
                                             </tr>
@@ -193,7 +193,7 @@
                         <div class="row g-2">
                             <div class="col-md-3">
                                 <a href="/manager/inventory" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2 py-3">
-                                    <span style="font-size: 1.5rem;">ðŸ“¦</span>
+                                    <span style="font-size: 1.5rem;"></span>
                                     <div>
                                         <div class="fw-bold small">Inventory Dashboard</div>
                                         <div class="text-muted" style="font-size: 0.75rem;">Monitor stock levels</div>
@@ -202,7 +202,7 @@
                             </div>
                             <div class="col-md-3">
                                 <a href="/manager/inventory/low-stock" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2 py-3">
-                                    <span style="font-size: 1.5rem;">âš ï¸</span>
+                                    <span style="font-size: 1.5rem;">âš </span>
                                     <div>
                                         <div class="fw-bold small">Low Stock Alerts</div>
                                         <div class="text-muted" style="font-size: 0.75rem;">@LowStockCount items need attention</div>
@@ -211,7 +211,7 @@
                             </div>
                             <div class="col-md-3">
                                 <a href="/manager/purchase-orders" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2 py-3">
-                                    <span style="font-size: 1.5rem;">ðŸ›’</span>
+                                    <span style="font-size: 1.5rem;">🛒</span>
                                     <div>
                                         <div class="fw-bold small">Purchase Orders</div>
                                         <div class="text-muted" style="font-size: 0.75rem;">Create & track POs</div>
@@ -220,7 +220,7 @@
                             </div>
                             <div class="col-md-3">
                                 <a href="/manager/promotions" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2 py-3">
-                                    <span style="font-size: 1.5rem;">ðŸ·ï¸</span>
+                                    <span style="font-size: 1.5rem;"></span>
                                     <div>
                                         <div class="fw-bold small">Promotions</div>
                                         <div class="text-muted" style="font-size: 0.75rem;">Manage discounts</div>

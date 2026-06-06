@@ -23,6 +23,20 @@
         <Routes />
     </CascadingAuthenticationState>
     <ReconnectModal />
+    <script>
+        window.toggleSidebar = function() {
+            var d = document.querySelector('.profile-drawer');
+            if (d) d.classList.toggle('drawer-open');
+        };
+        window.closeSidebar = function() {
+            var d = document.querySelector('.profile-drawer');
+            if (d) d.classList.remove('drawer-open');
+        };
+        window.signOut = function() {
+            localStorage.removeItem('authToken');
+            window.location.href = '/login';
+        };
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>

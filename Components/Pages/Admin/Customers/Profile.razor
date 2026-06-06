@@ -13,7 +13,7 @@
     {
         <div class="toast-container-pos">
             <div class="toast-pos toast-@ToastType">
-                <span class="toast-icon">@(ToastType == "success" ? "âœ…" : ToastType == "warning" ? "âš ï¸" : "âŒ")</span>
+                <span class="toast-icon">@(ToastType == "success" ? "" : ToastType == "warning" ? "" : "")</span>
                 <span class="toast-body">@ToastMessage</span>
                 <button class="toast-close" @onclick="DismissToast">&times;</button>
             </div>
@@ -54,9 +54,9 @@
                         <div>
                             <h3 class="fw-bold mb-1 text-dark">@Customer.Name</h3>
                             <div class="d-flex flex-wrap gap-3 text-muted small">
-                                <span>âœ‰ï¸ @Customer.Email</span>
-                                <span>ðŸ“ž @Customer.Phone</span>
-                                <span>ðŸ“… Member since @Customer.CreatedAt.ToString("MMM yyyy")</span>
+                                <span>@Customer.Email</span>
+                                <span>@Customer.Phone</span>
+                                <span>📅 Member since @Customer.CreatedAt.ToString("MMM yyyy")</span>
                             </div>
                         </div>
                     </div>
@@ -234,22 +234,22 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="text-muted small fw-semibold text-uppercase">Date of Birth</label>
-                                <p class="fw-bold text-dark mb-0">@(Customer.DateOfBirth?.ToString("MMM dd, yyyy") ?? "â€”")</p>
+                                <p class="fw-bold text-dark mb-0">@(Customer.DateOfBirth?.ToString("MMM dd, yyyy") ?? " - ")</p>
                             </div>
                             <div class="col-12">
                                 <label class="text-muted small fw-semibold text-uppercase">Address</label>
-                                <p class="fw-bold text-dark mb-0">@(!string.IsNullOrEmpty(Customer.Address) ? Customer.Address : "â€”")</p>
+                                <p class="fw-bold text-dark mb-0">@(!string.IsNullOrEmpty(Customer.Address) ? Customer.Address : " - ")</p>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-muted small fw-semibold text-uppercase">Account Status</label>
                                 <p class="mb-0">
                                     @if (Customer.IsActive)
                                     {
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">â— Active</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">â -  Active</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 rounded-pill">â— Inactive</span>
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2 rounded-pill">â -  Inactive</span>
                                     }
                                 </p>
                             </div>

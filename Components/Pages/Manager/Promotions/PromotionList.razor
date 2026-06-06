@@ -16,9 +16,9 @@
                 <span class="toast-icon">
                     @switch (ToastType)
                     {
-                        case "success": <text>âœ…</text>; break;
-                        case "error": <text>âŒ</text>; break;
-                        default: <text>â„¹ï¸</text>; break;
+                        case "success": <text></text>; break;
+                        case "error": <text></text>; break;
+                        default: <text></text>; break;
                     }
                 </span>
                 <span class="toast-body">@ToastMessage</span>
@@ -449,10 +449,10 @@
     {
         var status = GetRowStatus(p);
         if (status == "Active")
-            return (MarkupString)"<span class=\"badge bg-success-subtle text-success border border-success-subtle px-2 py-1.5 rounded-pill\">â— Active</span>";
+            return (MarkupString)"<span class=\"badge bg-success-subtle text-success border border-success-subtle px-2 py-1.5 rounded-pill\">â -  Active</span>";
         else if (status == "Expired")
-            return (MarkupString)"<span class=\"badge px-2 py-1.5 rounded-pill\" style=\"background-color: rgba(204, 85, 0, 0.15); color: #CC5500; border: 1px solid rgba(204, 85, 0, 0.3);\">â— Expired</span>";
+            return (MarkupString)"<span class=\"badge px-2 py-1.5 rounded-pill\" style=\"background-color: rgba(204, 85, 0, 0.15); color: #CC5500; border: 1px solid rgba(204, 85, 0, 0.3);\">â -  Expired</span>";
         else
-            return (MarkupString)"<span class=\"badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1.5 rounded-pill\">â— Inactive</span>";
+            return (MarkupString)"<span class=\"badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1.5 rounded-pill\">â -  Inactive</span>";
     }
 }

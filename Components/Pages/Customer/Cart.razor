@@ -2,7 +2,7 @@
 @rendermode InteractiveServer
 @layout CustomerLayout
 
-@* â”€â”€ Services injected per Blazor DI (all registered in Program.cs) â”€â”€ *@
+@* ── Services injected per Blazor DI (all registered in Program.cs) ── *@
 @inject CartStateService CartState
 @inject ISaleService      SaleService
 @inject NavigationManager Navigation
@@ -10,22 +10,22 @@
 @* IDisposable so we can unsubscribe from CartState.OnCartChanged *@
 @implements IDisposable
 
-<PageTitle>Your Cart â€” SmartPOS+ Bakery</PageTitle>
+<PageTitle>Your Cart  -  SmartPOS+ Bakery</PageTitle>
 
 <div class="cp-root">
 
-    @* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    @* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        PAGE HEADER
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
     <header class="cp-header">
         <div class="cp-header-inner">
             <button id="cp-back-to-shop-btn" class="cp-back-btn" @onclick="GoToShop">
-                <span class="cp-back-arrow">â†</span>
+                <span class="cp-back-arrow"></span>
                 <span>Continue Shopping</span>
             </button>
 
             <div class="cp-header-brand">
-                <span class="cp-header-icon">ðŸ›’</span>
+                <span class="cp-header-icon">🛒</span>
                 <h1 class="cp-header-title">Shopping Cart</h1>
             </div>
 
@@ -43,13 +43,13 @@
     </header>
 
 
-    @* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    @* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        EMPTY CART STATE
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
     @if (CartState.Count == 0 && !_orderPlaced)
     {
         <div class="cp-empty">
-            <div class="cp-empty-icon">ðŸ›’</div>
+            <div class="cp-empty-icon">🛒</div>
             <h2 class="cp-empty-title">Your cart is empty</h2>
             <p class="cp-empty-sub">
                 Looks like you haven't added anything yet.<br />
@@ -61,14 +61,14 @@
         </div>
     }
 
-    @* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    @* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        TWO-COLUMN CART LAYOUT  (items left / summary right)
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
     @if (CartState.Count > 0 && !_orderPlaced)
     {
         <div class="cp-body">
 
-            @* â”€â”€ LEFT COLUMN: CART ITEMS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+            @* ── LEFT COLUMN: CART ITEMS ─────────────────────────────── *@
             <section class="cp-items-col" aria-label="Cart items">
 
                 @* Column headings (desktop only) *@
@@ -94,11 +94,11 @@
                                          alt="@item.Product.Name"
                                          loading="lazy"
                                          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-                                    <div class="cp-item-img-ph" style="display:none;">ðŸ¥–</div>
+                                    <div class="cp-item-img-ph" style="display:none;"></div>
                                 }
                                 else
                                 {
-                                    <div class="cp-item-img-ph">ðŸ¥–</div>
+                                    <div class="cp-item-img-ph"></div>
                                 }
                             </div>
 
@@ -119,7 +119,7 @@
                                             id="cp-qty-minus-@item.Product.Id"
                                             @onclick="@(() => Decrement(item.Product.Id))"
                                             aria-label="Decrease quantity of @item.Product.Name">
-                                        âˆ’
+                                        −
                                     </button>
                                     <span class="cp-stepper-val" aria-live="polite">@item.Quantity</span>
                                     <button class="cp-stepper-btn"
@@ -145,7 +145,7 @@
                                         @onclick="@(() => Remove(item.Product.Id))"
                                         title="Remove @item.Product.Name from cart"
                                         aria-label="Remove @item.Product.Name">
-                                    ðŸ—‘
+                                    🗑
                                 </button>
                             </div>
 
@@ -156,14 +156,14 @@
                 @* Clear All footer *@
                 <div class="cp-items-footer">
                     <button id="cp-clear-all-btn" class="cp-clear-btn" @onclick="ClearAll">
-                        ðŸ—‘ Clear All Items
+                        🗑 Clear All Items
                     </button>
                 </div>
 
             </section>  @* /cp-items-col *@
 
 
-            @* â”€â”€ RIGHT COLUMN: ORDER SUMMARY (STICKY) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+            @* ── RIGHT COLUMN: ORDER SUMMARY (STICKY) ───────────────── *@
             <aside class="cp-summary-col" aria-label="Order summary">
                 <div class="cp-summary-card">
 
@@ -177,15 +177,15 @@
                         <span class="cp-sum-val">Rs.&nbsp;@CartState.SubTotal.ToString("N0")</span>
                     </div>
 
-                    @* â”€â”€ PROMO CODE SECTION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    @* ── PROMO CODE SECTION ─────────────────────────────────
                        UI Shell complete. Actual service call to
                        IPromotionService.ValidateAndApply will be wired once
                        MaryamJ's promo-service branch is merged.
                        See: ApplyPromoCode() method in @code for the TODO stub.
-                       â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+                       ──────────────────────────────────────────────────── *@
                     <div class="cp-promo-section">
                         <label class="cp-promo-label" for="cp-promo-input">
-                            ðŸ· Have a Promo Code?
+                             Have a Promo Code?
                         </label>
                         <div class="cp-promo-row">
                             <input id="cp-promo-input"
@@ -193,7 +193,7 @@
                                           @(_promoError   is not null ? "cp-promo-input--error"   : "")
                                           @(_appliedPromo is not null ? "cp-promo-input--success" : "")"
                                    type="text"
-                                   placeholder="Enter codeâ€¦"
+                                   placeholder="Enter code"
                                    @bind="_promoCode"
                                    @bind:event="oninput"
                                    disabled="@(_appliedPromo is not null || _isApplyingPromo)"
@@ -206,7 +206,7 @@
                                         class="cp-promo-apply-btn"
                                         @onclick="ApplyPromoCode"
                                         disabled="@(string.IsNullOrWhiteSpace(_promoCode) || _isApplyingPromo)">
-                                    @(_isApplyingPromo ? "Checkingâ€¦" : "Apply")
+                                    @(_isApplyingPromo ? "Checking" : "Apply")
                                 </button>
                             }
                             else
@@ -215,7 +215,7 @@
                                         @onclick="RemovePromo"
                                         title="Remove promo code"
                                         aria-label="Remove applied promo code">
-                                    âœ•
+                                    ✕
                                 </button>
                             }
                         </div>
@@ -223,7 +223,7 @@
                         @if (_promoError is not null)
                         {
                             <p class="cp-promo-msg cp-promo-msg--error" role="alert">
-                                âš &nbsp;@_promoError
+                                âš &nbsp;@_promoError
                             </p>
                         }
                         @if (_appliedPromo is not null)
@@ -234,13 +234,13 @@
                         }
                     </div>
 
-                    @* Discount row â€” only shown when a promo is applied *@
+                    @* Discount row  -  only shown when a promo is applied *@
                     @if (_appliedPromo is not null && _appliedPromo.DiscountAmount > 0)
                     {
                         <div class="cp-sum-row cp-sum-row--discount">
                             <span class="cp-sum-label">Discount (@_promoCode.ToUpper())</span>
                             <span class="cp-sum-val cp-sum-val--discount">
-                                âˆ’ Rs.&nbsp;@_appliedPromo.DiscountAmount.ToString("N0")
+                                − Rs.&nbsp;@_appliedPromo.DiscountAmount.ToString("N0")
                             </span>
                         </div>
                     }
@@ -269,20 +269,20 @@
                             class="cp-btn-checkout"
                             @onclick="OpenCheckoutModal"
                             disabled="@(CartState.Count == 0)">
-                        Proceed to Checkout&nbsp;â†’
+                        Proceed to Checkout&nbsp;â†'
                     </button>
 
                     <button id="cp-continue-shopping-btn"
                             class="cp-btn-continue"
                             @onclick="GoToShop">
-                        â† Continue Shopping
+                         Continue Shopping
                     </button>
 
                     @* Trust badges *@
                     <div class="cp-trust-row">
-                        <span class="cp-trust-item">ðŸ”’&nbsp;Secure Checkout</span>
-                        <span class="cp-trust-item">ðŸ§¾&nbsp;FBR Compliant</span>
-                        <span class="cp-trust-item">âœ…&nbsp;Quality Guaranteed</span>
+                        <span class="cp-trust-item">🔒&nbsp;Secure Checkout</span>
+                        <span class="cp-trust-item">&nbsp;FBR Compliant</span>
+                        <span class="cp-trust-item">✅&nbsp;Quality Guaranteed</span>
                     </div>
 
                 </div>  @* /cp-summary-card *@
@@ -292,13 +292,13 @@
     }
 
 
-    @* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    @* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        POST-ORDER SUCCESS STATE (full-page receipt)
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
     @if (_orderPlaced && _saleResult is not null)
     {
         <div class="cp-success-page">
-            <div class="cp-success-anim">âœ…</div>
+            <div class="cp-success-anim">✅</div>
             <h2 class="cp-success-title">Order Placed Successfully!</h2>
             <p class="cp-success-sub">
                 Thank you! Your order has been received. Here's your receipt.
@@ -322,7 +322,7 @@
                 @foreach (var line in _saleResult.Items)
                 {
                     <div class="cp-receipt-row">
-                        <span>@line.ProductName Ã— @line.Quantity</span>
+                        <span>@line.ProductName Ã -  @line.Quantity</span>
                         <span>Rs.&nbsp;@line.LineTotal.ToString("N0")</span>
                     </div>
                 }
@@ -337,7 +337,7 @@
                 {
                     <div class="cp-receipt-row cp-receipt-row--discount">
                         <span>Discount</span>
-                        <span>âˆ’ Rs.&nbsp;@_saleResult.DiscountAmount.ToString("N0")</span>
+                        <span>− Rs.&nbsp;@_saleResult.DiscountAmount.ToString("N0")</span>
                     </div>
                 }
                 <div class="cp-receipt-row">
@@ -354,7 +354,7 @@
             </div>
 
             <button id="cp-back-to-shop-after-order" class="cp-btn-primary" @onclick="GoToShop">
-                â† Back to Shop
+                 Back to Shop
             </button>
         </div>
     }
@@ -362,12 +362,12 @@
 </div>  @* /cp-root *@
 
 
-@* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   CHECKOUT MODAL  â€” 3-Step: Review â†’ Payment â†’ Receipt
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+@* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
+   CHECKOUT MODAL   -  3-Step: Review â†' Payment â†' Receipt
+   â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
 @if (_showCheckoutModal)
 {
-    @* Backdrop â€” click to close (blocked on step 3 to prevent losing receipt) *@
+    @* Backdrop  -  click to close (blocked on step 3 to prevent losing receipt) *@
     <div class="cp-modal-overlay"
          @onclick="@(() => { if (_checkoutStep < 3) CloseCheckoutModal(); })">
     </div>
@@ -384,19 +384,19 @@
                     id="cp-modal-close-btn"
                     @onclick="CloseCheckoutModal"
                     aria-label="Close checkout dialog">
-                âœ•
+                ✕
             </button>
         }
 
-        @* â”€â”€ STEP PROGRESS BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+        @* ── STEP PROGRESS BAR ─────────────────────────────────────────── *@
         <div class="cp-step-bar" aria-label="Checkout progress">
             <div class="cp-step-item @(_checkoutStep >= 1 ? "cp-step--active" : "")">
-                <div class="cp-step-dot">@(_checkoutStep > 1 ? "âœ“" : "1")</div>
+                <div class="cp-step-dot">@(_checkoutStep > 1 ? "✓" : "1")</div>
                 <span class="cp-step-label">Review</span>
             </div>
             <div class="cp-step-line @(_checkoutStep >= 2 ? "cp-step-line--done" : "")"></div>
             <div class="cp-step-item @(_checkoutStep >= 2 ? "cp-step--active" : "")">
-                <div class="cp-step-dot">@(_checkoutStep > 2 ? "âœ“" : "2")</div>
+                <div class="cp-step-dot">@(_checkoutStep > 2 ? "✓" : "2")</div>
                 <span class="cp-step-label">Payment</span>
             </div>
             <div class="cp-step-line @(_checkoutStep >= 3 ? "cp-step-line--done" : "")"></div>
@@ -407,9 +407,9 @@
         </div>
 
 
-        @* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-           STEP 1 â€” ORDER REVIEW
-           â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+        @* ────────────────────────────────────────────────────────────────
+           STEP 1  -  ORDER REVIEW
+           ──────────────────────────────────────────────────────────────── *@
         @if (_checkoutStep == 1)
         {
             <div class="cp-modal-body">
@@ -433,11 +433,11 @@
                                 }
                                 else
                                 {
-                                    <span class="cp-modal-item-ph">ðŸ¥–</span>
+                                    <span class="cp-modal-item-ph"></span>
                                 }
                             </div>
                             <span class="cp-modal-item-name">@item.Product.Name</span>
-                            <span class="cp-modal-item-qty">Ã— @item.Quantity</span>
+                            <span class="cp-modal-item-qty">Ã -  @item.Quantity</span>
                             <span class="cp-modal-item-price">
                                 Rs.&nbsp;@((item.Product.Price * item.Quantity).ToString("N0"))
                             </span>
@@ -455,7 +455,7 @@
                     {
                         <div class="cp-modal-sum-row cp-modal-sum-row--discount">
                             <span>Discount (@_promoCode.ToUpper())</span>
-                            <span>âˆ’ Rs.&nbsp;@_appliedPromo.DiscountAmount.ToString("N0")</span>
+                            <span>− Rs.&nbsp;@_appliedPromo.DiscountAmount.ToString("N0")</span>
                         </div>
                     }
                     <div class="cp-modal-sum-row cp-modal-sum-row--muted">
@@ -479,15 +479,15 @@
                 <button class="cp-modal-btn-primary"
                         id="cp-modal-next-payment-btn"
                         @onclick="@(() => _checkoutStep = 2)">
-                    Next: Payment &nbsp;â†’
+                    Next: Payment &nbsp;â†'
                 </button>
             </div>
         }
 
 
-        @* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-           STEP 2 â€” PAYMENT METHOD
-           â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+        @* ────────────────────────────────────────────────────────────────
+           STEP 2  -  PAYMENT METHOD
+           ──────────────────────────────────────────────────────────────── *@
         @if (_checkoutStep == 2)
         {
             <div class="cp-modal-body">
@@ -498,36 +498,36 @@
                     <button class="cp-payment-card @(_selectedPayment == PaymentMethod.Cash   ? "cp-payment-card--active" : "")"
                             id="cp-pay-cash"
                             @onclick="@(() => _selectedPayment = PaymentMethod.Cash)">
-                        <span class="cp-payment-icon">ðŸ’µ</span>
+                        <span class="cp-payment-icon"></span>
                         <span class="cp-payment-label">Cash</span>
                         <span class="cp-payment-desc">Pay at pickup</span>
                         @if (_selectedPayment == PaymentMethod.Cash)
                         {
-                            <span class="cp-payment-check">âœ“</span>
+                            <span class="cp-payment-check">✓</span>
                         }
                     </button>
 
                     <button class="cp-payment-card @(_selectedPayment == PaymentMethod.Card   ? "cp-payment-card--active" : "")"
                             id="cp-pay-card"
                             @onclick="@(() => _selectedPayment = PaymentMethod.Card)">
-                        <span class="cp-payment-icon">ðŸ’³</span>
+                        <span class="cp-payment-icon"></span>
                         <span class="cp-payment-label">Card</span>
                         <span class="cp-payment-desc">Debit or Credit</span>
                         @if (_selectedPayment == PaymentMethod.Card)
                         {
-                            <span class="cp-payment-check">âœ“</span>
+                            <span class="cp-payment-check">✓</span>
                         }
                     </button>
 
                     <button class="cp-payment-card @(_selectedPayment == PaymentMethod.Online ? "cp-payment-card--active" : "")"
                             id="cp-pay-online"
                             @onclick="@(() => _selectedPayment = PaymentMethod.Online)">
-                        <span class="cp-payment-icon">ðŸ“±</span>
+                        <span class="cp-payment-icon"></span>
                         <span class="cp-payment-label">Online</span>
                         <span class="cp-payment-desc">JazzCash / EasyPaisa</span>
                         @if (_selectedPayment == PaymentMethod.Online)
                         {
-                            <span class="cp-payment-check">âœ“</span>
+                            <span class="cp-payment-check">✓</span>
                         }
                     </button>
                 </div>
@@ -542,7 +542,7 @@
                 @if (_checkoutError is not null)
                 {
                     <div class="cp-modal-error" role="alert">
-                        âš ï¸&nbsp;@_checkoutError
+                        âš &nbsp;@_checkoutError
                     </div>
                 }
             </div>
@@ -551,7 +551,7 @@
                 <button class="cp-modal-btn-ghost"
                         id="cp-modal-back-btn"
                         @onclick="@(() => { _checkoutStep = 1; _checkoutError = null; })">
-                    â† Back
+                     Back
                 </button>
                 <button class="cp-modal-btn-place"
                         id="cp-place-order-btn"
@@ -560,24 +560,24 @@
                     @if (_isPlacingOrder)
                     {
                         <span class="cp-spinner"></span>
-                        <span>Placing Orderâ€¦</span>
+                        <span>Placing Order</span>
                     }
                     else
                     {
-                        <span>Place Order âœ“</span>
+                        <span>Place Order ✓</span>
                     }
                 </button>
             </div>
         }
 
 
-        @* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-           STEP 3 â€” RECEIPT / CONFIRMATION
-           â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+        @* ────────────────────────────────────────────────────────────────
+           STEP 3  -  RECEIPT / CONFIRMATION
+           ──────────────────────────────────────────────────────────────── *@
         @if (_checkoutStep == 3 && _saleResult is not null)
         {
             <div class="cp-modal-body cp-modal-body--success">
-                <div class="cp-modal-success-icon">âœ…</div>
+                <div class="cp-modal-success-icon">✅</div>
                 <h2 id="cp-modal-heading" class="cp-modal-title">Order Placed!</h2>
                 <p class="cp-modal-subtitle">
                     Your order is confirmed. Keep this receipt for your records.
@@ -589,7 +589,7 @@
                         <span class="cp-modal-receipt-num">#@_saleResult.ReceiptNumber</span>
                     </div>
                     <div class="cp-modal-receipt-date">
-                        @_saleResult.SaleDate.ToString("dd MMM yyyy â€” hh:mm tt")
+                        @_saleResult.SaleDate.ToString("dd MMM yyyy  -  hh:mm tt")
                     </div>
 
                     <div class="cp-modal-sum-divider"></div>
@@ -602,7 +602,7 @@
                     {
                         <div class="cp-modal-sum-row cp-modal-sum-row--discount">
                             <span>Discount</span>
-                            <span>âˆ’ Rs.&nbsp;@_saleResult.DiscountAmount.ToString("N0")</span>
+                            <span>− Rs.&nbsp;@_saleResult.DiscountAmount.ToString("N0")</span>
                         </div>
                     }
                     <div class="cp-modal-sum-row">
@@ -623,7 +623,7 @@
                 <button class="cp-modal-btn-primary"
                         id="cp-modal-done-btn"
                         @onclick="FinishOrder">
-                    Done â€” Back to Shop
+                    Done  -  Back to Shop
                 </button>
             </div>
         }
@@ -632,14 +632,14 @@
 }
 
 
-@* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   SCOPED STYLES  â€” all colors from colors.css custom properties
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+@* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
+   SCOPED STYLES   -  all colors from colors.css custom properties
+   â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
 <style>
-    /* â”€â”€ Google Font â”€â”€ */
+    /* ── Google Font ── */
     @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@@300;400;500;600;700;800;900&display=swap');
 
-    /* â”€â”€ Box-sizing reset scoped to this page â”€â”€ */
+    /* ── Box-sizing reset scoped to this page ── */
     .cp-root *, .cp-modal *, .cp-modal-overlay {
         box-sizing: border-box;
         font-family: 'Inter', sans-serif;
@@ -651,9 +651,9 @@
         color: var(--color-primary-text);
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        HEADER
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .cp-header {
         position: sticky;
         top: 0;
@@ -728,9 +728,9 @@
         color: rgba(255,248,220,.6);
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        EMPTY STATE
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .cp-empty {
         display: flex;
         flex-direction: column;
@@ -765,9 +765,9 @@
         line-height: 1.7;
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        TWO-COLUMN BODY
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .cp-body {
         display: flex;
         align-items: flex-start;
@@ -783,9 +783,9 @@
         to   { opacity: 1; transform: none; }
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        ITEMS COLUMN (left)
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .cp-items-col {
         flex: 1;
         min-width: 0;
@@ -820,7 +820,7 @@
         gap: .85rem;
     }
 
-    /* â”€â”€ Single Item Row â”€â”€ */
+    /* ── Single Item Row ── */
     .cp-item {
         display: grid;
         grid-template-columns: 72px 1fr 110px 110px 48px;
@@ -1018,9 +1018,9 @@
         color: #c62828;
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        SUMMARY COLUMN (right, sticky)
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .cp-summary-col {
         width: 380px;
         flex-shrink: 0;
@@ -1091,7 +1091,7 @@
         margin: .1rem 0;
     }
 
-    /* â”€â”€ Promo Code â”€â”€ */
+    /* ── Promo Code ── */
     .cp-promo-section {
         display: flex;
         flex-direction: column;
@@ -1176,7 +1176,7 @@
     .cp-promo-msg--error   { color: #c62828; }
     .cp-promo-msg--success { color: #2e7d32; }
 
-    /* â”€â”€ Checkout CTA â”€â”€ */
+    /* ── Checkout CTA ── */
     .cp-btn-checkout {
         background: var(--color-navbar-bg);
         color: var(--color-page-bg);
@@ -1234,7 +1234,7 @@
         font-weight: 500;
     }
 
-    /* â”€â”€ Generic Primary Button â”€â”€ */
+    /* ── Generic Primary Button ── */
     .cp-btn-primary {
         background: var(--color-button-primary);
         color: #fff;
@@ -1250,9 +1250,9 @@
 
     .cp-btn-primary:hover { background: var(--color-button-hover); transform: scale(1.02); }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        SUCCESS / FULL-PAGE RECEIPT
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .cp-success-page {
         display: flex;
         flex-direction: column;
@@ -1346,9 +1346,9 @@
         color: var(--color-heading-text);
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        CHECKOUT MODAL
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .cp-modal-overlay {
         position: fixed;
         inset: 0;
@@ -1405,7 +1405,7 @@
         transform: rotate(90deg);
     }
 
-    /* â”€â”€ Step Progress â”€â”€ */
+    /* ── Step Progress ── */
     .cp-step-bar {
         display: flex;
         align-items: center;
@@ -1464,7 +1464,7 @@
 
     .cp-step-line--done { background: var(--color-button-primary); }
 
-    /* â”€â”€ Modal Body â”€â”€ */
+    /* ── Modal Body ── */
     .cp-modal-body {
         padding: .6rem 2rem 1rem;
         flex: 1;
@@ -1496,7 +1496,7 @@
         line-height: 1.55;
     }
 
-    /* Step 1 â€” compact item list */
+    /* Step 1  -  compact item list */
     .cp-modal-items {
         display: flex;
         flex-direction: column;
@@ -1569,7 +1569,7 @@
         margin: .1rem 0;
     }
 
-    /* Step 2 â€” Payment grid */
+    /* Step 2  -  Payment grid */
     .cp-payment-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -1672,7 +1672,7 @@
 
     @@keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Step 3 â€” Modal receipt */
+    /* Step 3  -  Modal receipt */
     .cp-modal-receipt {
         background: rgba(61,28,2,.03);
         border: 1px solid rgba(61,28,2,.1);
@@ -1780,9 +1780,9 @@
     .cp-modal-btn-place:not(:disabled):hover { background: var(--color-button-hover); transform: translateY(-1px); }
     .cp-modal-btn-place:disabled { opacity: .3; cursor: not-allowed; }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        RESPONSIVE BREAKPOINTS
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     @@media (max-width: 1100px) {
         .cp-summary-col { width: 320px; }
         .cp-items-thead { grid-template-columns: 72px 1fr 100px 100px 44px; }
@@ -1839,24 +1839,24 @@
 
 
 @code {
-    // â”€â”€ Promo Code State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Promo Code State ──────────────────────────────────────────────────
     private string               _promoCode      = string.Empty;
     private bool                 _isApplyingPromo = false;
     private ApplyPromoResultDto? _appliedPromo    = null;
     private string?              _promoError      = null;
 
-    // â”€â”€ Checkout Modal State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Checkout Modal State ──────────────────────────────────────────────
     private bool          _showCheckoutModal = false;
     private int           _checkoutStep      = 1;
     private PaymentMethod _selectedPayment   = PaymentMethod.Cash;
     private bool          _isPlacingOrder    = false;
     private string?       _checkoutError     = null;
 
-    // â”€â”€ Post-Order State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Post-Order State ──────────────────────────────────────────────────
     private SaleResultDto? _saleResult  = null;
     private bool           _orderPlaced = false;
 
-    // â”€â”€ Computed Totals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Computed Totals ───────────────────────────────────────────────────
     /// <summary>
     /// Discount from applied promo. Defaults to 0 until MaryamJ's promo service
     /// is wired and a valid promo is applied.
@@ -1865,13 +1865,13 @@
 
     /// <summary>
     /// Client-side GST estimate at 5%. The final authoritative tax is
-    /// computed server-side by ISaleService.ProcessSale â†’ IFBRService.CalculateTax.
+    /// computed server-side by ISaleService.ProcessSale â†' IFBRService.CalculateTax.
     /// </summary>
     private decimal EstimatedTax => Math.Round((CartState.SubTotal - DiscountAmount) * 0.05m, 0);
 
     private decimal GrandTotal => CartState.SubTotal - DiscountAmount + EstimatedTax;
 
-    // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Lifecycle ─────────────────────────────────────────────────────────
     protected override void OnInitialized()
     {
         // Subscribe to cart changes so this page re-renders when
@@ -1887,35 +1887,35 @@
         CartState.OnCartChanged -= HandleCartChanged;
     }
 
-    // â”€â”€ Cart Mutations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Cart Mutations ────────────────────────────────────────────────────
     private void Increment(int productId) => CartState.UpdateQuantity(productId, +1);
     private void Decrement(int productId) => CartState.UpdateQuantity(productId, -1);
     private void Remove(int productId)    => CartState.RemoveItem(productId);
     private void ClearAll()              => CartState.Clear();
 
-    // â”€â”€ Promo Code â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Promo Code ────────────────────────────────────────────────────────
     /// <summary>
     /// Promo code validation UI shell.
     ///
-    /// â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
-    /// â•‘  TODO â€” WIRE-UP PENDING (MaryamJ branch merge)          â•‘
-    /// â•‘                                                          â•‘
-    /// â•‘  Once MaryamJ's IPromotionService is merged, replace     â•‘
-    /// â•‘  the stub below with:                                    â•‘
-    /// â•‘                                                          â•‘
-    /// â•‘    1. Add @inject IPromotionService PromotionService     â•‘
-    /// â•‘       to the top of this file.                          â•‘
-    /// â•‘                                                          â•‘
-    /// â•‘    2. Replace the Task.Delay stub with:                  â•‘
-    /// â•‘         var r = await PromotionService                   â•‘
-    /// â•‘                   .ValidateAndApply(                     â•‘
-    /// â•‘                       _promoCode.Trim(),                 â•‘
-    /// â•‘                       CartState.SubTotal);               â•‘
-    /// â•‘         if (r.Success && r.Data?.IsValid == true)        â•‘
-    /// â•‘             _appliedPromo = r.Data;                      â•‘
-    /// â•‘         else                                             â•‘
-    /// â•‘             _promoError = r.Data?.Message ?? r.Message;  â•‘
-    /// â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /// â*"â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*╗
+    /// ║  TODO  -  WIRE-UP PENDING (MaryamJ branch merge)          ║
+    /// ║                                                          ║
+    /// ║  Once MaryamJ's IPromotionService is merged, replace     ║
+    /// ║  the stub below with:                                    ║
+    /// ║                                                          ║
+    /// ║    1. Add @inject IPromotionService PromotionService     ║
+    /// ║       to the top of this file.                          ║
+    /// ║                                                          ║
+    /// ║    2. Replace the Task.Delay stub with:                  ║
+    /// ║         var r = await PromotionService                   ║
+    /// ║                   .ValidateAndApply(                     ║
+    /// ║                       _promoCode.Trim(),                 ║
+    /// ║                       CartState.SubTotal);               ║
+    /// ║         if (r.Success && r.Data?.IsValid == true)        ║
+    /// ║             _appliedPromo = r.Data;                      ║
+    /// ║         else                                             ║
+    /// ║             _promoError = r.Data?.Message ?? r.Message;  ║
+    /// â*šâ*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
     /// </summary>
     private async Task ApplyPromoCode()
     {
@@ -1926,10 +1926,10 @@
         _appliedPromo    = null;
         StateHasChanged();
 
-        // â”€â”€ STUB: Simulates a network call while MaryamJ's service is in development â”€â”€
+        // ── STUB: Simulates a network call while MaryamJ's service is in development ──
         await Task.Delay(700);
-        _promoError = $"Code \"{_promoCode.Trim().ToUpperInvariant()}\" â€” promo validation service is pending (MaryamJ branch).";
-        // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        _promoError = $"Code \"{_promoCode.Trim().ToUpperInvariant()}\"  -  promo validation service is pending (MaryamJ branch).";
+        // ─────────────────────────────────────────────────────────────────────────────
 
         _isApplyingPromo = false;
     }
@@ -1941,7 +1941,7 @@
         _promoError   = null;
     }
 
-    // â”€â”€ Checkout Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Checkout Modal ────────────────────────────────────────────────────
     private void OpenCheckoutModal()
     {
         _checkoutStep      = 1;
@@ -1956,16 +1956,16 @@
         _checkoutError     = null;
     }
 
-    // â”€â”€ Place Order â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Place Order ───────────────────────────────────────────────────────
     /// <summary>
     /// Assembles CreateSaleDto from current cart state and calls
     /// ISaleService.ProcessSale (Shahzain's implementation in SaleService.cs).
     ///
     /// Notes:
-    ///  â€¢ UserId  = 1 as guest/fallback until ClaimsPrincipal auth is integrated.
-    ///  â€¢ CustomerId = null for anonymous guest checkout.
-    ///  â€¢ On success: cart is cleared, receipt shown in modal step 3.
-    ///  â€¢ On failure: error displayed inline in step 2.
+    ///   UserId  = 1 as guest/fallback until ClaimsPrincipal auth is integrated.
+    ///   CustomerId = null for anonymous guest checkout.
+    ///   On success: cart is cleared, receipt shown in modal step 3.
+    ///   On failure: error displayed inline in step 2.
     /// </summary>
     private async Task PlaceOrder()
     {
@@ -2000,7 +2000,7 @@
         {
             _saleResult   = result.Data;
             _checkoutStep = 3;          // advance to receipt step
-            CartState.Clear();          // clear cart â€” order is placed
+            CartState.Clear();          // clear cart  -  order is placed
         }
         else
         {
@@ -2018,9 +2018,9 @@
     {
         _showCheckoutModal = false;
         _orderPlaced       = true;
-        // _saleResult stays set â€” used by the full-page receipt section
+        // _saleResult stays set  -  used by the full-page receipt section
     }
 
-    // â”€â”€ Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Navigation ────────────────────────────────────────────────────────
     private void GoToShop() => Navigation.NavigateTo("/customer/shop");
 }

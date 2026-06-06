@@ -16,10 +16,10 @@
                 <span class="toast-icon">
                     @switch (ToastType)
                     {
-                        case "success": <text>âœ…</text>; break;
-                        case "error": <text>âŒ</text>; break;
-                        case "warning": <text>âš ï¸</text>; break;
-                        default: <text>â„¹ï¸</text>; break;
+                        case "success": <text></text>; break;
+                        case "error": <text></text>; break;
+                        case "warning": <text></text>; break;
+                        default: <text></text>; break;
                     }
                 </span>
                 <span class="toast-body">@ToastMessage</span>
@@ -37,7 +37,7 @@
                 <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
             </svg>
             <div class="fw-semibold small text-dark">
-                âš ï¸ <strong>@UserCount user(s)</strong> are currently assigned to this role. Changing their permissions may affect their access to system features.
+                <strong>@UserCount user(s)</strong> are currently assigned to this role. Changing their permissions may affect their access to system features.
             </div>
             <button class="btn btn-sm btn-outline-secondary ms-auto" @onclick="DismissWarning">Dismiss</button>
         </div>
@@ -298,7 +298,7 @@
     private static string GetModuleDisplayName(string key) =>
         ModuleDisplayNames.TryGetValue(key, out var name) ? name : key;
 
-    // â”€â”€ Individual Toggle â”€â”€
+    // ── Individual Toggle ──
     private void ToggleModulePermission(string moduleKey, string column, bool value)
     {
         if (Permissions?.Modules == null || !Permissions.Modules.TryGetValue(moduleKey, out var perm))
@@ -329,7 +329,7 @@
         HasModified = true;
     }
 
-    // â”€â”€ Select All Toggles â”€â”€
+    // ── Select All Toggles ──
     private void ToggleAllCreate(ChangeEventArgs e)
     {
         var value = bool.Parse(e.Value?.ToString() ?? bool.FalseString);
@@ -374,7 +374,7 @@
         HasModified = true;
     }
 
-    // â”€â”€ Reset â”€â”€
+    // ── Reset ──
     private void ResetPermissions()
     {
         if (OriginalPermissions != null)
@@ -383,7 +383,7 @@
         ShowToast("success", "Permissions reset to original defaults.");
     }
 
-    // â”€â”€ Save â”€â”€
+    // ── Save ──
     private async Task SavePermissions()
     {
         if (Permissions == null) return;
@@ -425,7 +425,7 @@
         }
     }
 
-    // â”€â”€ Helpers â”€â”€
+    // ── Helpers ──
     private void DismissWarning() => ShowUserWarning = false;
 
     private void DismissToast() => ToastMessage = string.Empty;

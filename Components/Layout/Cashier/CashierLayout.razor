@@ -5,18 +5,9 @@
 
     <CashierNavbar OnAvatarClick="OpenDrawer" />
 
-    <ProfileDrawer IsOpen="@_drawerOpen"
-                   OnClose="CloseDrawer"
-                   DisplayName="Cashier"
+    <ProfileDrawer DisplayName="Cashier"
                    RoleName="Cashier"
-                   RoleColor="var(--role-cashier-accent, #7EB89A)"
-                    DashboardRoute="/cashier/pos"
-                    SettingsRoute=""
-                    NavItems="@(new List<ProfileDrawer.DrawerNavItem>
-                    {
-                        new() { Label = "Sales History",   Url = "/cashier/sales-history" },
-                        new() { Label = "Customer Lookup", Url = "/cashier/customer-lookup" },
-                    })" />
+                   RoleColor="var(--role-cashier-accent, #7EB98A)" />
 
     <main class="cashier-main" id="cashier-content">
         <div class="cashier-content-wrap">
@@ -32,7 +23,7 @@
     private bool _drawerOpen = false;
 
     private void OpenDrawer()  { _drawerOpen = true; StateHasChanged(); }
-    private void CloseDrawer() => _drawerOpen = false;
+    private void CloseDrawer() { _drawerOpen = false; StateHasChanged(); }
 }
 
 <style>

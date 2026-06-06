@@ -25,7 +25,7 @@
             @if (Weather != null)
             {
                 <div class="d-flex align-items-center gap-2 text-muted small">
-                    <span>ðŸŒ¤ @Weather.City</span>
+                    <span> @Weather.City</span>
                     <span class="fw-bold">@Weather.Temperature°C</span>
                     <span>@Weather.Condition</span>
                 </div>
@@ -133,11 +133,11 @@
                                                 <td class="text-end" style="padding-right: 20px;">
                                                     @if (user.IsActive)
                                                     {
-                                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1.5 rounded-pill">â— Active</span>
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1.5 rounded-pill">â -  Active</span>
                                                     }
                                                     else
                                                     {
-                                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1.5 rounded-pill">â— Inactive</span>
+                                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1.5 rounded-pill">â -  Inactive</span>
                                                     }
                                                 </td>
                                             </tr>
@@ -182,11 +182,11 @@
                                                 <td class="text-end" style="padding-right: 20px;">
                                                     @if (item.Quantity == 0)
                                                     {
-                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1.5 rounded-pill">â— Out of Stock</span>
+                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1.5 rounded-pill">â -  Out of Stock</span>
                                                     }
                                                     else
                                                     {
-                                                        <span class="badge px-2 py-1.5 rounded-pill" style="background-color: rgba(204, 85, 0, 0.15); color: #CC5500; border: 1px solid rgba(204, 85, 0, 0.3);">â— Low Stock</span>
+                                                        <span class="badge px-2 py-1.5 rounded-pill" style="background-color: rgba(204, 85, 0, 0.15); color: #CC5500; border: 1px solid rgba(204, 85, 0, 0.3);">â -  Low Stock</span>
                                                     }
                                                 </td>
                                             </tr>
@@ -252,32 +252,32 @@
                         <div class="row g-2">
                             <div class="col-6">
                                 <a href="/admin/users" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2 py-2">
-                                    <span>ðŸ‘¥</span> <span>User Management</span>
+                                    <span></span> <span>User Management</span>
                                 </a>
                             </div>
                             <div class="col-6">
                                 <a href="/admin/roles" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2 py-2">
-                                    <span>ðŸ›¡</span> <span>Roles & Permissions</span>
+                                    <span></span> <span>Roles & Permissions</span>
                                 </a>
                             </div>
                             <div class="col-6">
                                 <a href="/admin/customers" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2 py-2">
-                                    <span>ðŸ‘¤</span> <span>Customers</span>
+                                    <span></span> <span>Customers</span>
                                 </a>
                             </div>
                             <div class="col-6">
                                 <a href="/admin/products" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2 py-2">
-                                    <span>ðŸ“¦</span> <span>Products</span>
+                                    <span></span> <span>Products</span>
                                 </a>
                             </div>
                             <div class="col-6">
                                 <a href="/manager/inventory" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2 py-2">
-                                    <span>ðŸ“Š</span> <span>Inventory</span>
+                                    <span>📊</span> <span>Inventory</span>
                                 </a>
                             </div>
                             <div class="col-6">
                                 <a href="/admin/promotions" class="btn btn-outline-secondary w-100 text-start d-flex align-items-center gap-2 py-2">
-                                    <span>ðŸ·</span> <span>Promotions</span>
+                                    <span></span> <span>Promotions</span>
                                 </a>
                             </div>
                         </div>

@@ -5,21 +5,9 @@
 
     <CustomerNavbar OnAvatarClick="OpenDrawer" CartCount="@_cartCount" />
 
-    <ProfileDrawer IsOpen="@_drawerOpen"
-                   OnClose="CloseDrawer"
-                   DisplayName="Guest Customer"
+    <ProfileDrawer DisplayName="Guest Customer"
                    RoleName="Customer"
-                   RoleColor="var(--role-customer-accent, #C4A85A)"
-                    DashboardRoute="/customer/home"
-                    SettingsRoute=""
-                    NavItems="@(new List<ProfileDrawer.DrawerNavItem>
-                    {
-                        new() { Label = "Shop",    Url = "/customer/shop" },
-                        new() { Label = "Cart",    Url = "/customer/cart" },
-                        new() { Label = "Orders",  Url = "/customer/orders" },
-                        new() { Label = "Reviews", Url = "/customer/reviews" },
-                        new() { Label = "Profile", Url = "/customer/profile" },
-                    })" />
+                   RoleColor="var(--role-customer-accent, #C4A85A)" />
 
     <main class="customer-main" id="customer-content">
         <div class="customer-content-wrap">
@@ -36,7 +24,7 @@
     private int  _cartCount  = 0;
 
     private void OpenDrawer()  { _drawerOpen = true; StateHasChanged(); }
-    private void CloseDrawer() => _drawerOpen = false;
+    private void CloseDrawer() { _drawerOpen = false; StateHasChanged(); }
 }
 
 <style>

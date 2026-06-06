@@ -6,7 +6,7 @@
 
         <!-- Brand -->
         <a class="navbar-brand" href="/manager/inventory">
-            <span class="brand-icon">ðŸ¥</span>
+            <span class="brand-icon"></span>
             <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
             <span class="brand-role-tag manager-tag">Manager</span>
         </a>
@@ -33,14 +33,14 @@
         <!-- Right Controls -->
         <div class="navbar-right">
             <span class="navbar-time">@_currentTime</span>
-            <button class="nav-avatar-btn" @onclick="ToggleDrawer"
+            <button class="nav-avatar-btn" onclick="toggleSidebar()"
                     aria-label="Open profile drawer" id="manager-profile-btn">
                 <span class="avatar-ring manager-avatar">
                     <span class="avatar-initials">MG</span>
                 </span>
             </button>
-            <button class="hamburger-btn @(_mobileOpen ? "ham-open" : "")"
-                    @onclick="ToggleMobile" aria-label="Toggle menu">
+            <button class="hamburger-btn"
+                    onclick="toggleSidebar()" aria-label="Open profile drawer">
                 <span></span><span></span><span></span>
             </button>
         </div>
@@ -116,7 +116,7 @@
         background: rgba(138,159,196,0.14) !important;
     }
 
-    /* â”€â”€ Shared Navbar base (copied from Admin for isolation) â”€â”€ */
+    /* ── Shared Navbar base (copied from Admin for isolation) ── */
     .smartpos-navbar {
         position: sticky;
         top: 0;

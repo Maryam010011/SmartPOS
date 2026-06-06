@@ -6,7 +6,7 @@
 
         <!-- Brand -->
         <a class="navbar-brand" href="/cashier/pos">
-            <span class="brand-icon">ðŸ¥</span>
+            <span class="brand-icon"></span>
             <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
             <span class="brand-role-tag cashier-tag">Cashier</span>
         </a>
@@ -34,14 +34,14 @@
                 <span>Terminal Active</span>
             </div>
             <span class="navbar-time">@_currentTime</span>
-            <button class="nav-avatar-btn" @onclick="ToggleDrawer"
+            <button class="nav-avatar-btn" onclick="toggleSidebar()"
                     aria-label="Open profile drawer" id="cashier-profile-btn">
                 <span class="avatar-ring cashier-avatar">
                     <span class="avatar-initials">CS</span>
                 </span>
             </button>
-            <button class="hamburger-btn @(_mobileOpen ? "ham-open" : "")"
-                    @onclick="ToggleMobile" aria-label="Toggle menu">
+            <button class="hamburger-btn"
+                    onclick="toggleSidebar()" aria-label="Open profile drawer">
                 <span></span><span></span><span></span>
             </button>
         </div>

@@ -1,14 +1,7 @@
 ﻿@namespace SmartPOS.Components.Layout
-@inject NavigationManager Nav
-
-<!-- Overlay -->
-@if (IsOpen)
-{
-    <div class="drawer-overlay" @onclick="Close"></div>
-}
 
 <!-- Drawer Panel -->
-<aside class="profile-drawer @(IsOpen ? "drawer-open" : "")">
+<aside class="profile-drawer">
 
     <!-- Header -->
     <div class="drawer-header">
@@ -19,7 +12,7 @@
             <span class="drawer-display-name">@DisplayName</span>
             <span class="drawer-role-badge" style="--role-color: @RoleColor">@RoleName</span>
         </div>
-        <button class="drawer-close-btn" @onclick="Close" aria-label="Close profile drawer">
+        <button class="drawer-close-btn" onclick="closeSidebar()" aria-label="Close profile drawer">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
                  stroke-linecap="round" stroke-linejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -46,59 +39,27 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
-        <div class="drawer-section-label">Quick Actions</div>
-        <nav class="drawer-nav">
-            <a class="drawer-nav-item" href="@DashboardRoute">
-                <span class="nav-item-icon">ðŸ </span>
-                <span>Dashboard</span>
-            </a>
-            @if (!string.IsNullOrEmpty(SettingsRoute))
-            {
-                <a class="drawer-nav-item" href="@SettingsRoute">
-                    <span class="nav-item-icon">âš™ï¸</span>
-                    <span>Settings</span>
-                </a>
-            }
-            @foreach (var item in NavItems)
-            {
-                <a class="drawer-nav-item" href="@item.Url">
-                    <span class="nav-item-icon"></span>
-                    <span>@item.Label</span>
-                </a>
-            }
-            <button class="drawer-nav-item danger-item" @onclick="SignOut">
-                <span class="nav-item-icon">ðŸšª</span>
-                <span>Sign Out</span>
-            </button>
-        </nav>
+        <button class="drawer-nav-item danger-item" onclick="signOut()">
+            <span class="nav-item-icon"></span>
+            <span>Sign Out</span>
+        </button>
     </div>
 
     <!-- Footer -->
     <div class="drawer-footer">
-        <span class="drawer-app-name">ðŸ¥ SmartPOS<span class="drawer-plus">+</span></span>
+        <span class="drawer-app-name"> SmartPOS<span class="drawer-plus">+</span></span>
         <span class="drawer-version">v1.0</span>
     </div>
 
 </aside>
 
+<!-- Overlay (always rendered, hidden by CSS, shown via JS) -->
+<div class="drawer-overlay" onclick="closeSidebar()"></div>
+
 @code {
-    [Parameter] public bool IsOpen          { get; set; }
-    [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public string DisplayName   { get; set; } = "User";
     [Parameter] public string RoleName      { get; set; } = "Staff";
     [Parameter] public string RoleColor     { get; set; } = "#C4848A";
-    [Parameter] public string DashboardRoute  { get; set; } = "/";
-    [Parameter] public string SettingsRoute   { get; set; } = "";
-    [Parameter] public List<DrawerNavItem> NavItems { get; set; } = new();
-
-    public class DrawerNavItem
-    {
-        public string Label { get; set; } = "";
-        public string Url   { get; set; } = "";
-    }
-
-    private async Task Close() => await OnClose.InvokeAsync();
 
     private string GetInitials()
     {
@@ -110,12 +71,12 @@
                 : DisplayName.ToUpper();
     }
 
-    private void SignOut() => Nav.NavigateTo("/", forceLoad: true);
 }
 
 <style>
-    /* â”€â”€ Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Overlay ────────────────────────────────────────────── */
     .drawer-overlay {
+        display: none;
         position: fixed;
         inset: 0;
         background: var(--drawer-overlay, rgba(61,28,2,0.35));
@@ -124,12 +85,16 @@
         animation: overlay-in 0.22s ease;
     }
 
+    .profile-drawer.drawer-open + .drawer-overlay {
+        display: block;
+    }
+
     @@keyframes overlay-in {
         from { opacity: 0; }
         to   { opacity: 1; }
     }
 
-    /* â”€â”€ Drawer Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Drawer Panel ────────────────────────────────────────── */
     .profile-drawer {
         position: fixed;
         top: 0;
@@ -150,7 +115,7 @@
         transform: translateX(0);
     }
 
-    /* â”€â”€ Drawer Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Drawer Header ───────────────────────────────────────── */
     .drawer-header {
         background: var(--drawer-header-bg, #3D1C02);
         color: var(--drawer-header-text, #FFF8DC);
@@ -235,7 +200,7 @@
         color: #FFF8DC;
     }
 
-    /* â”€â”€ Drawer Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Drawer Body ─────────────────────────────────────────── */
     .drawer-body {
         flex: 1;
         overflow-y: auto;
@@ -331,7 +296,7 @@
         background: rgba(196, 74, 74, 0.08);
     }
 
-    /* â”€â”€ Drawer Footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Drawer Footer ───────────────────────────────────────── */
     .drawer-footer {
         padding: 0.85rem 1.25rem;
         border-top: 1px solid var(--surface-border, rgba(61,28,2,0.09));

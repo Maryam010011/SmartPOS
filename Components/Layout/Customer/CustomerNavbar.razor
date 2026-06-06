@@ -6,7 +6,7 @@
 
         <!-- Brand -->
         <a class="navbar-brand" href="/customer/home">
-            <span class="brand-icon">ðŸ¥</span>
+            <span class="brand-icon"></span>
             <span class="brand-text">SmartPOS<span class="brand-plus">+</span></span>
             <span class="brand-role-tag customer-tag">Shop</span>
         </a>
@@ -46,14 +46,14 @@
         <!-- Right Controls -->
         <div class="navbar-right">
             <span class="navbar-time">@_currentTime</span>
-            <button class="nav-avatar-btn" @onclick="ToggleDrawer"
+            <button class="nav-avatar-btn" onclick="toggleSidebar()"
                     aria-label="Open profile drawer" id="customer-profile-btn">
                 <span class="avatar-ring customer-avatar">
                     <span class="avatar-initials">CU</span>
                 </span>
             </button>
-            <button class="hamburger-btn @(_mobileOpen ? "ham-open" : "")"
-                    @onclick="ToggleMobile" aria-label="Toggle menu">
+            <button class="hamburger-btn"
+                    onclick="toggleSidebar()" aria-label="Open profile drawer">
                 <span></span><span></span><span></span>
             </button>
         </div>
@@ -150,7 +150,7 @@
         margin-left: 2px;
     }
 
-    /* â”€â”€ Shared base styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    /* ── Shared base styles ─────────────────────────────── */
     .smartpos-navbar {
         position: sticky;
         top: 0;

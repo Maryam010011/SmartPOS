@@ -5,19 +5,9 @@
 
     <ManagerNavbar OnAvatarClick="OpenDrawer" />
 
-    <ProfileDrawer IsOpen="@_drawerOpen"
-                   OnClose="CloseDrawer"
-                   DisplayName="Manager"
+    <ProfileDrawer DisplayName="Manager"
                    RoleName="Store Manager"
-                   RoleColor="var(--role-manager-accent, #8A9FC4)"
-                    DashboardRoute="/manager/inventory"
-                    SettingsRoute=""
-                    NavItems="@(new List<ProfileDrawer.DrawerNavItem>
-                    {
-                        new() { Label = "Low Stock",      Url = "/manager/inventory/low-stock" },
-                        new() { Label = "Purchase Orders", Url = "/manager/purchase-orders" },
-                        new() { Label = "Promotions",      Url = "/manager/promotions" },
-                    })" />
+                   RoleColor="var(--role-manager-accent, #8A9FC4)" />
 
     <main class="manager-main" id="manager-content">
         <div class="manager-content-wrap">
@@ -33,7 +23,7 @@
     private bool _drawerOpen = false;
 
     private void OpenDrawer()  { _drawerOpen = true; StateHasChanged(); }
-    private void CloseDrawer() => _drawerOpen = false;
+    private void CloseDrawer() { _drawerOpen = false; StateHasChanged(); }
 }
 
 <style>

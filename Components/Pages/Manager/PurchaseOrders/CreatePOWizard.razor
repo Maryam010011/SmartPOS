@@ -36,7 +36,7 @@
                                                  @(CurrentStep == stepIdx ? "background-color: var(--color-button-primary); color: white;" :
                                                    stepIdx < CurrentStep ? "background-color: #198754; color: white;" :
                                                    "background-color: #e9ecef; color: #6c757d;")">
-                                        @(stepIdx < CurrentStep ? "âœ“" : (stepIdx + 1).ToString())
+                                        @(stepIdx < CurrentStep ? "✓" : (stepIdx + 1).ToString())
                                     </span>
                                     <span class="small fw-semibold @(CurrentStep == stepIdx ? "text-dark" : "text-muted")">@Steps[stepIdx]</span>
                                 </div>
@@ -327,7 +327,7 @@
         <div class="toast-container-pos" style="z-index: 1070;">
             <div class="toast-pos toast-@ToastType">
                 <span class="toast-icon">
-                    @(ToastType == "success" ? "âœ…" : ToastType == "error" ? "âŒ" : "â„¹ï¸")
+                    @(ToastType == "success" ? "" : ToastType == "error" ? "" : "")
                 </span>
                 <span class="toast-body">@ToastMessage</span>
                 <button class="toast-close" @onclick="DismissToast">&times;</button>

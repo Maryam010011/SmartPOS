@@ -2,7 +2,7 @@
 @rendermode InteractiveServer
 @layout CustomerLayout
 
-@* â”€â”€ DI Injections (all registered in Program.cs as Scoped) â”€â”€ *@
+@* ── DI Injections (all registered in Program.cs as Scoped) ── *@
 @inject CartStateService    CartState
 @inject ISaleService        SaleService
 @inject NavigationManager   Navigation
@@ -10,37 +10,37 @@
 @* Implement IDisposable to unsubscribe from CartState.OnCartChanged *@
 @implements IDisposable
 
-<PageTitle>Checkout â€” SmartPOS+ Bakery</PageTitle>
+<PageTitle>Checkout  -  SmartPOS+ Bakery</PageTitle>
 
 <div class="chk-root">
 
-    @* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    @* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        STICKY TOP HEADER BAR
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
     <header class="chk-header">
         <div class="chk-header-inner">
             <button id="chk-back-btn" class="chk-back-btn" @onclick="GoToCart">
-                <span class="chk-back-arrow">â†</span>
+                <span class="chk-back-arrow"></span>
                 <span>Back to Cart</span>
             </button>
             <div class="chk-header-brand">
-                <span class="chk-header-icon">ðŸ¥</span>
+                <span class="chk-header-icon"></span>
                 <h1 class="chk-header-title">SmartPOS+ Bakery</h1>
             </div>
             <div class="chk-header-step-label">
-                <span class="chk-step-pill">Secure Checkout ðŸ”’</span>
+                <span class="chk-step-pill">Secure Checkout 🔒</span>
             </div>
         </div>
     </header>
 
 
-    @* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       EMPTY CART GUARD â€” redirect hint when cart is empty
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+    @* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
+       EMPTY CART GUARD  -  redirect hint when cart is empty
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
     @if (CartState.Count == 0 && !_orderPlaced)
     {
         <div class="chk-empty">
-            <div class="chk-empty-icon">ðŸ›’</div>
+            <div class="chk-empty-icon">🛒</div>
             <h2 class="chk-empty-title">Your cart is empty</h2>
             <p class="chk-empty-sub">Add some delicious items before checking out.</p>
             <button id="chk-go-shop-btn" class="chk-btn-primary" @onclick="GoToShop">
@@ -50,14 +50,14 @@
     }
 
 
-    @* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    @* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        ORDER-PLACED SUCCESS SCREEN
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
     @if (_orderPlaced && _saleResult is not null)
     {
         <div class="chk-success-page" id="chk-success-screen">
             <div class="chk-success-icon-wrap">
-                <div class="chk-success-checkmark">âœ“</div>
+                <div class="chk-success-checkmark">✓</div>
             </div>
             <h2 class="chk-success-title">Order Confirmed!</h2>
             <p class="chk-success-sub">
@@ -98,7 +98,7 @@
                 {
                     <div class="chk-receipt-row chk-receipt-row--discount">
                         <span>Discount</span>
-                        <span>âˆ’ Rs.&nbsp;@_saleResult.DiscountAmount.ToString("N0")</span>
+                        <span>− Rs.&nbsp;@_saleResult.DiscountAmount.ToString("N0")</span>
                     </div>
                 }
                 <div class="chk-receipt-row">
@@ -115,36 +115,36 @@
             </div>
 
             <div class="chk-success-delivery">
-                <div class="chk-success-delivery-icon">ðŸ“¦</div>
+                <div class="chk-success-delivery-icon"></div>
                 <div>
                     <div class="chk-success-delivery-title">Delivery Address</div>
                     <div class="chk-success-delivery-addr">
-                        @_address, @_city â€” @_postalCode
+                        @_address, @_city  -  @_postalCode
                     </div>
                 </div>
             </div>
 
             <button id="chk-back-to-shop-btn" class="chk-btn-primary" @onclick="GoToShop">
-                â† Continue Shopping
+                 Continue Shopping
             </button>
         </div>
     }
 
 
-    @* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       MAIN CHECKOUT BODY â€” Two-Column Layout
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+    @* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
+       MAIN CHECKOUT BODY  -  Two-Column Layout
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
     @if (CartState.Count > 0 && !_orderPlaced)
     {
         <div class="chk-body">
 
-            @* â”€â”€ LEFT COLUMN: FORM SECTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+            @* ── LEFT COLUMN: FORM SECTIONS ─────────────────────────────── *@
             <main class="chk-form-col">
 
-                @* â”€â”€ PROGRESS STEPS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+                @* ── PROGRESS STEPS ─────────────────────────────────────── *@
                 <div class="chk-progress" aria-label="Checkout steps">
                     <div class="chk-progress-step chk-progress-step--done">
-                        <div class="chk-progress-dot">âœ“</div>
+                        <div class="chk-progress-dot">✓</div>
                         <span class="chk-progress-label">Cart</span>
                     </div>
                     <div class="chk-progress-line chk-progress-line--done"></div>
@@ -168,17 +168,17 @@
                 @if (_globalError is not null)
                 {
                     <div class="chk-error-banner" role="alert" id="chk-global-error">
-                        <span>âš ï¸&nbsp;@_globalError</span>
-                        <button class="chk-error-dismiss" @onclick="@(() => _globalError = null)">âœ•</button>
+                        <span>âš &nbsp;@_globalError</span>
+                        <button class="chk-error-dismiss" @onclick="@(() => _globalError = null)">✕</button>
                     </div>
                 }
 
-                @* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                   SECTION 1 â€” CONTACT INFORMATION
-                   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+                @* ──────────────────────────────────────────────────────────
+                   SECTION 1  -  CONTACT INFORMATION
+                   ────────────────────────────────────────────────────────── *@
                 <div class="chk-card">
                     <div class="chk-card-header">
-                        <span class="chk-card-icon">ðŸ‘¤</span>
+                        <span class="chk-card-icon"></span>
                         <h2 class="chk-card-title">Contact Information</h2>
                     </div>
 
@@ -240,12 +240,12 @@
                 </div>
 
 
-                @* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                   SECTION 2 â€” SHIPPING ADDRESS
-                   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+                @* ──────────────────────────────────────────────────────────
+                   SECTION 2  -  SHIPPING ADDRESS
+                   ────────────────────────────────────────────────────────── *@
                 <div class="chk-card">
                     <div class="chk-card-header">
-                        <span class="chk-card-icon">ðŸ“</span>
+                        <span class="chk-card-icon"></span>
                         <h2 class="chk-card-title">Shipping Address</h2>
                     </div>
 
@@ -320,7 +320,7 @@
                         <label class="chk-label" for="chk-delivery-notes">Delivery Notes <span class="chk-label-opt">(optional)</span></label>
                         <textarea id="chk-delivery-notes"
                                   class="chk-textarea"
-                                  placeholder="Gate code, landmark, or special instructionsâ€¦"
+                                  placeholder="Gate code, landmark, or special instructions"
                                   @bind="_deliveryNotes"
                                   @bind:event="oninput"
                                   rows="3"
@@ -329,12 +329,12 @@
                 </div>
 
 
-                @* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                   SECTION 3 â€” PROMO CODE
-                   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+                @* ──────────────────────────────────────────────────────────
+                   SECTION 3  -  PROMO CODE
+                   ────────────────────────────────────────────────────────── *@
                 <div class="chk-card">
                     <div class="chk-card-header">
-                        <span class="chk-card-icon">ðŸ·ï¸</span>
+                        <span class="chk-card-icon"></span>
                         <h2 class="chk-card-title">Promo Code</h2>
                     </div>
 
@@ -344,7 +344,7 @@
                                       @(_promoError is not null ? "chk-promo-input--error" : "")
                                       @(_promoApplied ? "chk-promo-input--success" : "")"
                                type="text"
-                               placeholder="Enter promo codeâ€¦"
+                               placeholder="Enter promo code"
                                @bind="_promoCode"
                                @bind:event="oninput"
                                disabled="@(_promoApplied || _isApplyingPromo)"
@@ -357,21 +357,21 @@
                                     class="chk-promo-apply-btn"
                                     @onclick="ApplyPromo"
                                     disabled="@(string.IsNullOrWhiteSpace(_promoCode) || _isApplyingPromo)">
-                                @(_isApplyingPromo ? "Checkingâ€¦" : "Apply")
+                                @(_isApplyingPromo ? "Checking" : "Apply")
                             </button>
                         }
                         else
                         {
                             <button class="chk-promo-remove-btn"
                                     @onclick="RemovePromo"
-                                    aria-label="Remove promo code">âœ•</button>
+                                    aria-label="Remove promo code">✕</button>
                         }
                     </div>
 
                     @if (_promoError is not null)
                     {
                         <p class="chk-promo-msg chk-promo-msg--error" role="alert">
-                            âš &nbsp;@_promoError
+                            âš &nbsp;@_promoError
                         </p>
                     }
                     @if (_promoApplied)
@@ -383,12 +383,12 @@
                 </div>
 
 
-                @* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-                   SECTION 4 â€” PAYMENT METHOD
-                   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+                @* ──────────────────────────────────────────────────────────
+                   SECTION 4  -  PAYMENT METHOD
+                   ────────────────────────────────────────────────────────── *@
                 <div class="chk-card">
                     <div class="chk-card-header">
-                        <span class="chk-card-icon">ðŸ’³</span>
+                        <span class="chk-card-icon"></span>
                         <h2 class="chk-card-title">Payment Method</h2>
                     </div>
 
@@ -404,25 +404,25 @@
                         <button id="chk-pay-cod"
                                 class="chk-pay-card @(_paymentMethod == PaymentMethod.Cash ? "chk-pay-card--active" : "")"
                                 @onclick="@(() => { _paymentMethod = PaymentMethod.Cash; ClearFieldError("Payment"); })">
-                            <span class="chk-pay-icon">ðŸ’µ</span>
+                            <span class="chk-pay-icon"></span>
                             <span class="chk-pay-label">Cash on Delivery</span>
                             <span class="chk-pay-desc">Pay when you receive</span>
                             @if (_paymentMethod == PaymentMethod.Cash)
                             {
-                                <span class="chk-pay-check">âœ“</span>
+                                <span class="chk-pay-check">✓</span>
                             }
                         </button>
 
-                        @* Debit / Credit Card â€” Stripe shell *@
+                        @* Debit / Credit Card  -  Stripe shell *@
                         <button id="chk-pay-card"
                                 class="chk-pay-card @(_paymentMethod == PaymentMethod.Card ? "chk-pay-card--active" : "")"
                                 @onclick="@(() => { _paymentMethod = PaymentMethod.Card; ClearFieldError("Payment"); })">
-                            <span class="chk-pay-icon">ðŸ’³</span>
+                            <span class="chk-pay-icon"></span>
                             <span class="chk-pay-label">Credit / Debit Card</span>
                             <span class="chk-pay-desc">Visa, Mastercard</span>
                             @if (_paymentMethod == PaymentMethod.Card)
                             {
-                                <span class="chk-pay-check">âœ“</span>
+                                <span class="chk-pay-check">✓</span>
                             }
                         </button>
 
@@ -430,19 +430,19 @@
                         <button id="chk-pay-online"
                                 class="chk-pay-card @(_paymentMethod == PaymentMethod.Online ? "chk-pay-card--active" : "")"
                                 @onclick="@(() => { _paymentMethod = PaymentMethod.Online; ClearFieldError("Payment"); })">
-                            <span class="chk-pay-icon">ðŸ“±</span>
+                            <span class="chk-pay-icon"></span>
                             <span class="chk-pay-label">Mobile Wallet</span>
                             <span class="chk-pay-desc">JazzCash / EasyPaisa</span>
                             @if (_paymentMethod == PaymentMethod.Online)
                             {
-                                <span class="chk-pay-check">âœ“</span>
+                                <span class="chk-pay-check">✓</span>
                             }
                         </button>
                     </div>
 
-                    @* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    @* ────────────────────────────────────────────────────────
                        STRIPE PAYMENT UI SHELL
-                       â”€â”€ NOTE TO TEAM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                       ── NOTE TO TEAM ──────────────────────────────────────
                        The full Stripe gateway integration (tokenisation, 3DS,
                        payment-intent creation, webhook confirmation) is currently
                        being developed by MaryamJ on her feature branch.
@@ -450,12 +450,12 @@
                        method stub PlaceOrderWithStripe() are wired and ready.
                        Once MaryamJ's branch is merged, replace the TODO stub
                        body with the actual Stripe.js JS-interop call.
-                       â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+                       ──────────────────────────────────────────────────── *@
                     @if (_paymentMethod == PaymentMethod.Card)
                     {
                         <div class="chk-stripe-shell" id="chk-stripe-container">
                             <div class="chk-stripe-badge">
-                                <span class="chk-stripe-lock">ðŸ”’</span>
+                                <span class="chk-stripe-lock">🔒</span>
                                 <span class="chk-stripe-text">Secured by <strong>Stripe</strong></span>
                                 <span class="chk-stripe-cards">
                                     <span class="chk-card-chip">VISA</span>
@@ -483,13 +483,13 @@
                                         <input id="chk-card-number"
                                                class="chk-input chk-input--card"
                                                type="text"
-                                               placeholder="â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢ â€¢â€¢â€¢â€¢"
+                                               placeholder="   "
                                                @bind="_cardNumber"
                                                @bind:event="oninput"
                                                maxlength="19"
                                                autocomplete="cc-number"
                                                inputmode="numeric" />
-                                        <span class="chk-input-card-icon">ðŸ’³</span>
+                                        <span class="chk-input-card-icon"></span>
                                     </div>
                                 </div>
 
@@ -512,20 +512,20 @@
                                             <input id="chk-card-cvc"
                                                    class="chk-input"
                                                    type="password"
-                                                   placeholder="â€¢â€¢â€¢"
+                                                   placeholder=""
                                                    @bind="_cardCvc"
                                                    @bind:event="oninput"
                                                    maxlength="4"
                                                    autocomplete="cc-csc"
                                                    inputmode="numeric" />
-                                            <span class="chk-input-card-icon">ðŸ›¡</span>
+                                            <span class="chk-input-card-icon"></span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="chk-stripe-disclaimer">
-                                â“˜&nbsp;Card details are encrypted end-to-end via Stripe's PCI DSS certified gateway.
+                                ⓘ&nbsp;Card details are encrypted end-to-end via Stripe's PCI DSS certified gateway.
                                 We never store your raw card data.
                             </div>
                         </div>
@@ -533,7 +533,7 @@
                 </div>
 
 
-                @* â”€â”€ PLACE ORDER CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+                @* ── PLACE ORDER CTA ─────────────────────────────────────── *@
                 <div class="chk-cta-wrap">
                     <button id="chk-place-order-btn"
                             class="chk-btn-place-order"
@@ -542,27 +542,27 @@
                         @if (_isPlacingOrder)
                         {
                             <span class="chk-spinner"></span>
-                            <span>Placing Orderâ€¦</span>
+                            <span>Placing Order</span>
                         }
                         else
                         {
-                            <span>Place Order â€” Rs.&nbsp;@GrandTotal.ToString("N0")</span>
-                            <span class="chk-btn-arrow">â†’</span>
+                            <span>Place Order  -  Rs.&nbsp;@GrandTotal.ToString("N0")</span>
+                            <span class="chk-btn-arrow">â†'</span>
                         }
                     </button>
 
                     <div class="chk-trust-row">
-                        <span class="chk-trust-item">ðŸ”’&nbsp;SSL Encrypted</span>
-                        <span class="chk-trust-item">ðŸ§¾&nbsp;FBR Compliant</span>
-                        <span class="chk-trust-item">âœ…&nbsp;Quality Guaranteed</span>
-                        <span class="chk-trust-item">ðŸšš&nbsp;Fast Delivery</span>
+                        <span class="chk-trust-item">🔒&nbsp;SSL Encrypted</span>
+                        <span class="chk-trust-item">&nbsp;FBR Compliant</span>
+                        <span class="chk-trust-item">✅&nbsp;Quality Guaranteed</span>
+                        <span class="chk-trust-item">🚚&nbsp;Fast Delivery</span>
                     </div>
                 </div>
 
             </main>  @* /chk-form-col *@
 
 
-            @* â”€â”€ RIGHT COLUMN: STICKY ORDER SUMMARY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+            @* ── RIGHT COLUMN: STICKY ORDER SUMMARY ──────────────────────── *@
             <aside class="chk-summary-col" aria-label="Order summary">
                 <div class="chk-summary-card">
 
@@ -585,11 +585,11 @@
                                              class="chk-summary-item-img"
                                              alt="@item.Product.Name"
                                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
-                                        <div class="chk-summary-item-img-ph" style="display:none;">ðŸ¥–</div>
+                                        <div class="chk-summary-item-img-ph" style="display:none;"></div>
                                     }
                                     else
                                     {
-                                        <div class="chk-summary-item-img-ph">ðŸ¥–</div>
+                                        <div class="chk-summary-item-img-ph"></div>
                                     }
                                     <span class="chk-summary-item-qty-badge">@item.Quantity</span>
                                 </div>
@@ -617,11 +617,11 @@
                     {
                         <div class="chk-sum-row chk-sum-row--discount">
                             <span class="chk-sum-label">Discount (@_promoCode.ToUpper())</span>
-                            <span class="chk-sum-val chk-sum-val--discount">âˆ’ Rs.&nbsp;@_promoDiscount.ToString("N0")</span>
+                            <span class="chk-sum-val chk-sum-val--discount">− Rs.&nbsp;@_promoDiscount.ToString("N0")</span>
                         </div>
                     }
 
-                    @* Tax â€” Pakistan standard 17% GST applied by SaleService.ProcessSale *@
+                    @* Tax  -  Pakistan standard 17% GST applied by SaleService.ProcessSale *@
                     <div class="chk-sum-row chk-sum-row--muted">
                         <span class="chk-sum-label">
                             GST (17%)
@@ -653,9 +653,9 @@
                         </div>
                     }
 
-                    @* Sale type label â€” always Online for this checkout flow *@
+                    @* Sale type label  -  always Online for this checkout flow *@
                     <div class="chk-sum-online-badge">
-                        ðŸŒ&nbsp;Online Order
+                        &nbsp;Online Order
                     </div>
 
                     @* CTA mirror (desktop sidebar) *@
@@ -663,12 +663,12 @@
                             class="chk-btn-place-order chk-btn-place-order--sm"
                             @onclick="PlaceOrder"
                             disabled="@_isPlacingOrder">
-                        @(_isPlacingOrder ? "Placing Orderâ€¦" : $"Place Order â†’")
+                        @(_isPlacingOrder ? "Placing Order" : $"Place Order â†'")
                     </button>
 
                     @* Edit cart link *@
                     <button class="chk-edit-cart-link" @onclick="GoToCart" id="chk-edit-cart-btn">
-                        â† Edit Cart
+                         Edit Cart
                     </button>
                 </div>
             </aside>  @* /chk-summary-col *@
@@ -679,49 +679,49 @@
 </div>  @* /chk-root *@
 
 
-@* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+@* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
    @CODE SECTION
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+   â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
 @code {
 
-    // â”€â”€ Contact fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Contact fields ────────────────────────────────────────────────────
     private string _fullName   = string.Empty;
     private string _email      = string.Empty;
     private string _phone      = string.Empty;
 
-    // â”€â”€ Shipping fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Shipping fields ───────────────────────────────────────────────────
     private string _address      = string.Empty;
     private string _city         = string.Empty;
     private string _province     = string.Empty;
     private string _postalCode   = string.Empty;
     private string _deliveryNotes = string.Empty;
 
-    // â”€â”€ Promo fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Promo fields ──────────────────────────────────────────────────────
     private string  _promoCode     = string.Empty;
     private bool    _promoApplied  = false;
     private decimal _promoDiscount = 0m;
     private string? _promoError    = null;
     private bool    _isApplyingPromo = false;
 
-    // â”€â”€ Payment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Payment ───────────────────────────────────────────────────────────
     private PaymentMethod? _paymentMethod = null;
 
-    // â”€â”€ Stripe card fields (UI shell â€” wired but gateway is a TODO stub) â”€â”€
+    // ── Stripe card fields (UI shell  -  wired but gateway is a TODO stub) ──
     private string _cardName   = string.Empty;
     private string _cardNumber = string.Empty;
     private string _cardExpiry = string.Empty;
     private string _cardCvc    = string.Empty;
 
-    // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── State ─────────────────────────────────────────────────────────────
     private bool            _isPlacingOrder = false;
     private bool            _orderPlaced    = false;
     private SaleResultDto?  _saleResult     = null;
     private string?         _globalError    = null;
 
-    // â”€â”€ Validation dictionary (field key â†’ message) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Validation dictionary (field key â†' message) ───────────────────────
     private readonly Dictionary<string, string> _fieldErrors = new();
 
-    // â”€â”€ Computed properties â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Computed properties ───────────────────────────────────────────────
 
     /// <summary>
     /// Tax preview at 17% on the discounted sub-total.
@@ -734,7 +734,7 @@
     private decimal GrandTotal =>
         CartState.SubTotal - _promoDiscount + EstimatedTax;
 
-    // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Lifecycle ─────────────────────────────────────────────────────────
 
     protected override void OnInitialized()
     {
@@ -748,12 +748,12 @@
         CartState.OnCartChanged -= OnCartChanged;
     }
 
-    // â”€â”€ Navigation helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Navigation helpers ────────────────────────────────────────────────
 
     private void GoToCart() => Navigation.NavigateTo("/customer/cart");
     private void GoToShop() => Navigation.NavigateTo("/customer/shop");
 
-    // â”€â”€ Validation helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Validation helpers ────────────────────────────────────────────────
 
     private bool   HasError(string key) => _fieldErrors.ContainsKey(key);
     private string GetError(string key) => _fieldErrors.TryGetValue(key, out var msg) ? msg : string.Empty;
@@ -788,7 +788,7 @@
         return _fieldErrors.Count == 0;
     }
 
-    // â”€â”€ Promo code â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Promo code ────────────────────────────────────────────────────────
 
     private async Task ApplyPromo()
     {
@@ -813,28 +813,28 @@
         _promoError    = null;
     }
 
-    // â”€â”€ Stripe gateway stub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Stripe gateway stub ───────────────────────────────────────────────
 
     /// <summary>
     /// Stripe payment gateway placeholder.
-    /// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    /// ─────────────────────────────────────────────────────────────────────
     /// TODO (MaryamJ): Wire the actual Stripe gateway call here once your
     /// payment-intent / tokenisation feature branch is merged into main.
     /// Expected flow:
     ///   1. Call Stripe.js via JSInterop to tokenise card fields.
     ///   2. Send the payment-intent ID to the backend endpoint.
     ///   3. Await confirmation before calling SaleService.ProcessSale.
-    /// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    /// ─────────────────────────────────────────────────────────────────────
     /// </summary>
     private async Task<bool> PlaceOrderWithStripe()
     {
-        // Placeholder â€” always returns true in the stub.
+        // Placeholder  -  always returns true in the stub.
         // Replace this body with the real Stripe JS interop flow.
         await Task.CompletedTask;
         return true;
     }
 
-    // â”€â”€ Main order submission â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Main order submission ─────────────────────────────────────────────
 
     /// <summary>
     /// Validates the form, optionally processes Stripe payment (stub),
@@ -844,14 +844,14 @@
     {
         _globalError = null;
 
-        // â”€â”€ 1. Client-side validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── 1. Client-side validation ────────────────────────────────────
         if (!ValidateForm())
         {
             StateHasChanged();
             return;
         }
 
-        // â”€â”€ 2. Guard against empty cart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── 2. Guard against empty cart ──────────────────────────────────
         if (CartState.Count == 0)
         {
             _globalError = "Your cart is empty. Please add items before placing an order.";
@@ -863,7 +863,7 @@
 
         try
         {
-            // â”€â”€ 3. Stripe gateway (stub â€” see PlaceOrderWithStripe summary) â”€â”€
+            // ── 3. Stripe gateway (stub  -  see PlaceOrderWithStripe summary) ──
             if (_paymentMethod == PaymentMethod.Card)
             {
                 var stripeSuccess = await PlaceOrderWithStripe();
@@ -874,8 +874,8 @@
                 }
             }
 
-            // â”€â”€ 4. Build CreateSaleDto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-            //       SaleType is explicitly set to Online â€” this is a customer
+            // ── 4. Build CreateSaleDto ────────────────────────────────────
+            //       SaleType is explicitly set to Online  -  this is a customer
             //       web checkout, never an Onsite / cashier transaction.
             var dto = new CreateSaleDto
             {
@@ -884,7 +884,7 @@
                 PromoCode     = _promoApplied && !string.IsNullOrWhiteSpace(_promoCode)
                                     ? _promoCode.Trim()
                                     : null,
-                SaleType      = SaleType.Online,    // â† Explicitly Online for every web checkout
+                SaleType      = SaleType.Online,    //  Explicitly Online for every web checkout
                 PaymentMethod = _paymentMethod!.Value,
                 Items         = CartState.Items.Select(i => new SaleItemDto
                 {
@@ -896,7 +896,7 @@
                 }).ToList()
             };
 
-            // â”€â”€ 5. Call SaleService.ProcessSale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── 5. Call SaleService.ProcessSale ──────────────────────────
             var response = await SaleService.ProcessSale(dto);
 
             if (!response.Success || response.Data is null)
@@ -907,7 +907,7 @@
                 return;
             }
 
-            // â”€â”€ 6. Success: store result, clear cart, show receipt â”€â”€â”€â”€â”€â”€â”€â”€
+            // ── 6. Success: store result, clear cart, show receipt ────────
             _saleResult  = response.Data;
             _orderPlaced = true;
             CartState.Clear();
@@ -923,14 +923,14 @@
         }
     }
 
-    // â”€â”€ UI helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── UI helpers ────────────────────────────────────────────────────────
 
     private static string PaymentIcon(PaymentMethod m) => m switch
     {
-        PaymentMethod.Cash   => "ðŸ’µ",
-        PaymentMethod.Card   => "ðŸ’³",
-        PaymentMethod.Online => "ðŸ“±",
-        _                    => "ðŸ’³"
+        PaymentMethod.Cash   => "",
+        PaymentMethod.Card   => "",
+        PaymentMethod.Online => "",
+        _                    => ""
     };
 
     private static string PaymentLabel(PaymentMethod m) => m switch
@@ -943,23 +943,23 @@
 }
 
 
-@* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   SCOPED STYLES â€” EVERY COLOR COMES FROM colors.css CUSTOM PROPERTIES
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• *@
+@* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
+   SCOPED STYLES  -  EVERY COLOR COMES FROM colors.css CUSTOM PROPERTIES
+   â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* *@
 <style>
-    /* â”€â”€ Google Font â”€â”€ */
+    /* ── Google Font ── */
     @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@@300;400;500;600;700;800;900&display=swap');
 
-    /* â”€â”€ Box-sizing reset scoped to this page â”€â”€ */
+    /* ── Box-sizing reset scoped to this page ── */
     .chk-root *,
     .chk-header * {
         box-sizing: border-box;
         font-family: 'Inter', sans-serif;
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        ROOT
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-root {
         min-height: 100vh;
         background: var(--color-page-bg);
@@ -972,9 +972,9 @@
         to   { opacity: 1; transform: none; }
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        STICKY HEADER
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-header {
         position: sticky;
         top: 0;
@@ -1045,9 +1045,9 @@
         letter-spacing: .3px;
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        EMPTY STATE
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-empty {
         display: flex;
         flex-direction: column;
@@ -1078,9 +1078,9 @@
         line-height: 1.7;
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        TWO-COLUMN BODY
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-body {
         display: grid;
         grid-template-columns: 1fr 380px;
@@ -1100,9 +1100,9 @@
         }
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        PROGRESS STEPS
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-progress {
         display: flex;
         align-items: center;
@@ -1175,9 +1175,9 @@
         background: var(--color-navbar-bg);
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        ERROR BANNER
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-error-banner {
         display: flex;
         align-items: center;
@@ -1206,9 +1206,9 @@
 
     .chk-error-dismiss:hover { opacity: 1; }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        CARDS / SECTIONS
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-card {
         background: #fff;
         border: 1.5px solid rgba(61,28,2,.10);
@@ -1241,9 +1241,9 @@
         letter-spacing: -.15px;
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        FORM GRID
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-form-grid {
         display: grid;
         gap: 1rem;
@@ -1258,9 +1258,9 @@
         .chk-form-grid--3 { grid-template-columns: 1fr; }
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        FORM FIELDS
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-field {
         display: flex;
         flex-direction: column;
@@ -1392,9 +1392,9 @@
 
     .chk-input--card { letter-spacing: .12em; }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        PROMO
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-promo-row {
         display: flex;
         gap: .6rem;
@@ -1462,9 +1462,9 @@
     .chk-promo-msg--error   { background: #fff0f0; color: #c0392b; }
     .chk-promo-msg--success { background: #eafaf1; color: #1e8449; }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        PAYMENT METHOD GRID
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-payment-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -1529,9 +1529,9 @@
         color: var(--color-button-primary);
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        STRIPE SHELL
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-stripe-shell {
         border: 2px dashed rgba(196,132,138,.4);
         border-radius: 14px;
@@ -1589,9 +1589,9 @@
         line-height: 1.5;
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        CTA AREA
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-cta-wrap {
         display: flex;
         flex-direction: column;
@@ -1697,9 +1697,9 @@
         transform: translateY(-2px);
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        ORDER SUMMARY COLUMN (RIGHT / STICKY)
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-summary-col {
         position: sticky;
         top: 80px;
@@ -1943,9 +1943,9 @@
         color: var(--color-heading-text);
     }
 
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+    /* â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*
        SUCCESS / RECEIPT SCREEN
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â*â* */
     .chk-success-page {
         display: flex;
         flex-direction: column;
