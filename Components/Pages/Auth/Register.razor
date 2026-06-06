@@ -19,7 +19,11 @@
 <div class="auth-container">
     <div class="auth-card">
         <h1 class="auth-title">Create New Account</h1>
-        @if (!string.IsNullOrEmpty(_currentUserRole))
+        @if (!string.IsNullOrEmpty(_signupRole))
+        {
+            <p class="auth-subtitle">Creating new @_signupRole account</p>
+        }
+        else if (!string.IsNullOrEmpty(_currentUserRole))
         {
             <p class="auth-subtitle">@_currentUserRole context</p>
         }
@@ -110,9 +114,14 @@
     private bool isLoading;
     private bool isSuccess;
     private string _currentUserRole = "";
+    private string? _signupRole;
 
     protected override async Task OnInitializedAsync()
     {
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        _signupRole = query["role"];
+
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         if (user.Identity?.IsAuthenticated == true)
@@ -139,13 +148,26 @@
                 return;
             }
 
-            var newRoleName = _currentUserRole switch
+            string newRoleName;
+
+            if (!string.IsNullOrEmpty(_signupRole))
             {
-                "Admin" => "Manager",
-                "Manager" => "Cashier",
-                "Cashier" => "Customer",
-                _ => "Customer"
-            };
+                newRoleName = _signupRole;
+            }
+            else if (!string.IsNullOrEmpty(_currentUserRole))
+            {
+                newRoleName = _currentUserRole switch
+                {
+                    "Admin" => "Manager",
+                    "Manager" => "Cashier",
+                    "Cashier" => "Customer",
+                    _ => "Customer"
+                };
+            }
+            else
+            {
+                newRoleName = "Customer";
+            }
 
             var newRole = await DbContext.Roles
                 .FirstOrDefaultAsync(r => r.Name == newRoleName);
@@ -172,7 +194,9 @@
             {
                 var customerProfile = new Customer
                 {
-                    UserId = newUser.Id
+                    UserId = newUser.Id,
+                    Name = newUser.Name,
+                    Email = newUser.Email
                 };
                 DbContext.Customers.Add(customerProfile);
                 await DbContext.SaveChangesAsync();
@@ -189,7 +213,7 @@
         catch (Exception ex)
         {
             Logger.LogError(ex, "Account creation failed for email {Email}", registerModel.Email);
-            errorMessage = "An error occurred during account creation. Please try again.";
+            errorMessage = $"Account creation failed: {ex.Message}";
         }
         finally
         {

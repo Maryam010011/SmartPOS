@@ -99,8 +99,8 @@
                     </button>
 
                     <div class="auth-links">
-                        <a href="#" @onclick:preventDefault @onclick="ForgotPassword">Forgot Password?</a>
-                        <a href="/register">Sign Up</a>
+                        <a href="/forgot-password">Forgot Password?</a>
+                        <a href="/register?role=@selectedRole">Sign Up</a>
                     </div>
                 </EditForm>
             </div>
@@ -158,11 +158,11 @@
                 if (actualRole.Equals("Admin", StringComparison.OrdinalIgnoreCase))
                     NavigationManager.NavigateTo("/admin/dashboard");
                 else if (actualRole.Equals("Manager", StringComparison.OrdinalIgnoreCase))
-                    NavigationManager.NavigateTo("/manager/inventory");
+                    NavigationManager.NavigateTo("/manager/dashboard");
                 else if (actualRole.Equals("Cashier", StringComparison.OrdinalIgnoreCase))
                     NavigationManager.NavigateTo("/cashier/pos");
                 else
-                    NavigationManager.NavigateTo("/customer/shop");
+                    NavigationManager.NavigateTo("/customer/home");
             }
             else
             {
@@ -177,11 +177,6 @@
         {
             isLoading = false;
         }
-    }
-
-    private void ForgotPassword()
-    {
-        errorMessage = "A password reset link has been simulated. Check console or DB log.";
     }
 
     public class LoginModel
