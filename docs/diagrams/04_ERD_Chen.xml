@@ -1,0 +1,315 @@
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- ENTITIES (Rectangles)                                       -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <!-- Roles -->
+    <mxCell id="E_Roles" value="Roles" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="80" y="80" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Permissions -->
+    <mxCell id="E_Permissions" value="Permissions" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="80" y="280" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Users -->
+    <mxCell id="E_Users" value="Users" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="400" y="80" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Customers -->
+    <mxCell id="E_Customers" value="Customers" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="400" y="280" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- AuditLogs -->
+    <mxCell id="E_AuditLogs" value="AuditLogs" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="700" y="80" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Categories -->
+    <mxCell id="E_Categories" value="Categories" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="80" y="520" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Suppliers -->
+    <mxCell id="E_Suppliers" value="Suppliers" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="400" y="520" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Products -->
+    <mxCell id="E_Products" value="Products" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="700" y="520" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Inventories -->
+    <mxCell id="E_Inventories" value="Inventories" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1000" y="520" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Promotions -->
+    <mxCell id="E_Promotions" value="Promotions" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="80" y="760" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Sales -->
+    <mxCell id="E_Sales" value="Sales" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="400" y="760" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- SaleItems -->
+    <mxCell id="E_SaleItems" value="SaleItems" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="700" y="760" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Payments -->
+    <mxCell id="E_Payments" value="Payments" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="400" y="960" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- PurchaseOrders -->
+    <mxCell id="E_PurchaseOrders" value="PurchaseOrders" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1000" y="280" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- POLineItems -->
+    <mxCell id="E_POLineItems" value="POLineItems" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="1000" y="760" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- Reviews -->
+    <mxCell id="E_Reviews" value="Reviews" style="shape=mxgraph.erd.entity;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+      <mxGeometry x="700" y="960" width="120" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- RELATIONSHIPS (Diamonds)                                    -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <!-- has_permission: Roles — Permissions -->
+    <mxCell id="R_RolePerm" value="has" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="200" y="195" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_RolePerm1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Roles" target="R_RolePerm" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_RolePerm2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_RolePerm" target="E_Permissions" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- assigned_to: Roles — Users -->
+    <mxCell id="R_RoleUser" value="assigned to" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="250" y="95" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_RoleUser1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Roles" target="R_RoleUser" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_RoleUser2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_RoleUser" target="E_Users" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- extends: Users — Customers (1:1) -->
+    <mxCell id="R_UserCust" value="extends" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="420" y="195" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_UserCust1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Users" target="R_UserCust" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_UserCust2" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_UserCust" target="E_Customers" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- generates: Users — AuditLogs -->
+    <mxCell id="R_UserAudit" value="generates" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="580" y="95" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_UserAudit1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Users" target="R_UserAudit" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_UserAudit2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_UserAudit" target="E_AuditLogs" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- parent_of: Categories — Categories (self-ref) -->
+    <mxCell id="R_CatSelf" value="parent of" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="200" y="620" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_CatSelf1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Categories" target="R_CatSelf" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_CatSelf2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_CatSelf" target="E_Categories" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- contains: Categories — Products -->
+    <mxCell id="R_CatProd" value="contains" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="400" y="620" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_CatProd1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Categories" target="R_CatProd" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_CatProd2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_CatProd" target="E_Products" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- supplies: Suppliers — Products -->
+    <mxCell id="R_SuppProd" value="supplies" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="580" y="620" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_SuppProd1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Suppliers" target="R_SuppProd" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_SuppProd2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_SuppProd" target="E_Products" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- tracked_by: Products — Inventories (1:1) -->
+    <mxCell id="R_ProdInv" value="tracked by" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="870" y="620" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_ProdInv1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Products" target="R_ProdInv" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_ProdInv2" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_ProdInv" target="E_Inventories" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- receives: Suppliers — PurchaseOrders -->
+    <mxCell id="R_SuppPO" value="receives" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="750" y="295" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_SuppPO1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Suppliers" target="R_SuppPO" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_SuppPO2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_SuppPO" target="E_PurchaseOrders" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- raises: Users — PurchaseOrders -->
+    <mxCell id="R_UserPO" value="raises" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="750" y="175" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_UserPO1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Users" target="R_UserPO" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_UserPO2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_UserPO" target="E_PurchaseOrders" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- contains_po: PurchaseOrders — POLineItems -->
+    <mxCell id="R_POLine" value="contains" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1020" y="620" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_POLine1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_PurchaseOrders" target="R_POLine" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_POLine2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_POLine" target="E_POLineItems" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ordered_in: Products — POLineItems -->
+    <mxCell id="R_ProdPOLine" value="ordered in" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="870" y="760" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_ProdPOLine1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Products" target="R_ProdPOLine" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_ProdPOLine2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_ProdPOLine" target="E_POLineItems" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- places: Customers — Sales -->
+    <mxCell id="R_CustSale" value="places" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="420" y="640" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_CustSale1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Customers" target="R_CustSale" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_CustSale2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_CustSale" target="E_Sales" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- processes: Users — Sales -->
+    <mxCell id="R_UserSale" value="processes" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="420" y="460" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_UserSale1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Users" target="R_UserSale" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_UserSale2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_UserSale" target="E_Sales" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- applied_to: Promotions — Sales -->
+    <mxCell id="R_PromoSale" value="applied to" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="200" y="860" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_PromoSale1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Promotions" target="R_PromoSale" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_PromoSale2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_PromoSale" target="E_Sales" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- contains_sale: Sales — SaleItems -->
+    <mxCell id="R_SaleLine" value="contains" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="580" y="860" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_SaleLine1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Sales" target="R_SaleLine" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_SaleLine2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_SaleLine" target="E_SaleItems" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- sold_as: Products — SaleItems -->
+    <mxCell id="R_ProdSaleItem" value="sold as" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="750" y="860" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_ProdSaleItem1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Products" target="R_ProdSaleItem" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_ProdSaleItem2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_ProdSaleItem" target="E_SaleItems" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- paid_via: Sales — Payments (1:1) -->
+    <mxCell id="R_SalePay" value="paid via" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="420" y="870" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_SalePay1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Sales" target="R_SalePay" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_SalePay2" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_SalePay" target="E_Payments" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- writes: Customers — Reviews -->
+    <mxCell id="R_CustReview" value="writes" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="580" y="960" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_CustReview1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Customers" target="R_CustReview" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_CustReview2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_CustReview" target="E_Reviews" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- reviewed_in: Products — Reviews -->
+    <mxCell id="R_ProdReview" value="reviewed in" style="shape=mxgraph.erd.relationship;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="870" y="960" width="100" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="L_ProdReview1" value="1" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="E_Products" target="R_ProdReview" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="L_ProdReview2" value="N" style="edgeStyle=orthogonalEdgeStyle;" edge="1" source="R_ProdReview" target="E_Reviews" parent="1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

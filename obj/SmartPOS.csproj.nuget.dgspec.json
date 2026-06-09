@@ -1,32 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\jahan\\Desktop\\proj\\SmartPOS\\SmartPOS.csproj": {}
+    "C:\\Users\\Maryam Yaqoob\\Pictures\\New folder\\SmartPOS\\SmartPOS.csproj": {}
   },
   "projects": {
-    "C:\\Users\\jahan\\Desktop\\proj\\SmartPOS\\SmartPOS.csproj": {
+    "C:\\Users\\Maryam Yaqoob\\Pictures\\New folder\\SmartPOS\\SmartPOS.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jahan\\Desktop\\proj\\SmartPOS\\SmartPOS.csproj",
+        "projectUniqueName": "C:\\Users\\Maryam Yaqoob\\Pictures\\New folder\\SmartPOS\\SmartPOS.csproj",
         "projectName": "SmartPOS",
-        "projectPath": "C:\\Users\\jahan\\Desktop\\proj\\SmartPOS\\SmartPOS.csproj",
-        "packagesPath": "C:\\Users\\jahan\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jahan\\Desktop\\proj\\SmartPOS\\obj\\",
+        "projectPath": "C:\\Users\\Maryam Yaqoob\\Pictures\\New folder\\SmartPOS\\SmartPOS.csproj",
+        "packagesPath": "C:\\Users\\Maryam Yaqoob\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Maryam Yaqoob\\Pictures\\New folder\\SmartPOS\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\jahan\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\Maryam Yaqoob\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {

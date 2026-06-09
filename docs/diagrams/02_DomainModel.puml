@@ -1,0 +1,126 @@
+@startuml SmartPOS_DomainModel
+
+skinparam classBackgroundColor #FFF8F0
+skinparam classBorderColor #CC6600
+skinparam arrowColor #CC6600
+skinparam classHeaderBackgroundColor #FFE4B5
+skinparam linetype ortho
+
+title SmartPOS+ — UML Domain Model
+
+class "User" as User {
+  A person who logs into the system.
+  Has exactly one Role.
+}
+
+class "Role" as Role {
+  Defines what a User can do.
+  Admin | Manager | Cashier | Customer
+}
+
+class "Permission" as Permission {
+  Grants CRUD access to a module
+  for a specific Role.
+}
+
+class "Customer" as Customer {
+  Extended profile for Customer users.
+  Tracks loyalty points and spending.
+}
+
+class "AuditLog" as AuditLog {
+  Records every significant action
+  taken by any User.
+}
+
+class "Product" as Product {
+  A bakery item for sale.
+  Has price, cost price, and SKU.
+}
+
+class "Category" as Category {
+  Groups products into a hierarchy.
+  Can have sub-categories.
+}
+
+class "Supplier" as Supplier {
+  A company that supplies products.
+}
+
+class "Inventory" as Inventory {
+  Tracks stock level of one Product.
+  Triggers alerts at reorder level.
+}
+
+class "PurchaseOrder" as PO {
+  A restock request to a Supplier.
+  Draft > Sent > Received > Cancelled
+}
+
+class "POLineItem" as POLine {
+  One product line in a Purchase Order.
+}
+
+class "Sale" as Sale {
+  A completed transaction.
+  Onsite (POS) or Online (Shop).
+}
+
+class "SaleItem" as SaleItem {
+  One product line in a Sale.
+  Price captured at time of sale.
+}
+
+class "Promotion" as Promotion {
+  A discount code for checkout.
+  Percentage or flat amount.
+}
+
+class "Payment" as Payment {
+  Payment record for a Sale.
+  Cash | Card | Online
+}
+
+class "Review" as Review {
+  Customer rating + comment.
+  Enriched with BERT AI sentiment.
+}
+
+Role        "1" -- "0..*" User        : is assigned to >
+Role        "1" -- "0..*" Permission  : has >
+User        "1" -- "0..1" Customer    : extends to >
+User        "1" -- "0..*" AuditLog    : generates >
+Category    "0..1" -- "0..*" Category : parent of >
+Category    "1"    -- "0..*" Product  : contains >
+Supplier    "0..1" -- "0..*" Product  : supplies >
+Product     "1"    -- "1"   Inventory : tracked by >
+Supplier    "1"    -- "0..*" PO       : receives >
+User        "1"    -- "0..*" PO       : raised by >
+PO          "1"    -- "1..*" POLine   : contains >
+Product     "1"    -- "0..*" POLine   : ordered in >
+User        "1"    -- "0..*" Sale     : processed by >
+Customer    "0..1" -- "0..*" Sale     : placed by >
+Promotion   "0..1" -- "0..*" Sale     : applied to >
+Sale        "1"    -- "1..*" SaleItem : contains >
+Product     "1"    -- "0..*" SaleItem : sold as >
+Sale        "1"    -- "1"   Payment  : paid via >
+Customer    "1"    -- "0..*" Review   : writes >
+Product     "1"    -- "0..*" Review   : reviewed in >
+
+note top of Sale
+  Status: Completed | Voided | Refunded
+  Type: Onsite | Online
+end note
+
+note right of Review
+  Rating: 1-5 stars
+  Sentiment: Positive | Neutral | Negative
+  SentimentScore: 0.0 to 1.0
+end note
+
+note right of Inventory
+  Alert when Quantity <= ReorderLevel
+  Decrements on Sale, increments on PO Received
+end note
+
+@enduml

@@ -386,17 +386,17 @@
     private void BrowseCategory(int categoryId)
         => NavigationManager.NavigateTo($"/customer/shop?category={categoryId}");
 
-    // ── Cart Placeholder ────────────────────────────────────────
+    // ── Cart Action ────────────────────────────────────────
     /// <summary>
-    /// UI-ONLY PLACEHOLDER  -  Add to Cart stub.
-    /// TODO: Wire real CartStateService.AddItem(product) here once cart state
-    ///       integration is finalized. CartState is already injected and ready.
+    /// Adds a product to the cart using CartStateService.
     /// </summary>
     private void AddToCartPlaceholder(ProductDto product)
     {
-        // Placeholder: real implementation will call CartState.AddItem(product)
-        // CartState.AddItem(product);
-        // StateHasChanged();
+        if (product.CurrentStock > 0)
+        {
+            CartState.AddItem(product);
+            StateHasChanged();
+        }
     }
 
     // ── Helpers ─────────────────────────────────────────────────

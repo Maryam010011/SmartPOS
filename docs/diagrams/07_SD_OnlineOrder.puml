@@ -1,0 +1,91 @@
+@startuml SD_OnlineOrder
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBackgroundColor #FFF8F0
+skinparam sequenceParticipantBorderColor #CC6600
+skinparam noteBackgroundColor #FFF0D0
+
+title SmartPOS+ — Sequence: Customer Online Order
+
+actor       "Customer"          as CU
+participant "Shop.razor"        as SH
+participant "SaleService"       as SS
+participant "PromoService"      as PS
+participant "StripeService"     as STR
+participant "AppDbContext"      as DB
+participant "InventoryService"  as IS
+participant "LoyaltyService"    as LS
+participant "AuditService"      as AU
+
+CU  -> SH  : Open /customer/shop
+SH  -> DB  : Products.Where(IsActive).Include(Inventory)
+DB  --> SH : List<Product>
+SH  -> CU  : Show product grid
+
+loop Add to cart
+  CU  -> SH  : Add product + quantity
+  SH  -> SH  : Update cart totals
+end
+
+opt Apply promo code
+  CU  -> SH  : Enter promo code
+  SH  -> PS  : ValidatePromo(code, subTotal)
+  PS  -> DB  : Query Promotions
+  alt Invalid
+    PS  --> SH : { Valid: false }
+    SH  -> CU  : Show error
+  else Valid
+    PS  --> SH : { Valid: true, Discount: amount }
+    SH  -> SH  : Apply discount
+  end
+end
+
+SH  -> SH  : TaxAmount = (SubTotal - Discount) x 0.17
+SH  -> SH  : TotalAmount = SubTotal - Discount + Tax
+SH  -> CU  : Show order summary
+
+CU  -> SH  : Click "Pay by Card"
+SH  -> STR : CreatePaymentIntent(amount)
+STR --> SH : { clientSecret }
+SH  -> CU  : Show Stripe card form
+
+CU  -> STR : Enter card + confirm
+STR -> STR : Process charge
+
+alt Payment failed
+  STR --> SH : { status: failed }
+  SH  -> CU  : Show failure message
+else Payment succeeded
+  STR --> SH : { status: succeeded, chargeId: "ch_xxx" }
+
+  SH  -> SS  : CreateSale(cart, customerId, Online, "ch_xxx")
+  SS  -> DB  : BEGIN TRANSACTION
+  SS  -> DB  : INSERT Sales (Online, totals, Completed)
+  DB  --> SS : Sale.Id
+
+  loop Each SaleItem
+    SS -> DB : INSERT SaleItems
+  end
+
+  SS  -> DB  : INSERT Payments (Online, Completed, TransactionRef="ch_xxx")
+
+  loop Each SaleItem
+    SS -> IS : DecrementStock(productId, qty)
+    IS -> DB : UPDATE Inventories SET Quantity -= qty
+  end
+
+  SS  -> LS  : AwardPoints(customerId, totalAmount)
+  LS  -> DB  : UPDATE Customers SET LoyaltyPoints += pts, TotalSpent += total
+
+  opt Promo applied
+    SS -> DB : UPDATE Promotions SET UsageCount += 1
+  end
+
+  SS  -> DB  : COMMIT TRANSACTION
+  SS  -> AU  : LogAction(userId, "Online Order", "Sales")
+  AU  -> DB  : INSERT AuditLogs
+  SS  --> SH : Sale complete
+  SH  -> CU  : Show order confirmation
+end
+
+@enduml

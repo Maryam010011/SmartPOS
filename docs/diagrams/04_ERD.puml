@@ -1,0 +1,211 @@
+@startuml SmartPOS_ERD
+
+skinparam linetype ortho
+skinparam classBackgroundColor #FFFDF5
+skinparam classBorderColor #8B4513
+skinparam classHeaderBackgroundColor #F4A460
+skinparam arrowColor #8B4513
+
+title SmartPOS+ — Entity Relationship Diagram
+
+entity "Roles" as Roles {
+  * Id : INT <<PK>>
+  --
+  * Name : NVARCHAR(50)
+}
+
+entity "Permissions" as Permissions {
+  * Id : INT <<PK>>
+  --
+  * RoleId : INT <<FK>>
+  * Module : NVARCHAR(100)
+  * CanCreate : BIT DEFAULT 0
+  * CanRead : BIT DEFAULT 0
+  * CanUpdate : BIT DEFAULT 0
+  * CanDelete : BIT DEFAULT 0
+}
+
+entity "Users" as Users {
+  * Id : INT <<PK>>
+  --
+  * Name : NVARCHAR(100)
+  * Email : NVARCHAR(150) <<UQ>>
+  * PasswordHash : NVARCHAR(255)
+  * RoleId : INT <<FK>>
+  * IsActive : BIT DEFAULT 1
+  * CreatedAt : DATETIME2
+}
+
+entity "Customers" as Customers {
+  * Id : INT <<PK>>
+  --
+  * UserId : INT <<FK, UQ>>
+  * Name : NVARCHAR(100)
+  * Email : NVARCHAR(150) <<UQ>>
+    Phone : NVARCHAR(20)
+    DateOfBirth : DATE
+    Address : TEXT
+  * LoyaltyPoints : INT DEFAULT 0
+  * TotalSpent : DECIMAL(10,2)
+  * CreatedAt : DATETIME2
+}
+
+entity "AuditLogs" as AuditLogs {
+  * Id : INT <<PK>>
+  --
+  * UserId : INT <<FK>>
+  * Action : NVARCHAR(255)
+  * Module : NVARCHAR(100)
+  * Timestamp : DATETIME2
+    IPAddress : NVARCHAR(45)
+    Details : TEXT
+}
+
+entity "Categories" as Categories {
+  * Id : INT <<PK>>
+  --
+  * Name : NVARCHAR(100)
+    ParentCategoryId : INT <<FK, nullable>>
+    Description : TEXT
+    ImageURL : NVARCHAR(255)
+}
+
+entity "Suppliers" as Suppliers {
+  * Id : INT <<PK>>
+  --
+  * Name : NVARCHAR(100)
+    ContactPerson : NVARCHAR(100)
+    ContactNo : NVARCHAR(20)
+    Email : NVARCHAR(150) <<UQ>>
+    Address : TEXT
+  * IsActive : BIT DEFAULT 1
+}
+
+entity "Products" as Products {
+  * Id : INT <<PK>>
+  --
+  * Name : NVARCHAR(150)
+  * SKU : NVARCHAR(50) <<UQ>>
+    Description : TEXT
+    ImageURL : NVARCHAR(255)
+  * Price : DECIMAL(10,2)
+  * CostPrice : DECIMAL(10,2)
+  * IsActive : BIT DEFAULT 1
+  * CategoryId : INT <<FK, RESTRICT>>
+    SupplierId : INT <<FK, SET NULL>>
+  * CreatedAt : DATETIME2
+}
+
+entity "Inventories" as Inventories {
+  * Id : INT <<PK>>
+  --
+  * ProductId : INT <<FK, UQ>>
+  * Quantity : INT DEFAULT 0
+  * ReorderLevel : INT
+  * LastUpdated : DATETIME2
+}
+
+entity "Promotions" as Promotions {
+  * Id : INT <<PK>>
+  --
+  * Code : NVARCHAR(50) <<UQ>>
+  * DiscountType : INT
+  * Value : DECIMAL(10,2)
+  * MinOrderValue : DECIMAL(10,2)
+    MaxUsageLimit : INT
+  * UsageCount : INT DEFAULT 0
+  * ValidFrom : DATE
+  * ValidTo : DATE
+  * IsActive : BIT DEFAULT 1
+}
+
+entity "PurchaseOrders" as PurchaseOrders {
+  * Id : INT <<PK>>
+  --
+  * SupplierId : INT <<FK>>
+  * UserId : INT <<FK>>
+  * Status : INT DEFAULT 0
+  * TotalCost : DECIMAL(10,2)
+  * OrderDate : DATETIME2
+    ReceivedAt : DATETIME2
+    Notes : TEXT
+}
+
+entity "POLineItems" as POLineItems {
+  * Id : INT <<PK>>
+  --
+  * POID : INT <<FK, CASCADE>>
+  * ProductId : INT <<FK>>
+  * OrderedQty : INT
+  * UnitPrice : DECIMAL(10,2)
+}
+
+entity "Sales" as Sales {
+  * Id : INT <<PK>>
+  --
+    CustomerId : INT <<FK, nullable>>
+  * UserId : INT <<FK>>
+    PromoId : INT <<FK, nullable>>
+  * SaleType : INT
+  * TotalAmount : DECIMAL(10,2)
+  * DiscountAmount : DECIMAL(10,2)
+  * TaxAmount : DECIMAL(10,2)
+  * SaleDate : DATETIME2
+  * Status : INT DEFAULT 0
+}
+
+entity "SaleItems" as SaleItems {
+  * Id : INT <<PK>>
+  --
+  * SaleId : INT <<FK, CASCADE>>
+  * ProductId : INT <<FK, RESTRICT>>
+  * Quantity : INT
+  * UnitPrice : DECIMAL(10,2)
+  * LineTotal : DECIMAL(10,2)
+}
+
+entity "Reviews" as Reviews {
+  * Id : INT <<PK>>
+  --
+  * CustomerId : INT <<FK>>
+  * ProductId : INT <<FK>>
+  * Rating : INT <<CHECK 1-5>>
+    Comment : TEXT
+    Sentiment : NVARCHAR(20)
+    SentimentScore : FLOAT
+  * CreatedAt : DATETIME2
+}
+
+entity "Payments" as Payments {
+  * Id : INT <<PK>>
+  --
+  * SaleId : INT <<FK, UQ>>
+  * Method : INT
+  * Amount : DECIMAL(10,2)
+  * Status : INT DEFAULT 0
+    TransactionRef : NVARCHAR(255)
+    PaidAt : DATETIME2
+}
+
+Roles        ||--o{ Permissions
+Roles        ||--o{ Users
+Users        ||--|| Customers
+Users        ||--o{ AuditLogs
+Users        ||--o{ Sales
+Users        ||--o{ PurchaseOrders
+Categories   |o--o{ Categories
+Categories   ||--o{ Products
+Suppliers    |o--o{ Products
+Suppliers    ||--o{ PurchaseOrders
+Products     ||--|| Inventories
+PurchaseOrders ||--o{ POLineItems
+Products     ||--o{ POLineItems
+Customers    |o--o{ Sales
+Promotions   |o--o{ Sales
+Sales        ||--o{ SaleItems
+Products     ||--o{ SaleItems
+Sales        ||--|| Payments
+Customers    ||--o{ Reviews
+Products     ||--o{ Reviews
+
+@enduml

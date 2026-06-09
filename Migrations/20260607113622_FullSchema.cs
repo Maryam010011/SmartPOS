@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartPOS.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialFullDatabaseSetup : Migration
+    public partial class FullSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,7 +19,7 @@ namespace SmartPOS.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     ParentCategoryId = table.Column<int>(type: "int", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true),
+                    Description = table.Column<string>(type: "text", maxLength: 500, nullable: true),
                     ImageURL = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true)
                 },
                 constraints: table =>
@@ -39,6 +39,7 @@ namespace SmartPOS.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DiscountType = table.Column<int>(type: "int", nullable: false),
                     Value = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
                     MinOrderValue = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false, defaultValue: 0.00m),
@@ -46,7 +47,8 @@ namespace SmartPOS.Migrations
                     UsageCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     ValidFrom = table.Column<DateOnly>(type: "date", nullable: false),
                     ValidTo = table.Column<DateOnly>(type: "date", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true)
+                    IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -59,7 +61,9 @@ namespace SmartPOS.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    RoleName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PermissionsJson = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -76,7 +80,7 @@ namespace SmartPOS.Migrations
                     ContactPerson = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     ContactNo = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
-                    Address = table.Column<string>(type: "text", nullable: true),
+                    Address = table.Column<string>(type: "text", maxLength: 500, nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
@@ -95,7 +99,8 @@ namespace SmartPOS.Migrations
                     CanCreate = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CanRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CanUpdate = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    CanDelete = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                    CanDelete = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    RoleId1 = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -106,6 +111,11 @@ namespace SmartPOS.Migrations
                         principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Permissions_Roles_RoleId1",
+                        column: x => x.RoleId1,
+                        principalTable: "Roles",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -175,6 +185,9 @@ namespace SmartPOS.Migrations
                     UserId = table.Column<int>(type: "int", nullable: false),
                     Action = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     Module = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    EntityId = table.Column<int>(type: "int", nullable: false),
+                    OldValues = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NewValues = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "(getutcdate())"),
                     IPAddress = table.Column<string>(type: "nvarchar(45)", maxLength: 45, nullable: true),
                     Details = table.Column<string>(type: "text", nullable: true)
@@ -202,6 +215,7 @@ namespace SmartPOS.Migrations
                     Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     DateOfBirth = table.Column<DateOnly>(type: "date", nullable: true),
                     Address = table.Column<string>(type: "text", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     LoyaltyPoints = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     TotalSpent = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false, defaultValue: 0.00m),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "(getutcdate())")
@@ -249,7 +263,7 @@ namespace SmartPOS.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Inventories",
+                name: "Inventory",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -261,11 +275,34 @@ namespace SmartPOS.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Inventories", x => x.Id);
+                    table.PrimaryKey("PK_Inventory", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Inventories_Products_ProductId",
+                        name: "FK_Inventory_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "LoyaltyTransactions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    Points = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_LoyaltyTransactions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_LoyaltyTransactions_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -400,8 +437,8 @@ namespace SmartPOS.Migrations
                     SaleId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
-                    LineTotal = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false)
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 10, scale: 2, nullable: false),
+                    LineTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 10, scale: 2, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -444,9 +481,14 @@ namespace SmartPOS.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Inventories_ProductId",
-                table: "Inventories",
+                table: "Inventory",
                 column: "ProductId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_LoyaltyTransactions_CustomerId",
+                table: "LoyaltyTransactions",
+                column: "CustomerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Payments_SaleId",
@@ -458,6 +500,11 @@ namespace SmartPOS.Migrations
                 name: "IX_Permissions_RoleId",
                 table: "Permissions",
                 column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Permissions_RoleId1",
+                table: "Permissions",
+                column: "RoleId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_POLineItems_POID",
@@ -562,7 +609,10 @@ namespace SmartPOS.Migrations
                 name: "AuditLogs");
 
             migrationBuilder.DropTable(
-                name: "Inventories");
+                name: "Inventory");
+
+            migrationBuilder.DropTable(
+                name: "LoyaltyTransactions");
 
             migrationBuilder.DropTable(
                 name: "Payments");

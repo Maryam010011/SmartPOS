@@ -48,9 +48,9 @@ public partial class AppDbContext : DbContext
                      .HasMaxLength(50)
                      .IsRequired();
 
-               // Map the new property to the existing text column
+               // PermissionsJson stores JSON string — use its own column name
                entity.Property(e => e.PermissionsJson)
-                     .HasColumnName("Permissions");
+                     .HasColumnName("PermissionsJson");
           });
 
           // â”€â”€ Permission â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -68,7 +68,7 @@ public partial class AppDbContext : DbContext
                entity.Property(e => e.CanDelete).HasDefaultValue(false);
 
                 entity.HasOne(e => e.Role)
-                    .WithMany()
+                    .WithMany(r => r.Permissions)
                     .HasForeignKey(e => e.RoleId);
           });
 
@@ -253,6 +253,7 @@ public partial class AppDbContext : DbContext
         // â”€â”€ Inventory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           modelBuilder.Entity<Inventory>(entity =>
           {
+               entity.ToTable("Inventories");
                entity.HasIndex(e => e.ProductId, "IX_Inventories_ProductId").IsUnique();
 
                entity.Property(e => e.Quantity).HasDefaultValue(0);

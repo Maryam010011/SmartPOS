@@ -1,0 +1,294 @@
+@startuml SmartPOS_ClassDiagram
+
+skinparam classBackgroundColor #FFF8F0
+skinparam classBorderColor #CC6600
+skinparam arrowColor #555555
+skinparam classHeaderBackgroundColor #FFE4B5
+skinparam linetype ortho
+
+title SmartPOS+ — UML Class Diagram
+
+enum DiscountType {
+  Percentage = 0
+  Flat = 1
+}
+
+enum SaleType {
+  Onsite = 0
+  Online = 1
+}
+
+enum SaleStatus {
+  Completed = 0
+  Voided = 1
+  Refunded = 2
+}
+
+enum POStatus {
+  Draft = 0
+  Sent = 1
+  Received = 2
+  Cancelled = 3
+}
+
+enum PaymentMethod {
+  Cash = 0
+  Card = 1
+  Online = 2
+}
+
+enum PaymentStatus {
+  Pending = 0
+  Completed = 1
+  Failed = 2
+  Refunded = 3
+}
+
+class Role {
+  + Id : int
+  + Name : string
+  --
+  + Users : ICollection<User>
+  + Permissions : ICollection<Permission>
+}
+
+class Permission {
+  + Id : int
+  + RoleId : int
+  + Module : string
+  + CanCreate : bool
+  + CanRead : bool
+  + CanUpdate : bool
+  + CanDelete : bool
+  --
+  + Role : Role
+}
+
+class User {
+  + Id : int
+  + Name : string
+  + Email : string
+  + PasswordHash : string
+  + RoleId : int
+  + IsActive : bool
+  + CreatedAt : DateTime
+  --
+  + Role : Role
+  + Customer : Customer?
+  + Sales : ICollection<Sale>
+  + PurchaseOrders : ICollection<PurchaseOrder>
+  + AuditLogs : ICollection<AuditLog>
+}
+
+class Customer {
+  + Id : int
+  + UserId : int
+  + Name : string
+  + Email : string
+  + Phone : string?
+  + DateOfBirth : DateOnly?
+  + Address : string?
+  + LoyaltyPoints : int
+  + TotalSpent : decimal
+  + CreatedAt : DateTime
+  --
+  + User : User
+  + Sales : ICollection<Sale>
+  + Reviews : ICollection<Review>
+}
+
+class AuditLog {
+  + Id : int
+  + UserId : int
+  + Action : string
+  + Module : string
+  + Timestamp : DateTime
+  + IPAddress : string?
+  + Details : string?
+  --
+  + User : User
+}
+
+class Category {
+  + Id : int
+  + Name : string
+  + ParentCategoryId : int?
+  + Description : string?
+  + ImageURL : string?
+  --
+  + ParentCategory : Category?
+  + SubCategories : ICollection<Category>
+  + Products : ICollection<Product>
+}
+
+class Supplier {
+  + Id : int
+  + Name : string
+  + ContactPerson : string?
+  + ContactNo : string?
+  + Email : string?
+  + Address : string?
+  + IsActive : bool
+  --
+  + Products : ICollection<Product>
+  + PurchaseOrders : ICollection<PurchaseOrder>
+}
+
+class Product {
+  + Id : int
+  + Name : string
+  + SKU : string
+  + Description : string?
+  + ImageURL : string?
+  + Price : decimal
+  + CostPrice : decimal
+  + IsActive : bool
+  + CategoryId : int
+  + SupplierId : int?
+  + CreatedAt : DateTime
+  --
+  + Category : Category
+  + Supplier : Supplier?
+  + Inventory : Inventory?
+  + SaleItems : ICollection<SaleItem>
+  + POLineItems : ICollection<POLineItem>
+  + Reviews : ICollection<Review>
+}
+
+class Inventory {
+  + Id : int
+  + ProductId : int
+  + Quantity : int
+  + ReorderLevel : int
+  + LastUpdated : DateTime
+  --
+  + Product : Product
+}
+
+class PurchaseOrder {
+  + Id : int
+  + SupplierId : int
+  + UserId : int
+  + Status : POStatus
+  + TotalCost : decimal
+  + OrderDate : DateTime
+  + ReceivedAt : DateTime?
+  + Notes : string?
+  --
+  + Supplier : Supplier
+  + User : User
+  + LineItems : ICollection<POLineItem>
+}
+
+class POLineItem {
+  + Id : int
+  + POID : int
+  + ProductId : int
+  + OrderedQty : int
+  + UnitPrice : decimal
+  --
+  + PurchaseOrder : PurchaseOrder
+  + Product : Product
+}
+
+class Promotion {
+  + Id : int
+  + Code : string
+  + DiscountType : DiscountType
+  + Value : decimal
+  + MinOrderValue : decimal
+  + MaxUsageLimit : int?
+  + UsageCount : int
+  + ValidFrom : DateOnly
+  + ValidTo : DateOnly
+  + IsActive : bool
+  --
+  + Sales : ICollection<Sale>
+}
+
+class Sale {
+  + Id : int
+  + CustomerId : int?
+  + UserId : int
+  + PromoId : int?
+  + SaleType : SaleType
+  + TotalAmount : decimal
+  + DiscountAmount : decimal
+  + TaxAmount : decimal
+  + SaleDate : DateTime
+  + Status : SaleStatus
+  --
+  + Customer : Customer?
+  + User : User
+  + Promotion : Promotion?
+  + SaleItems : ICollection<SaleItem>
+  + Payment : Payment?
+}
+
+class SaleItem {
+  + Id : int
+  + SaleId : int
+  + ProductId : int
+  + Quantity : int
+  + UnitPrice : decimal
+  + LineTotal : decimal
+  --
+  + Sale : Sale
+  + Product : Product
+}
+
+class Payment {
+  + Id : int
+  + SaleId : int
+  + Method : PaymentMethod
+  + Amount : decimal
+  + Status : PaymentStatus
+  + TransactionRef : string?
+  + PaidAt : DateTime?
+  --
+  + Sale : Sale
+}
+
+class Review {
+  + Id : int
+  + CustomerId : int
+  + ProductId : int
+  + Rating : int
+  + Comment : string?
+  + Sentiment : string?
+  + SentimentScore : double?
+  + CreatedAt : DateTime
+  --
+  + Customer : Customer
+  + Product : Product
+}
+
+Role        "1" *-- "0..*" Permission
+Role        "1" *-- "0..*" User
+User        "1" *-- "0..1" Customer
+User        "1" *-- "0..*" AuditLog
+Category    "0..1" o-- "0..*" Category
+Category    "1" *-- "0..*" Product
+Supplier    "0..1" o-- "0..*" Product
+Product     "1" *-- "1"    Inventory
+Supplier    "1" *-- "0..*" PurchaseOrder
+User        "1" *-- "0..*" PurchaseOrder
+PurchaseOrder "1" *-- "1..*" POLineItem
+Product     "1" o-- "0..*" POLineItem
+Customer    "0..1" o-- "0..*" Sale
+User        "1" *-- "0..*" Sale
+Promotion   "0..1" o-- "0..*" Sale
+Sale        "1" *-- "1..*" SaleItem
+Product     "1" o-- "0..*" SaleItem
+Sale        "1" *-- "1"    Payment
+Customer    "1" *-- "0..*" Review
+Product     "1" *-- "0..*" Review
+
+Promotion   ..> DiscountType
+Sale        ..> SaleType
+Sale        ..> SaleStatus
+PurchaseOrder ..> POStatus
+Payment     ..> PaymentMethod
+Payment     ..> PaymentStatus
+
+@enduml

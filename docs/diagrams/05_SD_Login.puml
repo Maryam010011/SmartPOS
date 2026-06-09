@@ -1,0 +1,78 @@
+@startuml SD_Login
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBackgroundColor #FFF8F0
+skinparam sequenceParticipantBorderColor #CC6600
+skinparam sequenceLifeLineBorderColor #CC6600
+skinparam noteBackgroundColor #FFF0D0
+
+title SmartPOS+ — Sequence: User Login & Role-Based Redirect
+
+actor       "User"              as U
+participant "Login.razor"       as LR
+participant "AuthService"       as AS
+participant "AppDbContext"      as DB
+participant "JwtService"        as JWT
+participant "LocalStorage"      as LS
+participant "AuthStateProvider" as ASP
+participant "NavigationManager" as NM
+
+U  -> LR  : Open /login
+LR -> U   : Show role selection grid
+U  -> LR  : Click role (e.g. Cashier)
+LR -> LR  : selectedRole = "Cashier"
+
+U  -> LR  : Enter email + password
+U  -> LR  : Click "Sign In as Cashier"
+LR -> LR  : Validate form
+
+alt Validation fails
+  LR -> U : Show validation errors
+else Validation passes
+  LR -> AS  : LoginAsync(email, password)
+  AS -> DB  : Find User by email (include Role)
+
+  alt User not found
+    DB --> AS : null
+    AS --> LR : { Token: null }
+    LR -> U   : "Invalid email or password."
+  else User found
+    DB --> AS : User entity
+    AS -> AS  : BCrypt.Verify(password, hash)
+
+    alt Password wrong
+      AS --> LR : { Token: null }
+      LR -> U   : "Invalid email or password."
+    else Password correct
+      AS -> AS  : Check IsActive == true
+
+      alt Account inactive
+        AS --> LR : { Token: null }
+        LR -> U   : "Account is deactivated."
+      else Active
+        AS -> JWT : GenerateToken(user)
+        JWT --> AS : JWT string
+        AS --> LR  : { Token: "eyJ...", User: dto }
+
+        LR -> LR : Check user.Role == selectedRole
+
+        alt Role mismatch
+          LR -> U : "Access Denied. Wrong role selected."
+        else Role matches
+          LR -> LS  : SetItemAsync("authToken", token)
+          LR -> ASP : MarkUserAsAuthenticated(token)
+          LR -> NM  : NavigateTo(role dashboard)
+          note right of NM
+            Admin    → /admin/dashboard
+            Manager  → /manager/inventory
+            Cashier  → /cashier/pos
+            Customer → /customer/shop
+          end note
+          NM -> U   : Load dashboard
+        end
+      end
+    end
+  end
+end
+
+@enduml

@@ -1,0 +1,74 @@
+@startuml SD_PurchaseOrder
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBackgroundColor #FFF8F0
+skinparam sequenceParticipantBorderColor #CC6600
+skinparam noteBackgroundColor #FFF0D0
+
+title SmartPOS+ — Sequence: Purchase Order & Stock Receive
+
+actor       "Manager"           as M
+participant "Inventory.razor"   as INV
+participant "POService"         as POS
+participant "AppDbContext"      as DB
+participant "InventoryService"  as IS
+participant "AuditService"      as AU
+
+M   -> INV : Open /manager/inventory
+INV -> DB  : Inventories WHERE Quantity <= ReorderLevel
+DB  --> INV : Low-stock items
+INV -> M   : Highlight low-stock products
+
+M   -> INV : Click "Create Purchase Order"
+INV -> DB  : Suppliers.Where(IsActive)
+DB  --> INV : List<Supplier>
+INV -> M   : Show PO form
+
+M   -> INV : Select supplier, add line items, add notes
+M   -> INV : Click "Save as Draft"
+
+INV -> POS : CreatePurchaseOrder(supplierId, userId, lineItems)
+POS -> POS : TotalCost = sum(qty x unitPrice)
+POS -> DB  : INSERT PurchaseOrders (Draft, TotalCost, OrderDate)
+DB  --> POS : PO.Id
+
+loop Each line item
+  POS -> DB : INSERT POLineItems (POID, ProductId, Qty, UnitPrice)
+end
+
+POS -> AU  : LogAction(userId, "Created PO", "PurchaseOrders")
+AU  -> DB  : INSERT AuditLogs
+POS --> INV : PO created
+INV -> M   : Show PO summary
+
+M   -> INV : Click "Send to Supplier"
+INV -> POS : UpdatePOStatus(poId, Sent)
+POS -> DB  : UPDATE PurchaseOrders SET Status = Sent
+POS -> AU  : LogAction(userId, "Sent PO", "PurchaseOrders")
+AU  -> DB  : INSERT AuditLogs
+INV -> M   : "PO sent to supplier"
+
+note over M, INV
+  Supplier delivers goods...
+end note
+
+M   -> INV : Click "Mark as Received"
+INV -> POS : ReceivePurchaseOrder(poId, userId)
+POS -> DB  : SELECT POLineItems WHERE POID = poId
+DB  --> POS : List<POLineItem>
+
+POS -> DB  : BEGIN TRANSACTION
+POS -> DB  : UPDATE PurchaseOrders SET Status=Received, ReceivedAt=now
+
+loop Each POLineItem
+  POS -> IS  : IncrementStock(productId, orderedQty)
+  IS  -> DB  : UPDATE Inventories SET Quantity += qty, LastUpdated=now
+end
+
+POS -> DB  : COMMIT TRANSACTION
+POS -> AU  : LogAction(userId, "Received PO — stock updated", "PurchaseOrders")
+AU  -> DB  : INSERT AuditLogs
+POS --> INV : Stock updated
+INV -> M   : Show updated inventory (alerts cleared)
+
+@enduml

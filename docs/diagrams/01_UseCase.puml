@@ -1,0 +1,160 @@
+@startuml SmartPOS_UseCaseDiagram
+
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #FFF8F0
+  BorderColor #CC6600
+  ArrowColor #CC6600
+}
+skinparam actor {
+  BackgroundColor #FFE4B5
+  BorderColor #CC6600
+}
+
+title SmartPOS+ — UML Use Case Diagram
+
+actor Admin      as A #FFD700
+actor Manager    as M #87CEEB
+actor Cashier    as C #90EE90
+actor Customer   as CU #FFB6C1
+actor "BERT AI\nService" as BERT #D3D3D3
+actor "Stripe\nPayment" as STRIPE #D3D3D3
+
+rectangle "SmartPOS+ System" {
+
+  package "Authentication" {
+    usecase "Select Role"            as UC01
+    usecase "Login"                  as UC02
+    usecase "Register Account"       as UC03
+    usecase "Logout"                 as UC04
+  }
+
+  package "User & Permission Management" {
+    usecase "Manage Users"           as UC05
+    usecase "Assign Role Permissions" as UC06
+    usecase "View Audit Log"         as UC07
+  }
+
+  package "Product Catalog" {
+    usecase "Add / Edit Product"     as UC08
+    usecase "Deactivate Product"     as UC09
+    usecase "Manage Categories"      as UC10
+    usecase "Manage Suppliers"       as UC11
+  }
+
+  package "Inventory Management" {
+    usecase "View Stock Levels"      as UC12
+    usecase "Set Reorder Level"      as UC13
+    usecase "Create Purchase Order"  as UC14
+    usecase "Update PO Status"       as UC15
+    usecase "Receive Stock"          as UC16
+  }
+
+  package "Sales & POS" {
+    usecase "Search Products"        as UC17
+    usecase "Add Item to Cart"       as UC18
+    usecase "Apply Promotion Code"   as UC19
+    usecase "Process Payment"        as UC20
+    usecase "Complete Sale"          as UC21
+    usecase "Void Sale"              as UC22
+    usecase "Browse Online Shop"     as UC23
+    usecase "Place Online Order"     as UC24
+  }
+
+  package "Promotions" {
+    usecase "Create / Edit Promotion"     as UC25
+    usecase "Activate / Deactivate Promo" as UC26
+  }
+
+  package "Payments" {
+    usecase "Pay by Cash"            as UC27
+    usecase "Pay by Card (Stripe)"   as UC28
+    usecase "Process Refund"         as UC29
+  }
+
+  package "Reviews & Sentiment" {
+    usecase "Submit Product Review"  as UC30
+    usecase "Analyse Sentiment"      as UC31
+    usecase "View Sentiment Report"  as UC32
+  }
+
+  package "Customer Loyalty" {
+    usecase "Earn Loyalty Points"    as UC33
+    usecase "View Loyalty Balance"   as UC34
+  }
+}
+
+A  --> UC01 : selects
+M  --> UC01
+C  --> UC01
+CU --> UC01
+
+A  --> UC02
+M  --> UC02
+C  --> UC02
+CU --> UC02
+
+CU --> UC03
+A  --> UC04
+M  --> UC04
+C  --> UC04
+CU --> UC04
+
+A --> UC05
+A --> UC06
+A --> UC07
+A --> UC08
+A --> UC09
+A --> UC10
+A --> UC11
+A --> UC12
+A --> UC22
+A --> UC25
+A --> UC26
+A --> UC29
+
+M --> UC08
+M --> UC09
+M --> UC10
+M --> UC11
+M --> UC12
+M --> UC13
+M --> UC14
+M --> UC15
+M --> UC16
+M --> UC25
+M --> UC26
+M --> UC29
+M --> UC32
+
+C --> UC17
+C --> UC18
+C --> UC19
+C --> UC20
+C --> UC21
+C --> UC22
+C --> UC27
+
+CU --> UC23
+CU --> UC24
+CU --> UC19
+CU --> UC28
+CU --> UC30
+CU --> UC33
+CU --> UC34
+
+STRIPE --> UC28
+BERT   --> UC31
+
+UC21 .> UC20 : <<include>>
+UC21 .> UC33 : <<include>>
+UC24 .> UC20 : <<include>>
+UC24 .> UC33 : <<include>>
+UC20 .> UC27 : <<extend>>
+UC20 .> UC28 : <<extend>>
+UC19 .> UC21 : <<extend>>
+UC30 .> UC31 : <<include>>
+UC16 .> UC12 : <<include>>
+
+@enduml

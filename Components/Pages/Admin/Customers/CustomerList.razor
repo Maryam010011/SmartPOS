@@ -328,7 +328,7 @@
                     TotalSpent = c.TotalSpent,
                     IsActive = c.IsActive,
                     CreatedAt = c.CreatedAt,
-                    TotalOrders = 0
+                    TotalOrders = c.TotalOrders  // Fixed: now uses real count from service
                 }).ToList();
             }
             else

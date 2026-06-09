@@ -18,12 +18,11 @@ namespace SmartPOS.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.0")
-                .HasAnnotation("ProductVersion", "9.0.16")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("SmartPOS.Web.Models.AuditLog", b =>
+            modelBuilder.Entity("SmartPOS.Models.AuditLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -39,6 +38,9 @@ namespace SmartPOS.Migrations
                     b.Property<string>("Details")
                         .HasColumnType("text");
 
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int");
+
                     b.Property<string>("IPAddress")
                         .HasMaxLength(45)
                         .HasColumnType("nvarchar(45)");
@@ -47,6 +49,12 @@ namespace SmartPOS.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Timestamp")
                         .ValueGeneratedOnAdd()
@@ -63,7 +71,7 @@ namespace SmartPOS.Migrations
                     b.ToTable("AuditLogs");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Category", b =>
+            modelBuilder.Entity("SmartPOS.Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -72,12 +80,10 @@ namespace SmartPOS.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("text");
 
                     b.Property<string>("ImageURL")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -93,10 +99,10 @@ namespace SmartPOS.Migrations
 
                     b.HasIndex("ParentCategoryId");
 
-                    b.ToTable("Category");
+                    b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Customer", b =>
+            modelBuilder.Entity("SmartPOS.Models.Customer", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -105,14 +111,15 @@ namespace SmartPOS.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(getutcdate())");
 
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly?>("DateOfBirth")
+                        .HasColumnType("date");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -123,7 +130,9 @@ namespace SmartPOS.Migrations
                         .HasColumnType("bit");
 
                     b.Property<int>("LoyaltyPoints")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -135,17 +144,26 @@ namespace SmartPOS.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<decimal>("TotalSpent")
-                        .HasColumnType("decimal(18,2)");
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)")
+                        .HasDefaultValue(0.00m);
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
+                    b.HasIndex(new[] { "Email" }, "IX_Customers_Email")
                         .IsUnique();
 
-                    b.ToTable("Customer");
+                    b.HasIndex(new[] { "UserId" }, "IX_Customers_UserId")
+                        .IsUnique();
+
+                    b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Inventory", b =>
+            modelBuilder.Entity("SmartPOS.Models.Inventory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -154,26 +172,30 @@ namespace SmartPOS.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("(getutcdate())");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("ReorderLevel")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId")
+                    b.HasIndex(new[] { "ProductId" }, "IX_Inventories_ProductId")
                         .IsUnique();
 
-                    b.ToTable("Inventory");
+                    b.ToTable("Inventories", (string)null);
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.LoyaltyTransaction", b =>
+            modelBuilder.Entity("SmartPOS.Models.LoyaltyTransaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -192,22 +214,20 @@ namespace SmartPOS.Migrations
 
                     b.Property<string>("Reason")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("LoyaltyTransaction");
+                    b.ToTable("LoyaltyTransactions");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.POLineItem", b =>
+            modelBuilder.Entity("SmartPOS.Models.POLineItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -237,7 +257,7 @@ namespace SmartPOS.Migrations
                     b.ToTable("POLineItems");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Payment", b =>
+            modelBuilder.Entity("SmartPOS.Models.Payment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -275,7 +295,7 @@ namespace SmartPOS.Migrations
                     b.ToTable("Payments");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Permission", b =>
+            modelBuilder.Entity("SmartPOS.Models.Permission", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -311,43 +331,19 @@ namespace SmartPOS.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("RoleId1")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("RoleId1");
 
                     b.HasIndex(new[] { "RoleId" }, "IX_Permissions_RoleId");
 
                     b.ToTable("Permissions");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.POLineItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("OrderedQty")
-                        .HasColumnType("int");
-
-                    b.Property<int>("POID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("UnitPrice")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("POID");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("POLineItem");
-                });
-
-            modelBuilder.Entity("SmartPOS.Web.Models.Product", b =>
+            modelBuilder.Entity("SmartPOS.Models.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -408,7 +404,7 @@ namespace SmartPOS.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Promotion", b =>
+            modelBuilder.Entity("SmartPOS.Models.Promotion", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -420,6 +416,13 @@ namespace SmartPOS.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("DiscountType")
                         .HasColumnType("int");
@@ -461,7 +464,7 @@ namespace SmartPOS.Migrations
                     b.ToTable("Promotions");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.PurchaseOrder", b =>
+            modelBuilder.Entity("SmartPOS.Models.PurchaseOrder", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -504,98 +507,7 @@ namespace SmartPOS.Migrations
                     b.ToTable("PurchaseOrders");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Promotion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<int>("DiscountType")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("MaxUsageLimit")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("MinOrderValue")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("UsageCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ValidFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ValidTo")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("Value")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("Promotion");
-                });
-
-            modelBuilder.Entity("SmartPOS.Web.Models.PurchaseOrder", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("OrderDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ReceivedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SupplierId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("TotalCost")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SupplierId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PurchaseOrder");
-                });
-
-            modelBuilder.Entity("SmartPOS.Web.Models.Review", b =>
+            modelBuilder.Entity("SmartPOS.Models.Review", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -639,7 +551,7 @@ namespace SmartPOS.Migrations
                         });
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Role", b =>
+            modelBuilder.Entity("SmartPOS.Models.Role", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -647,49 +559,26 @@ namespace SmartPOS.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Permissions")
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PermissionsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("PermissionsJson");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoleName")
-                        .IsUnique();
-
                     b.ToTable("Roles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Permissions = "{\"Modules\":{\"UserManagement\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":true},\"Inventory\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":true},\"POS\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":true},\"Reports\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":true},\"Promotions\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":true},\"Customers\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":true},\"PurchaseOrders\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":true},\"AuditLogs\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":true}}}",
-                            RoleName = "Admin"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Permissions = "{\"Modules\":{\"UserManagement\":{\"CanCreate\":false,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":false},\"Inventory\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":false},\"POS\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":false},\"Reports\":{\"CanCreate\":false,\"CanRead\":true,\"CanUpdate\":false,\"CanDelete\":false},\"Promotions\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":false},\"Customers\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":false},\"PurchaseOrders\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":false},\"AuditLogs\":{\"CanCreate\":false,\"CanRead\":true,\"CanUpdate\":false,\"CanDelete\":false}}}",
-                            RoleName = "Manager"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Permissions = "{\"Modules\":{\"UserManagement\":{\"CanCreate\":false,\"CanRead\":false,\"CanUpdate\":false,\"CanDelete\":false},\"Inventory\":{\"CanCreate\":false,\"CanRead\":true,\"CanUpdate\":false,\"CanDelete\":false},\"POS\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":false},\"Reports\":{\"CanCreate\":false,\"CanRead\":true,\"CanUpdate\":false,\"CanDelete\":false},\"Promotions\":{\"CanCreate\":false,\"CanRead\":true,\"CanUpdate\":false,\"CanDelete\":false},\"Customers\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":false},\"PurchaseOrders\":{\"CanCreate\":false,\"CanRead\":false,\"CanUpdate\":false,\"CanDelete\":false},\"AuditLogs\":{\"CanCreate\":false,\"CanRead\":false,\"CanUpdate\":false,\"CanDelete\":false}}}",
-                            RoleName = "Cashier"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Permissions = "{\"Modules\":{\"UserManagement\":{\"CanCreate\":false,\"CanRead\":false,\"CanUpdate\":false,\"CanDelete\":false},\"Inventory\":{\"CanCreate\":false,\"CanRead\":true,\"CanUpdate\":false,\"CanDelete\":false},\"POS\":{\"CanCreate\":true,\"CanRead\":true,\"CanUpdate\":false,\"CanDelete\":false},\"Reports\":{\"CanCreate\":false,\"CanRead\":false,\"CanUpdate\":false,\"CanDelete\":false},\"Promotions\":{\"CanCreate\":false,\"CanRead\":true,\"CanUpdate\":false,\"CanDelete\":false},\"Customers\":{\"CanCreate\":false,\"CanRead\":true,\"CanUpdate\":true,\"CanDelete\":false},\"PurchaseOrders\":{\"CanCreate\":false,\"CanRead\":false,\"CanUpdate\":false,\"CanDelete\":false},\"AuditLogs\":{\"CanCreate\":false,\"CanRead\":false,\"CanUpdate\":false,\"CanDelete\":false}}}",
-                            RoleName = "Customer"
-                        });
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Sale", b =>
+            modelBuilder.Entity("SmartPOS.Models.Sale", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -707,9 +596,6 @@ namespace SmartPOS.Migrations
                         .HasDefaultValue(0.00m);
 
                     b.Property<int?>("PromoId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("PromotionId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("SaleDate")
@@ -745,14 +631,9 @@ namespace SmartPOS.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Sales");
-                    b.HasIndex("CustomerId");
-
-                    b.HasIndex("PromotionId");
-
-                    b.ToTable("Sale");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.SaleItem", b =>
+            modelBuilder.Entity("SmartPOS.Models.SaleItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -783,10 +664,10 @@ namespace SmartPOS.Migrations
 
                     b.HasIndex(new[] { "SaleId" }, "IX_SaleItems_SaleId");
 
-                    b.ToTable("SaleItem");
+                    b.ToTable("SaleItems");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Supplier", b =>
+            modelBuilder.Entity("SmartPOS.Models.Supplier", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -795,22 +676,18 @@ namespace SmartPOS.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("text");
 
                     b.Property<string>("ContactNo")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("ContactPerson")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
@@ -827,12 +704,13 @@ namespace SmartPOS.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex(new[] { "Email" }, "IX_Suppliers_Email")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
 
-                    b.ToTable("Supplier");
+                    b.ToTable("Suppliers");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.User", b =>
+            modelBuilder.Entity("SmartPOS.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -878,9 +756,9 @@ namespace SmartPOS.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.AuditLog", b =>
+            modelBuilder.Entity("SmartPOS.Models.AuditLog", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.User", "User")
+                    b.HasOne("SmartPOS.Models.User", "User")
                         .WithMany("AuditLogs")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -889,51 +767,9 @@ namespace SmartPOS.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.User", b =>
+            modelBuilder.Entity("SmartPOS.Models.Category", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("User");
-                });
-
-            modelBuilder.Entity("SmartPOS.Web.Models.Category", b =>
-                {
-                    b.HasOne("SmartPOS.Web.Models.Category", "ParentCategory")
+                    b.HasOne("SmartPOS.Models.Category", "ParentCategory")
                         .WithMany("SubCategories")
                         .HasForeignKey("ParentCategoryId")
                         .OnDelete(DeleteBehavior.NoAction);
@@ -941,37 +777,48 @@ namespace SmartPOS.Migrations
                     b.Navigation("ParentCategory");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Customer", b =>
+            modelBuilder.Entity("SmartPOS.Models.Customer", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.User", "User")
+                    b.HasOne("SmartPOS.Models.User", "User")
                         .WithOne("Customer")
-                        .HasForeignKey("SmartPOS.Web.Models.Customer", "UserId")
+                        .HasForeignKey("SmartPOS.Models.Customer", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Inventory", b =>
+            modelBuilder.Entity("SmartPOS.Models.Inventory", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.Product", "Product")
+                    b.HasOne("SmartPOS.Models.Product", "Product")
                         .WithOne("Inventory")
-                        .HasForeignKey("SmartPOS.Web.Models.Inventory", "ProductId")
+                        .HasForeignKey("SmartPOS.Models.Inventory", "ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.POLineItem", b =>
+            modelBuilder.Entity("SmartPOS.Models.LoyaltyTransaction", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.PurchaseOrder", "PurchaseOrder")
+                    b.HasOne("SmartPOS.Models.Customer", "Customer")
+                        .WithMany("LoyaltyTransactions")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("SmartPOS.Models.POLineItem", b =>
+                {
+                    b.HasOne("SmartPOS.Models.PurchaseOrder", "PurchaseOrder")
                         .WithMany("LineItems")
                         .HasForeignKey("POID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SmartPOS.Web.Models.Product", "Product")
+                    b.HasOne("SmartPOS.Models.Product", "Product")
                         .WithMany("POLineItems")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -982,78 +829,41 @@ namespace SmartPOS.Migrations
                     b.Navigation("PurchaseOrder");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Payment", b =>
+            modelBuilder.Entity("SmartPOS.Models.Payment", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.Sale", "Sale")
+                    b.HasOne("SmartPOS.Models.Sale", "Sale")
                         .WithOne("Payment")
-                        .HasForeignKey("SmartPOS.Web.Models.Payment", "SaleId")
+                        .HasForeignKey("SmartPOS.Models.Payment", "SaleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Sale");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Permission", b =>
+            modelBuilder.Entity("SmartPOS.Models.Permission", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.Role", "Role")
+                    b.HasOne("SmartPOS.Models.Role", "Role")
                         .WithMany("Permissions")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SmartPOS.Models.Role", null)
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("RoleId1");
+
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Inventory", b =>
+            modelBuilder.Entity("SmartPOS.Models.Product", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("SmartPOS.Web.Models.LoyaltyTransaction", b =>
-                {
-                    b.HasOne("SmartPOS.Web.Models.Customer", "Customer")
-                        .WithMany("LoyaltyTransactions")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("SmartPOS.Web.Models.POLineItem", b =>
-                {
-                    b.HasOne("SmartPOS.Web.Models.PurchaseOrder", "PO")
-                        .WithMany("LineItems")
-                        .HasForeignKey("POID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SmartPOS.Web.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("PO");
-
-                    b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("SmartPOS.Web.Models.Product", b =>
-                {
-                    b.HasOne("SmartPOS.Web.Models.Category", "Category")
+                    b.HasOne("SmartPOS.Models.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SmartPOS.Web.Models.Supplier", "Supplier")
+                    b.HasOne("SmartPOS.Models.Supplier", "Supplier")
                         .WithMany("Products")
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1063,18 +873,18 @@ namespace SmartPOS.Migrations
                     b.Navigation("Supplier");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.PurchaseOrder", b =>
+            modelBuilder.Entity("SmartPOS.Models.PurchaseOrder", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.Supplier", "Supplier")
-                        .WithMany()
+                    b.HasOne("SmartPOS.Models.Supplier", "Supplier")
+                        .WithMany("PurchaseOrders")
                         .HasForeignKey("SupplierId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SmartPOS.Web.Models.User", "User")
-                        .WithMany()
+                    b.HasOne("SmartPOS.Models.User", "User")
+                        .WithMany("PurchaseOrders")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Supplier");
@@ -1082,15 +892,15 @@ namespace SmartPOS.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Review", b =>
+            modelBuilder.Entity("SmartPOS.Models.Review", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.Customer", "Customer")
+                    b.HasOne("SmartPOS.Models.Customer", "Customer")
                         .WithMany("Reviews")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SmartPOS.Web.Models.Product", "Product")
+                    b.HasOne("SmartPOS.Models.Product", "Product")
                         .WithMany("Reviews")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1101,29 +911,38 @@ namespace SmartPOS.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Sale", b =>
+            modelBuilder.Entity("SmartPOS.Models.Sale", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.Customer", "Customer")
+                    b.HasOne("SmartPOS.Models.Customer", "Customer")
                         .WithMany("Sales")
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("CustomerId");
 
-                    b.HasOne("SmartPOS.Web.Models.Promotion", null)
+                    b.HasOne("SmartPOS.Models.Promotion", "Promotion")
                         .WithMany("Sales")
-                        .HasForeignKey("PromotionId");
+                        .HasForeignKey("PromoId");
+
+                    b.HasOne("SmartPOS.Models.User", "User")
+                        .WithMany("Sales")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Customer");
+
+                    b.Navigation("Promotion");
+
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.SaleItem", b =>
+            modelBuilder.Entity("SmartPOS.Models.SaleItem", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.Product", "Product")
+                    b.HasOne("SmartPOS.Models.Product", "Product")
                         .WithMany("SaleItems")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SmartPOS.Web.Models.Sale", "Sale")
+                    b.HasOne("SmartPOS.Models.Sale", "Sale")
                         .WithMany("SaleItems")
                         .HasForeignKey("SaleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1134,32 +953,34 @@ namespace SmartPOS.Migrations
                     b.Navigation("Sale");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.User", b =>
+            modelBuilder.Entity("SmartPOS.Models.User", b =>
                 {
-                    b.HasOne("SmartPOS.Web.Models.Role", "Role")
+                    b.HasOne("SmartPOS.Models.Role", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Category", b =>
+            modelBuilder.Entity("SmartPOS.Models.Category", b =>
                 {
                     b.Navigation("Products");
 
                     b.Navigation("SubCategories");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Customer", b =>
+            modelBuilder.Entity("SmartPOS.Models.Customer", b =>
                 {
                     b.Navigation("LoyaltyTransactions");
+
+                    b.Navigation("Reviews");
 
                     b.Navigation("Sales");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Product", b =>
+            modelBuilder.Entity("SmartPOS.Models.Product", b =>
                 {
                     b.Navigation("Inventory");
 
@@ -1170,36 +991,40 @@ namespace SmartPOS.Migrations
                     b.Navigation("SaleItems");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Promotion", b =>
+            modelBuilder.Entity("SmartPOS.Models.Promotion", b =>
                 {
                     b.Navigation("Sales");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.PurchaseOrder", b =>
+            modelBuilder.Entity("SmartPOS.Models.PurchaseOrder", b =>
                 {
                     b.Navigation("LineItems");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Role", b =>
+            modelBuilder.Entity("SmartPOS.Models.Role", b =>
                 {
+                    b.Navigation("Permissions");
+
+                    b.Navigation("RolePermissions");
+
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Sale", b =>
+            modelBuilder.Entity("SmartPOS.Models.Sale", b =>
                 {
                     b.Navigation("Payment");
 
                     b.Navigation("SaleItems");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.Supplier", b =>
+            modelBuilder.Entity("SmartPOS.Models.Supplier", b =>
                 {
                     b.Navigation("Products");
 
                     b.Navigation("PurchaseOrders");
                 });
 
-            modelBuilder.Entity("SmartPOS.Web.Models.User", b =>
+            modelBuilder.Entity("SmartPOS.Models.User", b =>
                 {
                     b.Navigation("AuditLogs");
 

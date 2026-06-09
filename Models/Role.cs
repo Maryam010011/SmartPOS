@@ -15,5 +15,8 @@ public partial class Role
     public virtual ICollection<User> Users { get; set; } = new List<User>();
     
     // Optional: If you want the one-to-many relationship navigation to the Permission entity table
-    public virtual ICollection<Permission> RolePermissions { get; set; } = new List<Permission>();
+    public virtual ICollection<Permission> Permissions { get; set; } = new List<Permission>();
+    
+    // Alias kept for compatibility
+    public virtual ICollection<Permission> RolePermissions => Permissions;
 }

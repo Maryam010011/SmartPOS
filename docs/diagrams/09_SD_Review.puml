@@ -1,0 +1,60 @@
+@startuml SD_Review
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBackgroundColor #FFF8F0
+skinparam sequenceParticipantBorderColor #CC6600
+skinparam noteBackgroundColor #FFF0D0
+
+title SmartPOS+ — Sequence: Customer Review + BERT Sentiment
+
+actor       "Customer"          as CU
+participant "Shop.razor"        as SH
+participant "ReviewService"     as RS
+participant "BertApiClient"     as BERT
+participant "AppDbContext"      as DB
+participant "AuditService"      as AU
+
+CU  -> SH   : Click "Leave a Review" on product
+SH  -> DB   : Verify customer purchased this product\n(SaleItems JOIN Sales WHERE CustomerId = id)
+
+alt Not purchased
+  DB  --> SH  : No match
+  SH  -> CU   : "You can only review products you have purchased."
+else Purchased
+  DB  --> SH  : Confirmed
+  SH  -> CU   : Show review form (1-5 stars + comment)
+
+  CU  -> SH   : Select rating + type comment
+  CU  -> SH   : Click "Submit Review"
+  SH  -> SH   : Validate rating (1-5), comment not empty
+
+  SH  -> RS   : SubmitReview(customerId, productId, rating, comment)
+  RS  -> DB   : INSERT Reviews (Rating, Comment, Sentiment=null, Score=null)
+  DB  --> RS  : Review.Id
+
+  RS  --> SH  : Saved
+  SH  -> CU   : "Review submitted! Analysing sentiment..."
+
+  RS  -> BERT : POST /analyse { text: comment }
+
+  note right of BERT
+    Positive  → score = 1.0
+    Neutral   → score = 0.5
+    Negative  → score = 0.0
+  end note
+
+  alt BERT unavailable
+    BERT --> RS : timeout / 503
+    RS   -> AU  : LogAction("Review submitted - sentiment pending", "Reviews")
+    AU   -> DB  : INSERT AuditLogs
+  else BERT responds
+    BERT --> RS : { sentiment: "Positive", score: 0.92 }
+    RS  -> DB   : UPDATE Reviews SET Sentiment="Positive", SentimentScore=0.92
+    RS  -> AU   : LogAction("Review submitted - Positive", "Reviews")
+    AU  -> DB   : INSERT AuditLogs
+    RS  --> SH  : Sentiment result
+    SH  -> CU   : Show sentiment badge (Positive)
+  end
+end
+
+@enduml

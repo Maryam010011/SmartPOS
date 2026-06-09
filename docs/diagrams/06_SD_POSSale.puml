@@ -1,0 +1,81 @@
+@startuml SD_POSSale
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBackgroundColor #FFF8F0
+skinparam sequenceParticipantBorderColor #CC6600
+skinparam noteBackgroundColor #FFF0D0
+
+title SmartPOS+ — Sequence: Cashier POS Sale (Onsite)
+
+actor       "Cashier"           as C
+participant "Pos.razor"         as POS
+participant "SaleService"       as SS
+participant "PromoService"      as PS
+participant "AppDbContext"      as DB
+participant "InventoryService"  as IS
+participant "AuditService"      as AU
+
+C   -> POS : Search product (name or SKU)
+POS -> DB  : Products.Where(IsActive, name/SKU match)
+DB  --> POS : List<Product>
+POS -> C   : Show results
+
+loop Add items to cart
+  C   -> POS : Add product + quantity
+  POS -> POS : LineTotal = Qty x UnitPrice
+end
+
+POS -> POS : SubTotal = sum of LineTotals
+
+opt Apply promo code
+  C   -> POS : Enter promo code
+  POS -> PS  : ValidatePromo(code, subTotal)
+  PS  -> DB  : Query Promotions (active, valid dates, usage limit)
+  alt Invalid
+    DB  --> PS  : null
+    PS  --> POS : { Valid: false }
+    POS -> C    : Show error
+  else Valid
+    DB  --> PS  : Promotion
+    PS  --> POS : { Valid: true, Discount: amount }
+    POS -> POS  : DiscountAmount = amount
+  end
+end
+
+POS -> POS : TaxAmount = (SubTotal - Discount) x 0.17
+POS -> POS : TotalAmount = SubTotal - Discount + Tax
+POS -> C   : Show order summary
+
+C   -> POS : Select Cash payment
+C   -> POS : Click "Complete Sale"
+POS -> SS  : CreateSale(cart, userId, promoId?, Cash)
+
+SS  -> DB  : BEGIN TRANSACTION
+SS  -> DB  : INSERT Sales (Onsite, totals, Completed)
+DB  --> SS : Sale.Id
+
+loop Each SaleItem
+  SS -> DB : INSERT SaleItems
+end
+
+SS  -> DB  : INSERT Payments (Cash, Completed, PaidAt=now)
+
+loop Each SaleItem
+  SS -> IS : DecrementStock(productId, qty)
+  IS -> DB : UPDATE Inventories SET Quantity -= qty
+  opt Quantity <= ReorderLevel
+    IS -> C : Low-stock alert
+  end
+end
+
+opt Promo applied
+  SS -> DB : UPDATE Promotions SET UsageCount += 1
+end
+
+SS  -> DB  : COMMIT TRANSACTION
+SS  -> AU  : LogAction(userId, "Completed Sale", "Sales")
+AU  -> DB  : INSERT AuditLogs
+SS  --> POS : Sale complete
+POS -> C   : Show receipt, clear cart
+
+@enduml

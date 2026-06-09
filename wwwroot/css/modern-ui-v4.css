@@ -1,0 +1,623 @@
+/* ============================================================
+   SmartPOS+ Professional UI System v4.0
+   Complete Modern Redesign - Material Design 3 Inspired
+   ============================================================ */
+
+/* ── Reset & Base Styles ─────────────────────────────────────── */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #1e293b;
+    background: #f8fafc;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Modern Card System ──────────────────────────────────────── */
+.card,
+.card-pos {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
+    transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow: hidden;
+}
+
+.card:hover,
+.card-pos:hover {
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04) !important;
+    transform: translateY(-2px) !important;
+}
+
+.card-header {
+    background: linear-gradient(to bottom, #ffffff, #f8fafc) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 1.25rem 1.5rem !important;
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    font-size: 1.125rem !important;
+}
+
+.card-body {
+    padding: 1.5rem !important;
+}
+
+/* Stat Cards */
+.card-stat {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-stat::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+    border-radius: 0 0 0 100%;
+}
+
+/* ── Professional Button System ──────────────────────────────── */
+.btn {
+    font-weight: 500 !important;
+    letter-spacing: 0.01em !important;
+    border-radius: 10px !important;
+    padding: 0.625rem 1.25rem !important;
+    font-size: 0.9375rem !important;
+    border: none !important;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Primary Button */
+.btn-primary,
+.btn-burnt-orange {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3), 0 2px 4px -2px rgba(59, 130, 246, 0.2) !important;
+}
+
+.btn-primary:hover,
+.btn-burnt-orange:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4), 0 4px 6px -4px rgba(59, 130, 246, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Secondary Button */
+.btn-secondary,
+.btn-outline-burnt-orange {
+    background: #ffffff !important;
+    color: #3b82f6 !important;
+    border: 2px solid #3b82f6 !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.btn-secondary:hover,
+.btn-outline-burnt-orange:hover {
+    background: #eff6ff !important;
+    border-color: #2563eb !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Success Button */
+.btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Danger Button */
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3) !important;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.4) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Small Button */
+.btn-sm {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 8px !important;
+}
+
+/* Large Button */
+.btn-lg {
+    padding: 0.875rem 1.75rem !important;
+    font-size: 1rem !important;
+    border-radius: 12px !important;
+}
+
+/* ── Modern Table Design ─────────────────────────────────────── */
+.table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.table,
+.table-pos {
+    width: 100% !important;
+    margin-bottom: 0 !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    background: #ffffff;
+}
+
+.table thead,
+.table-pos thead {
+    background: linear-gradient(to bottom, #f8fafc, #f1f5f9) !important;
+}
+
+.table thead th,
+.table-pos thead th {
+    padding: 1rem 1.5rem !important;
+    font-weight: 600 !important;
+    font-size: 0.8125rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #475569 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+}
+
+.table tbody tr,
+.table-pos tbody tr {
+    border-bottom: 1px solid #f1f5f9 !important;
+    transition: all 200ms ease !important;
+}
+
+.table tbody tr:hover,
+.table-pos tbody tr:hover {
+    background: #f8fafc !important;
+    box-shadow: inset 0 0 0 2px #e2e8f0 !important;
+}
+
+.table tbody td,
+.table-pos tbody td {
+    padding: 1rem 1.5rem !important;
+    vertical-align: middle !important;
+    font-size: 0.9375rem !important;
+    color: #1e293b !important;
+}
+
+.table tbody tr:last-child {
+    border-bottom: none !important;
+}
+
+/* Table Actions */
+.table td .btn {
+    padding: 0.375rem 0.875rem !important;
+    font-size: 0.8125rem !important;
+}
+
+/* ── Modern Form Controls ────────────────────────────────────── */
+.form-control,
+.form-select {
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.9375rem !important;
+    color: #1e293b !important;
+    background: #ffffff !important;
+    transition: all 200ms ease !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+    outline: none !important;
+}
+
+.form-label {
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    color: #475569 !important;
+    margin-bottom: 0.5rem !important;
+    letter-spacing: 0.01em !important;
+}
+
+.input-group {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.input-group-text {
+    background: #f8fafc !important;
+    border: 2px solid #e2e8f0 !important;
+    border-right: none !important;
+    color: #64748b !important;
+    font-size: 0.9375rem !important;
+}
+
+.input-group .form-control {
+    border-left: none !important;
+}
+
+/* ── Badge System ────────────────────────────────────────────── */
+.badge {
+    padding: 0.375rem 0.75rem !important;
+    border-radius: 6px !important;
+    font-weight: 500 !important;
+    font-size: 0.8125rem !important;
+    letter-spacing: 0.01em !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.375rem !important;
+}
+
+.badge-success,
+.bg-success {
+    background: #d1fae5 !important;
+    color: #065f46 !important;
+}
+
+.badge-warning,
+.bg-warning {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+}
+
+.badge-danger,
+.bg-danger {
+    background: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+.badge-info,
+.bg-info {
+    background: #dbeafe !important;
+    color: #1e40af !important;
+}
+
+.badge-secondary,
+.bg-secondary {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+}
+
+/* Role Badges */
+.badge-role {
+    padding: 0.5rem 1rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.05em !important;
+}
+
+.badge-role-admin {
+    background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%) !important;
+    color: #991b1b !important;
+}
+
+.badge-role-manager {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) !important;
+    color: #1e40af !important;
+}
+
+.badge-role-cashier {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%) !important;
+    color: #065f46 !important;
+}
+
+.badge-role-customer {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+    color: #92400e !important;
+}
+
+/* ── Alert Messages ──────────────────────────────────────────── */
+.alert {
+    border-radius: 12px !important;
+    border: 2px solid !important;
+    padding: 1rem 1.25rem !important;
+    font-size: 0.9375rem !important;
+    margin-bottom: 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+}
+
+.alert-success {
+    background: #f0fdf4 !important;
+    border-color: #86efac !important;
+    color: #166534 !important;
+}
+
+.alert-warning {
+    background: #fffbeb !important;
+    border-color: #fcd34d !important;
+    color: #92400e !important;
+}
+
+.alert-danger,
+.alert-error {
+    background: #fef2f2 !important;
+    border-color: #fca5a5 !important;
+    color: #991b1b !important;
+}
+
+.alert-info {
+    background: #eff6ff !important;
+    border-color: #93c5fd !important;
+    color: #1e40af !important;
+}
+
+/* ── Modern Pagination ───────────────────────────────────────── */
+.pagination {
+    gap: 0.5rem !important;
+}
+
+.pagination .page-item {
+    margin: 0 !important;
+}
+
+.pagination .page-link {
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 0.875rem !important;
+    color: #475569 !important;
+    font-weight: 500 !important;
+    min-width: 2.5rem !important;
+    text-align: center !important;
+    transition: all 200ms ease !important;
+}
+
+.pagination .page-link:hover {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #1e293b !important;
+}
+
+.pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    border-color: #3b82f6 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3) !important;
+}
+
+.pagination .page-item.disabled .page-link {
+    background: #f8fafc !important;
+    border-color: #f1f5f9 !important;
+    color: #cbd5e1 !important;
+    cursor: not-allowed !important;
+}
+
+/* ── Modern Modal Design ─────────────────────────────────────── */
+.modal-content {
+    border-radius: 20px !important;
+    border: none !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(to bottom, #ffffff, #f8fafc) !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    padding: 1.5rem !important;
+}
+
+.modal-title {
+    font-weight: 600 !important;
+    font-size: 1.25rem !important;
+    color: #0f172a !important;
+}
+
+.modal-body {
+    padding: 2rem !important;
+}
+
+.modal-footer {
+    background: #f8fafc !important;
+    border-top: 2px solid #e2e8f0 !important;
+    padding: 1.25rem 1.5rem !important;
+}
+
+/* ── Loading States ──────────────────────────────────────────── */
+.spinner-border {
+    border-width: 3px !important;
+    animation: spinner-grow 0.75s linear infinite !important;
+}
+
+@keyframes spinner-grow {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.05); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s ease-in-out infinite;
+    border-radius: 8px;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── Navbar Enhancement ──────────────────────────────────────── */
+.navbar-pos {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* ── Page Transitions ────────────────────────────────────────── */
+.main-content,
+.container,
+.container-fluid {
+    animation: fadeIn 400ms ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Typography Enhancements ─────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.01em !important;
+}
+
+h1 { font-size: 2.25rem !important; }
+h2 { font-size: 1.875rem !important; }
+h3 { font-size: 1.5rem !important; }
+h4 { font-size: 1.25rem !important; }
+h5 { font-size: 1.125rem !important; }
+h6 { font-size: 1rem !important; }
+
+/* ── Utility Classes ─────────────────────────────────────────── */
+.shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important; }
+.shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1) !important; }
+.shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1) !important; }
+.shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important; }
+.shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important; }
+
+.rounded { border-radius: 0.5rem !important; }
+.rounded-lg { border-radius: 0.75rem !important; }
+.rounded-xl { border-radius: 1rem !important; }
+.rounded-2xl { border-radius: 1.5rem !important; }
+
+/* ── Scrollbar Styling ───────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 6px;
+    border: 2px solid #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ── Focus States ────────────────────────────────────────────── */
+*:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, 0.5) !important;
+    outline-offset: 2px !important;
+}
+
+/* ── Dropdown Enhancement ────────────────────────────────────── */
+.dropdown-menu {
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1) !important;
+    padding: 0.5rem !important;
+    animation: dropdown-fade-in 200ms ease;
+}
+
+@keyframes dropdown-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-item {
+    border-radius: 8px !important;
+    padding: 0.625rem 1rem !important;
+    color: #475569 !important;
+    font-size: 0.9375rem !important;
+    transition: all 150ms ease !important;
+}
+
+.dropdown-item:hover {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+}
+
+.dropdown-item:active {
+    background: #eff6ff !important;
+    color: #3b82f6 !important;
+}
+
+/* ── Search Enhancement ──────────────────────────────────────── */
+.search-wrapper {
+    position: relative;
+    max-width: 400px;
+}
+
+.search-wrapper .form-control {
+    padding-left: 2.75rem !important;
+}
+
+.search-wrapper::before {
+    content: '🔍';
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1rem;
+    opacity: 0.5;
+    pointer-events: none;
+}

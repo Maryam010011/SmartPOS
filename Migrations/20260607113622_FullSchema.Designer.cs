@@ -12,15 +12,15 @@ using SmartPOS.Data;
 namespace SmartPOS.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260524190220_FullDatabaseSetup")]
-    partial class InitialFullDatabaseSetup
+    [Migration("20260607113622_FullSchema")]
+    partial class FullSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.8")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -41,6 +41,9 @@ namespace SmartPOS.Migrations
                     b.Property<string>("Details")
                         .HasColumnType("text");
 
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int");
+
                     b.Property<string>("IPAddress")
                         .HasMaxLength(45)
                         .HasColumnType("nvarchar(45)");
@@ -49,6 +52,12 @@ namespace SmartPOS.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Timestamp")
                         .ValueGeneratedOnAdd()
@@ -74,6 +83,7 @@ namespace SmartPOS.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
+                        .HasMaxLength(500)
                         .HasColumnType("text");
 
                     b.Property<string>("ImageURL")
@@ -118,6 +128,9 @@ namespace SmartPOS.Migrations
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<int>("LoyaltyPoints")
                         .ValueGeneratedOnAdd()
@@ -182,7 +195,39 @@ namespace SmartPOS.Migrations
                     b.HasIndex(new[] { "ProductId" }, "IX_Inventories_ProductId")
                         .IsUnique();
 
-                    b.ToTable("Inventories");
+                    b.ToTable("Inventory");
+                });
+
+            modelBuilder.Entity("SmartPOS.Models.LoyaltyTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("LoyaltyTransactions");
                 });
 
             modelBuilder.Entity("SmartPOS.Models.POLineItem", b =>
@@ -289,7 +334,12 @@ namespace SmartPOS.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("RoleId1")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("RoleId1");
 
                     b.HasIndex(new[] { "RoleId" }, "IX_Permissions_RoleId");
 
@@ -369,6 +419,13 @@ namespace SmartPOS.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("DiscountType")
                         .HasColumnType("int");
@@ -510,6 +567,15 @@ namespace SmartPOS.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("PermissionsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("PermissionsJson");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Roles");
@@ -580,7 +646,7 @@ namespace SmartPOS.Migrations
 
                     b.Property<decimal>("LineTotal")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
@@ -593,7 +659,7 @@ namespace SmartPOS.Migrations
 
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -613,6 +679,7 @@ namespace SmartPOS.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
+                        .HasMaxLength(500)
                         .HasColumnType("text");
 
                     b.Property<string>("ContactNo")
@@ -735,6 +802,17 @@ namespace SmartPOS.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("SmartPOS.Models.LoyaltyTransaction", b =>
+                {
+                    b.HasOne("SmartPOS.Models.Customer", "Customer")
+                        .WithMany("LoyaltyTransactions")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("SmartPOS.Models.POLineItem", b =>
                 {
                     b.HasOne("SmartPOS.Models.PurchaseOrder", "PurchaseOrder")
@@ -772,6 +850,10 @@ namespace SmartPOS.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("SmartPOS.Models.Role", null)
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("RoleId1");
 
                     b.Navigation("Role");
                 });
@@ -894,6 +976,8 @@ namespace SmartPOS.Migrations
 
             modelBuilder.Entity("SmartPOS.Models.Customer", b =>
                 {
+                    b.Navigation("LoyaltyTransactions");
+
                     b.Navigation("Reviews");
 
                     b.Navigation("Sales");
@@ -923,6 +1007,8 @@ namespace SmartPOS.Migrations
             modelBuilder.Entity("SmartPOS.Models.Role", b =>
                 {
                     b.Navigation("Permissions");
+
+                    b.Navigation("RolePermissions");
 
                     b.Navigation("Users");
                 });

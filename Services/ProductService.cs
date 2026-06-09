@@ -33,6 +33,7 @@ namespace SmartPOS.Services
                 var product = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
+                    .Include(p => p.Inventory)
                     .FirstOrDefaultAsync(p => p.Id == id);
 
                 if (product == null)
@@ -58,6 +59,7 @@ namespace SmartPOS.Services
                 var products = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
+                    .Include(p => p.Inventory)
                     .ToListAsync();
 
                 return ApiResponse<List<ProductDto>>.Ok(products.Select(MapToDto).ToList());
@@ -81,6 +83,7 @@ namespace SmartPOS.Services
                 var products = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
+                    .Include(p => p.Inventory)
                     .Where(p => p.CategoryId == categoryId)
                     .ToListAsync();
 
@@ -105,6 +108,7 @@ namespace SmartPOS.Services
                 var products = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
+                    .Include(p => p.Inventory)
                     .Where(p => p.SupplierId == supplierId)
                     .ToListAsync();
 
@@ -261,6 +265,7 @@ namespace SmartPOS.Services
                 var products = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
+                    .Include(p => p.Inventory)
                     .Where(p => p.Name.Contains(keyword) || p.SKU.Contains(keyword))
                     .ToListAsync();
 
@@ -291,7 +296,7 @@ namespace SmartPOS.Services
                 CategoryName = product.Category?.Name ?? "N/A",
                 SupplierId = product.SupplierId,
                 SupplierName = product.Supplier?.Name ?? "N/A",
-                CurrentStock = 0 // Placeholder: To be implemented with Inventory module
+                CurrentStock = product.Inventory?.Quantity ?? 0
             };
         }
     }
