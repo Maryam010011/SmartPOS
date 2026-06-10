@@ -10,7 +10,5 @@ COPY --from=build /app/out .
 
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
-ENTRYPOINT ["dotnet", "SmartPOS.Server.dll"]
-
-ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
+ENTRYPOINT ["dotnet", "SmartPOS.dll"]
